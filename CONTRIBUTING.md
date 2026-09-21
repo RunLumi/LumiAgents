@@ -1,0 +1,166 @@
+> Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+
+# Contributing to Lumi Agents
+
+Thanks for contributing to the Lumi Agents community edition. This fork of
+[ZCode](https://github.com/zai-org/ZCode) keeps the public code Apache-2.0; the
+licensing and contribution policy is set in
+[LICENSING.md](LICENSING.md) and
+[ADR 0001](docs/specs/lumi-agents/adr/0001-licensing-and-contribution-model.md).
+
+## The rules in one paragraph
+
+Contributions to first-party public code are made under the **Developer
+Certificate of Origin 1.1** (below) plus the **Apache-2.0** license. You sign off
+every commit you submit (`git commit -s`); you keep copyright; Lumi and everyone
+else receive the Apache grant for your contribution as part of the distribution.
+You do **not** assign copyright and there is no CLA to sign. If you are not the
+sole author of your contribution, or your employer may have rights in it, you must
+have their authorization before submitting — that is what the DCO's "(d)" line is
+for.
+
+## Sign-off (DCO) — required for every commit
+
+Every commit in a pull request must carry a `Signed-off-by` line matching the
+commit author's verified identity, e.g.:
+
+```
+git commit -s -m "Fix terminal resize flicker"
+```
+
+The `Signed-off-by` line certifies that you wrote the change or otherwise have the
+right to submit it under this repository's license. The DCO is a certification of
+**provenance**, not a copyright assignment, not a grant of exclusive rights, and
+not proof of any company ownership. Maintainers will not add, edit or "fix"
+sign-off lines on a contributor's behalf, and each committer must actually make
+the certification themselves.
+
+If your commits fail the DCO check, push corrected commits with proper sign-off
+(e.g. `git commit --amend -s` or an interactive rebase adding `-s` to each commit).
+
+### Employer / third-party authorization
+
+If you contribute as part of your job, or your employer's IP policy could claim
+your work, get their approval first. The DCO's "(d)" certification covers this:
+_"I understand and agree that this project and the contribution are public and
+that a record of the contribution is maintained indefinitely."_ plus the right to
+submit under the license. When in doubt, ask your employer before opening the PR.
+
+### AI-assisted contributions
+
+AI-assisted contributions are welcome, subject to the same DCO certification and
+human review:
+
+- A **human** opens the PR, reviews the change, takes responsibility for the
+  submission, and holds the submission rights; the sign-off must be made by that
+  human (or an authorized committer), never by the tool.
+- Do not claim that generated code is guaranteed to be original — certify only
+  what the DCO asks (right to submit under the license).
+- Follow the tool's license/terms for disclosed restrictions; do not submit output
+  you are not licensed to distribute.
+- No confidential or customer code/data may be submitted, AI-generated or not.
+
+### Copied material
+
+Copied third-party or existing code requires attribution and evidence of license:
+state the origin and license in the PR description, and keep the original license
+notice where the code lands. Contributions that cannot demonstrate the right to
+submit under Apache-2.0 will be declined.
+
+## What to work on
+
+Good first areas, matching the fork's structure:
+
+- **Theme/brand surfaces** (`packages/ui`): the light-only `.theme-lumi` token layer
+  and DESIGN.md compliance; check `pnpm lumi:drift` before submitting.
+- **Docs and onboarding**: clearer setup, screenshots, translated docs.
+- **Agent/provider integrations** (`packages/provider*`, `packages/services`):
+  new providers, BYOK paths, bug fixes.
+- **Desktop shell bugs** (`packages/desktop`): packaging, menus, About/Licenses,
+  update UX.
+- **Third-party compliance**: notice gaps and packaging audits in `third-party/`
+  (see `third-party/README.md`).
+
+When touching files inherited from upstream, add the `Modified for Lumi Agents`
+notice if applicable (`pnpm lumi:notice` will tell you).
+
+## Setup and test commands
+
+```bash
+pnpm install
+pnpm typecheck            # TypeScript across the workspace
+pnpm lint                 # oxlint
+pnpm fmt:check            # oxfmt formatting check
+pnpm architecture:check -- --changed   # architecture boundaries
+pnpm test                 # workspace tests
+```
+
+Licensing/branding checks that must pass for docs + src changes:
+
+```bash
+pnpm lumi:notice          # Apache-2.0 §4(b) modification notices
+pnpm lumi:drift           # branding/licensing integration-point drift
+# DCO sign-offs (CI runs this on PR ranges):
+node scripts/check-dco.mjs "$(git merge-base origin/main HEAD)..HEAD"
+node scripts/licenses.mjs check --strict   # third-party material gate
+```
+
+For desktop E2E and packaging, see `AGENTS.md` and
+`docs/upstream/UPSTREAM-SYNC.md`; run platform-specific checks where your
+environment supports them and say so in the PR when it doesn't.
+
+## Commit messages
+
+Prefer concise, imperative subjects ("fix: …", "feat: …", "docs: …") with a body
+explaining the _why_. Sign every commit (`-s`). One logical change per commit
+makes review and backports easier.
+
+## Review
+
+A maintainer reviews each PR for correctness, scope and license/provenance
+compliance. There are no published review-time commitments. Changes to license
+scope, contribution terms or third-party material policy require documented
+maintainer review (see ADR 0001) and are never merged silently.
+
+---
+
+## Developer Certificate of Origin — Version 1.1
+
+The text below is the official, unmodified
+[Developer Certificate of Origin 1.1](https://developercertificate.org/).
+
+```
+Developer Certificate of Origin
+Version 1.1
+
+Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
+
+Everyone is permitted to copy and distribute verbatim copies of this
+license document, but changing it is not allowed.
+
+Developer's Certificate of Origin 1.1
+
+By making a contribution to this project, I certify that:
+
+(a) The contribution was created in whole or in part by me and I
+    have the right to submit it under the open source license
+    identified in the file; or
+
+(b) The contribution is based upon previous work that, to the best
+    of my knowledge, is covered under an appropriate open source
+    license and I have the right under that license to submit that
+    work with modifications, whether created in whole or in part
+    by me, under the same open source license (unless I am
+    permitted to submit under a different license), as indicated
+    in the file; or
+
+(c) The contribution was provided directly to me by some other
+    person who certified (a), (b) or (c) and I have not modified
+    it.
+
+(d) I understand and agree that this project and the contribution
+    are public and that a record of the contribution (including all
+    personal information I submit with it, including my sign-off) is
+    maintained indefinitely and may be redistributed consistent with
+    this project or the open source license(s) involved.
+```

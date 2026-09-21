@@ -114,6 +114,13 @@ export const MODIFIED_FILES = [
   { path: "scripts/build-zcode.mjs", comment: "line", place: "afterShebang" },
   // pnpm-lock.yaml 记录了移除 @arms/rum-* 依赖后的锁定态（YAML # 注释）。
   { path: "pnpm-lock.yaml", comment: "hash" },
+  // 许可/贡献政策文件（ADR 0001）与检查器。
+  { path: "LICENSING.md", comment: "md" },
+  { path: "CONTRIBUTING.md", comment: "md" },
+  { path: "TRADEMARKS.md", comment: "md" },
+  // GitHub Actions 工作流（YAML # 注释）。
+  { path: ".github/workflows/dco-license.yml", comment: "hash" },
+  { path: "scripts/check-dco.mjs", comment: "line", place: "afterShebang" },
   { path: "scripts/generate-third-party-notices.mjs", comment: "line" },
   { path: "scripts/doctor-macos-release-app.sh", comment: "hash", place: "afterShebang" },
   { path: "scripts/third-party-notices.mjs", comment: "line" },

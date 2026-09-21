@@ -15,7 +15,8 @@
 >
 > - 上游项目：<https://github.com/zai-org/ZCode>
 > - 上游基线：`872ad960de7ec172591f7e1952f7849229f94521`
-> - 许可与合规说明：[docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md)、[NOTICE.md](NOTICE.md)、[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
+> - 许可与合规说明：[LICENSING.md](LICENSING.md)、[docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md)、[NOTICE.md](NOTICE.md)、[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
+> - 参与贡献：[CONTRIBUTING.md](CONTRIBUTING.md)（DCO 1.1，签署即认证，不转让版权） · 品牌：[TRADEMARKS.md](TRADEMARKS.md)
 > - 与上游的差异清单：[docs/upstream/FORK-DIFFERENCES.md](docs/upstream/FORK-DIFFERENCES.md)
 >
 > 本分支保留了大量上游内部标识以维持兼容：`@zcode/*` 包名、`ZCODE_*` 环境变量、`zcode://` 协议、`zcode` 命令行，以及上游数据目录名。这些是**刻意保留**的，不是品牌遗漏；详见 [COMPLIANCE.md](docs/licensing/COMPLIANCE.md)。

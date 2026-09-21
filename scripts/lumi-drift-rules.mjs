@@ -221,6 +221,52 @@ export const EXPECTATIONS = [
     mustInclude: [/lumiTelemetrySendCustom/],
     mustExclude: [/from "@arms\//],
   },
+  // ── 许可/贡献政策（ADR 0001）：政策文件与其关键承诺不得被悄悄删除 ──
+  {
+    file: "LICENSING.md",
+    description: "许可页保留永久授权、竞争边界与 open/commercial 划分",
+    mustInclude: [
+      /perpetual and irrevocable/,
+      /Competitors may lawfully build/,
+      /proposed, not shipped/,
+      /separate private repositories/,
+    ],
+  },
+  {
+    file: "CONTRIBUTING.md",
+    description: "贡献指南保留 DCO 1.1 官方原文与不代签声明",
+    mustInclude: [
+      /Developer Certificate of Origin/,
+      /Version 1\.1/,
+      /not a copyright assignment/,
+      /AI-assisted/,
+    ],
+  },
+  {
+    file: "TRADEMARKS.md",
+    description: "商标页保持许可/品牌分离且不宣称注册或排他权利",
+    mustInclude: [
+      /brand permissions/,
+      /Nothing here claims trademark registration/,
+      /independent fork/,
+    ],
+    mustExclude: [/is a registered trademark/],
+  },
+  {
+    file: "scripts/check-dco.mjs",
+    description: "DCO 检查器存在且导入基线例外收口在上游基点",
+    mustInclude: [/Signed-off-by:/, /872ad960de7ec172591f7e1952f7849229f94521/, /evaluateDco/],
+  },
+  {
+    file: ".github/workflows/dco-license.yml",
+    description: "CI 存在 DCO/许可门禁且为最小权限",
+    mustInclude: [
+      /permissions:/,
+      /contents: read/,
+      /check-dco\.mjs/,
+      /licenses\.mjs check --strict/,
+    ],
+  },
   // ── 法务材料可访问 ──
   {
     file: "packages/desktop/src/main/licensesWindow.ts",

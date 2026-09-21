@@ -15,7 +15,8 @@
 >
 > - Upstream project: <https://github.com/zai-org/ZCode>
 > - Upstream baseline: `872ad960de7ec172591f7e1952f7849229f94521`
-> - Licensing and compliance: [docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md), [NOTICE.md](NOTICE.md), [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
+> - Licensing and compliance: [LICENSING.md](LICENSING.md), [docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md), [NOTICE.md](NOTICE.md), [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
+> - Contributing: [CONTRIBUTING.md](CONTRIBUTING.md) (DCO 1.1 — sign to certify provenance, no copyright assignment) · Brand: [TRADEMARKS.md](TRADEMARKS.md)
 > - Intentional upstream differences: [docs/upstream/FORK-DIFFERENCES.md](docs/upstream/FORK-DIFFERENCES.md)
 >
 > This fork deliberately retains upstream internal identifiers for compatibility: `@zcode/*` package names, `ZCODE_*` environment variables, the `zcode://` protocol, the `zcode` CLI command, and the upstream data-directory name. These are intentional, not branding oversights — see [COMPLIANCE.md](docs/licensing/COMPLIANCE.md).

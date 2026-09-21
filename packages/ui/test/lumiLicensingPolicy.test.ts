@@ -1,0 +1,133 @@
+/**
+ * 许可/贡献政策（ADR 0001）的可执行验证。
+ *
+ * 目的：证明政策不是"多几个法务样子的文件"——
+ * 1. DCO 检查真实地拒绝缺失/伪造/错配的签名，且 --base 例外不可扩大；
+ * 2. LICENSING/CONTRIBUTING/TRADEMARKS 的关键承诺（永久授权、竞争边界、
+ *    DCO≠转让、品牌≠许可）在文档里真实存在，删掉会红灯。
+ *
+ * 运行：node --import tsx --test packages/ui/test/lumiLicensingPolicy.test.ts
+ */
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { test } from "node:test";
+import {
+  KNOWN_IMPORT_BASES,
+  evaluateDco,
+  extractSignOffEmails,
+  normalizeEmail,
+} from "../../../scripts/check-dco.mjs";
+
+const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
+const read = (file) => readFileSync(`${repoRoot}${file}`, "utf8");
+
+function commit(hash, authorEmail, body) {
+  return { hash, authorEmail, body };
+}
+
+test("DCO：作者自签通过", () => {
+  const failures = evaluateDco({
+    commits: [commit("a1", "dev@example.com", "Change\n\nSigned-off-by: Dev <dev@example.com>")],
+  });
+  assert.equal(failures.length, 0);
+});
+
+test("DCO：缺少签名 → 失败（不会静默通过）", () => {
+  const failures = evaluateDco({
+    commits: [commit("a2", "dev@example.com", "Change without sign-off")],
+  });
+  assert.equal(failures.length, 1);
+  assert.match(failures[0].reason, /缺少 Signed-off-by/);
+});
+
+test("DCO：第三方代签（既非作者也非提交者授权形态）→ 失败", () => {
+  const failures = evaluateDco({
+    commits: [
+      commit("a3", "dev@example.com", "Change\n\nSigned-off-by: Someone Else <else@example.com>"),
+    ],
+  });
+  assert.equal(failures.length, 1, "拿别人的名字凑签名必须被拒绝");
+});
+
+test("DCO：邮箱归一（GitHub noreply 数字前缀）后匹配", () => {
+  assert.equal(
+    normalizeEmail("978862+dev@users.noreply.github.com"),
+    normalizeEmail("dev@users.noreply.github.com"),
+  );
+  const failures = evaluateDco({
+    commits: [
+      commit(
+        "a4",
+        "978862+dev@users.noreply.github.com",
+        "Change\n\nSigned-off-by: Dev <dev@users.noreply.github.com>",
+      ),
+    ],
+  });
+  assert.equal(failures.length, 0);
+});
+
+test("DCO：签名提取只认 Signed-off-by 行", () => {
+  const emails = extractSignOffEmails("Signed-off-by: A <a@x.com>\nCo-authored-by: B <b@x.com>");
+  assert.deepEqual(emails, ["a@x.com"]);
+});
+
+test("DCO：导入基线白名单只含已记录的上游基点", () => {
+  assert.deepEqual(KNOWN_IMPORT_BASES, ["872ad960de7ec172591f7e1952f7849229f94521"]);
+});
+
+test("DCO：豁免集合精确豁免（导入祖先不误报，新提交不豁免）", () => {
+  const exempt = new Set(["base0", "base1"]);
+  const failures = evaluateDco({
+    commits: [
+      commit("base0", "upstream@example.com", "import"),
+      commit("new1", "dev@example.com", "unsigned new work"),
+    ],
+    exemptHashes: exempt,
+  });
+  assert.equal(failures.length, 1, "只有导入历史被豁免，新提交必须失败");
+  assert.equal(failures[0].hash, "new1");
+});
+
+// ── 文档锚点：政策文件的关键承诺不可被悄悄删掉 ──
+
+test("LICENSING.md：永久授权 + 竞争边界 + FAQ 存在", () => {
+  const doc = read("LICENSING.md");
+  assert.match(doc, /perpetual and irrevocable/);
+  assert.match(doc, /Competitors may lawfully build/);
+  assert.match(doc, /Can a business use Lumi Agents for free/);
+  assert.match(doc, /Does Apache grant rights to the Lumi name/);
+  assert.match(doc, /What can't this licensing model protect/);
+  assert.match(doc, /Must ordinary contributors assign copyright\?/);
+});
+
+test("CONTRIBUTING.md：DCO 1.1 官方原文存在且未被改写", () => {
+  const doc = read("CONTRIBUTING.md");
+  assert.match(doc, /Developer Certificate of Origin\nVersion 1\.1/);
+  assert.match(doc, /Copyright \(C\) 2004, 2006 The Linux Foundation and its contributors\./);
+  assert.match(doc, /\(d\) I understand and agree/);
+  assert.match(doc, /not a copyright assignment/);
+  assert.match(doc, /AI-assisted/);
+});
+
+test("TRADEMARKS.md：许可与品牌分离、无注册/排他声明", () => {
+  const doc = read("TRADEMARKS.md").replace(/\n/g, " ");
+  assert.match(doc, /does not grant\s+rights to the name/);
+  assert.match(doc, /Nothing here claims trademark registration/);
+  assert.match(doc, /independent fork/);
+  assert.match(doc, /ZCode/);
+});
+
+test("ADR 0001：记录了备选方案与局限（不是只写结论）", () => {
+  const doc = read("docs/specs/lumi-agents/adr/0001-licensing-and-contribution-model.md");
+  for (const anchor of ["AGPL", "FSL", "CLA", "Limitations", "not legal advice"]) {
+    assert.ok(doc.includes(anchor), `ADR 缺少锚点: ${anchor}`);
+  }
+});
+
+test("上游义务：LICENSE 原文与上游版权行未被触碰", () => {
+  const license = read("LICENSE");
+  assert.match(license, /Apache License/);
+  assert.match(license, /Version 2\.0, January 2004/);
+  assert.match(license, /Copyright 2026 Z\.AI Co\., Ltd/);
+});
