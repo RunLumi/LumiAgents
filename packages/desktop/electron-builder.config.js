@@ -1,7 +1,7 @@
 // Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /* eslint-disable max-lines -- Electron Builder config keeps related packaging hooks together so build order stays explicit. */
 import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
-import { readdir, writeFile } from "node:fs/promises";
+import { chmod, readdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { createRequire } from "node:module";
@@ -80,16 +80,15 @@ const nativeSearchReleasePlan = resolveNativeSearchReleasePlan({
   platform: targetPlatform.os,
   arch: targetPlatform.arch,
 });
-const rawMacSigningIdentity = process.env.APPLE_SIGNING_IDENTITY || process.env.CSC_NAME;
+const rawMacSigningIdentity =
+  process.env.APPLE_SIGNING_IDENTITY ||
+  process.env.MAS_APP_SIGNING_IDENTITY ||
+  process.env.CSC_NAME;
 const macSigningIdentity =
   rawMacSigningIdentity?.replace(
     /^(?:Developer ID Application|3rd Party Mac Developer Application|Apple Distribution):\s*/,
     "",
   ) ?? null;
-const rawMasInstallerIdentity =
-  process.env.MAS_INSTALLER_IDENTITY || process.env.CSC_INSTALLER_NAME;
-const masInstallerIdentity =
-  rawMasInstallerIdentity?.replace(/^3rd Party Mac Developer Installer:\s*/, "") ?? null;
 const shouldEnableMacSigning =
   process.env.ZCODE_ENABLE_MAC_SIGN === "1" && Boolean(macSigningIdentity);
 const workspaceRoot = resolve(import.meta.dirname, "../..");
@@ -302,6 +301,22 @@ export function resolvePackagedResourcesDir(context) {
   }
 
   return resolve(context.appOutDir, "resources");
+}
+
+async function ensureMasEmbeddedProfileReadable(context) {
+  if (context.electronPlatformName !== "mas") return;
+  const appName = `${context.packager?.appInfo?.productFilename ?? "ZCode"}.app`;
+  const embeddedProfilePath = join(
+    context.appOutDir,
+    appName,
+    "Contents",
+    "embedded.provisionprofile",
+  );
+  if (existsSync(embeddedProfilePath)) {
+    // The source profile is intentionally mode 0600; the embedded copy is
+    // public bundle metadata and must be readable by the installed user.
+    await chmod(embeddedProfilePath, 0o644);
+  }
 }
 
 function normalizeAsarEntry(entry) {
@@ -573,11 +588,17 @@ export default {
     runTimedSync("afterPack:assertPackagedNodePtyPrebuild", () =>
       assertPackagedNodePtyPrebuild(context),
     );
+    await ensureMasEmbeddedProfileReadable(context);
     if (actualWindowsTarget) {
       await runTimedAsync("afterPack:writeWindowsInstallManifest", () =>
         writeWindowsInstallManifest(context),
       );
     }
+  },
+  afterSign: async (context) => {
+    // osx-sign re-embeds the profile during signing, so apply the public mode
+    // after the final signature has been written and before productbuild runs.
+    await ensureMasEmbeddedProfileReadable(context);
   },
   extraResources: [
     { from: resolve(workspaceRoot, noticesFileName), to: noticesFileName },
@@ -708,10 +729,12 @@ export default {
     // 命中后可跳过已预签名目录的重复签名/遍历，同时保留主 app 与框架签名。
     // CUA Helper 在独立 job 中已完成 Developer ID 签名和 notarization staple；
     // electron-builder 若再次签名嵌套 Helper 会改变 CDHash，使最终用户包中的 staple 失效。
-    signIgnore: [
-      "[/\\\\]Contents[/\\\\]Resources[/\\\\]glm([/\\\\]|$)",
-      "[/\\\\]Contents[/\\\\]Resources[/\\\\]tools([/\\\\]|$)",
-    ],
+    signIgnore: shouldBuildMacAppStorePkg
+      ? []
+      : [
+          "[/\\\\]Contents[/\\\\]Resources[/\\\\]glm([/\\\\]|$)",
+          "[/\\\\]Contents[/\\\\]Resources[/\\\\]tools([/\\\\]|$)",
+        ],
   },
   mas: {
     cscInstallerLink:
