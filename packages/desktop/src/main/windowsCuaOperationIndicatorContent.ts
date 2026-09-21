@@ -63,10 +63,6 @@ function indicatorHtml(locale: Locale): string {
     html[data-state="leaving"] .indicator { opacity: 0; transform: translateY(-6px); }
     @keyframes enter { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0%, 70%, 100% { opacity: .35; transform: scale(.8); } 35% { opacity: 1; transform: scale(1); } }
-    @media (prefers-color-scheme: dark) {
-      .indicator { color: #f8fafc; background: rgba(35, 38, 43, 0.96); border-color: rgba(255, 255, 255, 0.14); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 6px 12px -6px rgba(0, 0, 0, 0.28); }
-      .dot { background: #a8b3c4; }
-    }
     @media (prefers-reduced-motion: reduce) {
       .indicator, .dot { animation: none; transition: opacity 1ms linear; transform: none; }
       html[data-state="leaving"] .indicator { transform: none; }

@@ -6,21 +6,26 @@ export type ResolvedTheme = "light" | "dark";
 const STORAGE_KEY = "zcode-theme";
 const BROWSER_THEME_SURFACE_ATTRIBUTE = "data-zcode-browser-theme-surface";
 
-function getSystemTheme(): ResolvedTheme {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+/**
+ * Lumi Agents 是 light-only 品牌：DESIGN.md §5 明确没有暗色主题，也没有
+ * `prefers-color-scheme` 分支。这里把所有主题偏好都解析为 light，因此代码预览、
+ * 终端、diff、编辑器等按明暗分流的组件会一致走浅色路径。
+ *
+ * 上游的暗色 token（`.dark` / `.theme-zai-dark`）仍保留在 styles.css 中，但不再可达；
+ * 保留它们是为了让上游主题实现可对照、可回退，而不是移除上游能力。
+ */
+export function resolveTheme(_theme: Theme): ResolvedTheme {
+  return "light";
 }
 
-export function resolveTheme(theme: Theme): ResolvedTheme {
-  if (theme === "system") {
-    return getSystemTheme();
-  }
-
-  return theme === "dark" || theme === "zai-dark" ? "dark" : "light";
-}
-
+/**
+ * 已保存的深色偏好会被收敛到 light，避免设置页下拉框显示「深色」但界面仍是浅色。
+ * `system` 保留为用户可选值，但 resolveTheme 会把它解析成 light。
+ */
 export function normalizeThemePreference(theme: Theme): Theme {
-  if (theme === "dark") return "zai-dark";
-  if (theme === "light") return "zai-light";
+  if (theme === "dark" || theme === "zai-dark" || theme === "zai-light") {
+    return "light";
+  }
   return theme;
 }
 
@@ -57,15 +62,12 @@ function syncBrowserThemeSurface(resolved: ResolvedTheme) {
 
 export function applyTheme(theme: Theme) {
   const resolved = resolveTheme(theme);
-  const appliedTheme =
-    theme === "system"
-      ? resolved === "dark"
-        ? "zai-dark"
-        : "zai-light"
-      : normalizeThemePreference(theme);
-  document.documentElement.classList.toggle("dark", resolved === "dark");
-  document.documentElement.classList.toggle("theme-zai-light", appliedTheme === "zai-light");
-  document.documentElement.classList.toggle("theme-zai-dark", appliedTheme === "zai-dark");
+  const root = document.documentElement;
+  // 唯一的 Lumi 主题层：始终启用 theme-lumi，并清掉上游 dark / zai 主题类。
+  // 既保证 light-only，也让旧的 localStorage 主题值不会留下混合状态。
+  root.classList.remove("dark", "theme-zai-light", "theme-zai-dark");
+  root.classList.add("theme-lumi");
+  root.style.colorScheme = "light";
   syncBrowserThemeSurface(resolved);
 }
 
@@ -82,8 +84,8 @@ function isTheme(value: string | null): value is Theme {
 export function useTheme() {
   const [theme, setThemeState] = useState<Theme>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    // 默认主题统一收敛到 Zai dark，避免旧 hook 兜底值和 Zustand store 默认值分叉。
-    return isTheme(saved) ? normalizeThemePreference(saved) : "zai-dark";
+    // Lumi Agents 默认 light；normalizeThemePreference 会把旧的 dark 偏好收敛到 light。
+    return isTheme(saved) ? normalizeThemePreference(saved) : "light";
   });
 
   const setTheme = useCallback((t: Theme) => {

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ZCode</title>
+    <title>Lumi Agents</title>
     <style>
       html,
       body,
@@ -45,10 +45,11 @@
         align-items: center;
         justify-content: center;
         border-radius: 24px;
-        background: linear-gradient(180deg, #000000 0%, #151718 100%);
+        /* 启动壳改为暖纸上的白色 lit sheet（DESIGN.md §8.0），不再用固定深色底。 */
+        background: linear-gradient(180deg, #ffffff 0%, #f4f0e8 100%);
         box-shadow:
-          0 20px 25px -5px rgb(0 0 0 / 0.2),
-          0 8px 10px -6px rgb(0 0 0 / 0.2);
+          0 20px 25px -5px rgb(16 42 67 / 0.1),
+          0 8px 10px -6px rgb(16 42 67 / 0.08);
         transform: scale(0.72);
         opacity: 0;
         animation: startup-logo-pop 0.72s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -60,15 +61,14 @@
         inset: 0;
         pointer-events: none;
         content: "";
-        /* 启动 logo 壳是固定深色底，边框不能跟随浅色主题 token，否则首屏边框过重。*/
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(16, 42, 67, 0.08);
         border-radius: inherit;
       }
 
       .startup-logo {
         width: 56px;
         height: auto;
-        color: #ffffff;
+        color: #006093;
       }
 
       @keyframes startup-logo-pop {

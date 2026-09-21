@@ -252,9 +252,8 @@ export function createZCodeStore(
       writeSafeLocalStorage(INTERFACE_MODE_STORAGE_KEY, interfaceMode);
       set({ interfaceMode });
     },
-    // 默认主题统一收敛到 Zai dark，避免首次启动时 store 与其他主题入口表现不一致。
-    // 仍然优先尊重 localStorage 中已保存的用户选择，不覆盖已有偏好。
-    theme: normalizeThemePreference((readSafeLocalStorage("zcode-theme") as Theme) || "zai-dark"),
+    // Lumi Agents 默认 light-only；normalizeThemePreference 会把旧的 dark 偏好收敛到 light。
+    theme: normalizeThemePreference((readSafeLocalStorage("zcode-theme") as Theme) || "light"),
     setTheme: (theme: Theme) => {
       const normalizedTheme = normalizeThemePreference(theme);
       writeSafeLocalStorage("zcode-theme", normalizedTheme);
@@ -491,6 +490,7 @@ export function createZCodeStore(
   syncSystemThemeListener(useStore.getState().theme);
   applyTheme(useStore.getState().theme);
   applyUiFontSizePx(useStore.getState().uiFontSizePx);
+  // resolveTheme 已收口为 light，这里保留调用以维持 store 初始化结构。
   document.documentElement.classList.toggle(
     "dark",
     resolveTheme(useStore.getState().theme) === "dark",

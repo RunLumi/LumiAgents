@@ -203,10 +203,13 @@ export function createCodingPlanAuthInjectionScript({
 
   return `(() => {
   ${storageUpdates}
-  const zcodeTheme = ${JSON.stringify(theme)};
-  document.documentElement.classList.toggle("dark", zcodeTheme === "zai-dark");
-  document.documentElement.classList.toggle("theme-zai-light", zcodeTheme === "zai-light");
-  document.documentElement.classList.toggle("theme-zai-dark", zcodeTheme === "zai-dark");
+  // Lumi Agents 是 light-only：嵌入的官网页面也按浅色渲染，与 App 内其他面板一致。
+  // theme 入参保留以兼容调用方，但不再决定渲染结果。
+  const zcodeTheme = "zai-light";
+  void ${JSON.stringify(theme)};
+  document.documentElement.classList.remove("dark", "theme-zai-dark");
+  document.documentElement.classList.add("theme-lumi");
+  document.documentElement.style.colorScheme = "light";
   localStorage.setItem("zcode-theme", zcodeTheme);
   localStorage.setItem("zcode:coding-plan:embedded", "app");
   // 写入当前 App locale，供官网 zcodeBridge.getLang() 读取。

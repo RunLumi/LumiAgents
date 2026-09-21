@@ -18,6 +18,7 @@ import {
 } from "@/lib/browserEnvironment.js";
 import zhCN from "./locales/zh-CN.js";
 import enUS from "./locales/en-US.js";
+import { applyLumiBranding } from "./lumiBrandingOverlay.js";
 
 /** 语言 → 翻译消息映射 */
 const MESSAGES: Record<Locale, Record<string, string>> = {
@@ -121,7 +122,8 @@ function createIntl(locale: Locale): IntlInstance {
           msg = msg.replaceAll(`{${key}}`, String(val));
         }
       }
-      return msg;
+      // 产品名在唯一出口统一改写，避免在上游 locale 文件里散布大量品牌改动。
+      return applyLumiBranding(msg);
     },
   };
 }

@@ -8,6 +8,7 @@ import {
   PanelLeftOpen,
 } from "lucide-react";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { PRODUCT_NAME } from "@/lib/productBrand.js";
 import { UpdateStatusButton } from "@/UpdateStatusButton.js";
 import { DesktopTopOverlayActionButton } from "@/DesktopTopOverlayActionButton.js";
 import {
@@ -141,7 +142,7 @@ export function DesktopTopOverlay({
             >
               <img
                 src={appLogoUrl}
-                alt="ZCode"
+                alt={PRODUCT_NAME}
                 className="size-5 transition-opacity duration-150 group-hover:opacity-0"
                 draggable={false}
               />

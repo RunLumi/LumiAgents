@@ -19,31 +19,13 @@ declare global {
   }
 }
 
-type Theme = "light" | "dark" | "zai-light" | "zai-dark" | "system";
-
-function resolveTheme(theme: Theme): "light" | "dark" {
-  if (theme === "system") {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  }
-  return theme === "dark" || theme === "zai-dark" ? "dark" : "light";
-}
-
+// 资源管理器是主窗口之外的独立 HTML 入口，不能依赖主窗口的 Zustand store。
+// Lumi Agents 是 light-only，这里直接应用 theme-lumi，与 useTheme 的结果保持一致。
 function applyResourceManagerTheme(): void {
-  const savedTheme = (localStorage.getItem("zcode-theme") as Theme | null) ?? "zai-dark";
-  const resolvedTheme = resolveTheme(savedTheme);
-  const appliedTheme =
-    savedTheme === "system"
-      ? resolvedTheme === "dark"
-        ? "zai-dark"
-        : "zai-light"
-      : savedTheme === "dark"
-        ? "zai-dark"
-        : savedTheme === "light"
-          ? "zai-light"
-          : savedTheme;
-  document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
-  document.documentElement.classList.toggle("theme-zai-light", appliedTheme === "zai-light");
-  document.documentElement.classList.toggle("theme-zai-dark", appliedTheme === "zai-dark");
+  const root = document.documentElement;
+  root.classList.remove("dark", "theme-zai-light", "theme-zai-dark");
+  root.classList.add("theme-lumi");
+  root.style.colorScheme = "light";
 }
 
 applyResourceManagerTheme();
