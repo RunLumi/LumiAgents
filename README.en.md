@@ -11,12 +11,13 @@
 
 > **Lumi Agents is an independently maintained fork of ZCode.**
 >
-> Developed and maintained by **CLOUDJET SOLUTIONS PTE. LTD.** This maintainer credit does not replace upstream or contributor copyright ownership.
+> Developed and maintained by **CLOUDJET SOLUTIONS PTE. LTD.** (Singapore UEN **201708398E**). Cloudjet is the project steward for Lumi Agents; this role does not replace upstream or contributor copyright ownership.
 >
 > Lumi Agents includes software from Z.AI Co., Ltd and other contributors under their applicable licenses. Lumi Agents is not an official ZCode or Z.AI distribution.
 >
 > - Upstream project: <https://github.com/zai-org/ZCode>
 > - Upstream baseline: `872ad960de7ec172591f7e1952f7849229f94521`
+> - Rights and project stewardship: [RIGHTS.md](RIGHTS.md)
 > - Licensing and compliance: [LICENSING.md](LICENSING.md), [docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md), [NOTICE.md](NOTICE.md), [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
 > - Contributing: [CONTRIBUTING.md](CONTRIBUTING.md) (DCO 1.1 — sign to certify provenance, no copyright assignment) · Brand: [TRADEMARKS.md](TRADEMARKS.md)
 > - Intentional upstream differences: [docs/upstream/FORK-DIFFERENCES.md](docs/upstream/FORK-DIFFERENCES.md)

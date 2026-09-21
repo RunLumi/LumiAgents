@@ -11,12 +11,13 @@
 
 > **Lumi Agents 是 ZCode 的独立维护分支（fork）。**
 >
-> 本分支由 **CLOUDJET SOLUTIONS PTE. LTD.** 开发和维护。维护主体说明不替代上游或其他贡献者的著作权归属。
+> 本分支由 **CLOUDJET SOLUTIONS PTE. LTD.**（Singapore UEN **201708398E**）开发和维护。Cloudjet 是 Lumi Agents 的项目维护主体；该身份不替代上游或其他贡献者的著作权归属。
 >
 > Lumi Agents 包含来自 Z.AI Co., Ltd 及其他贡献者按各自许可提供的软件。Lumi Agents 不是 ZCode 或 Z.AI 的官方发行版。
 >
 > - 上游项目：<https://github.com/zai-org/ZCode>
 > - 上游基线：`872ad960de7ec172591f7e1952f7849229f94521`
+> - 权利与项目维护主体：[RIGHTS.md](RIGHTS.md)
 > - 许可与合规说明：[LICENSING.md](LICENSING.md)、[docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md)、[NOTICE.md](NOTICE.md)、[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
 > - 参与贡献：[CONTRIBUTING.md](CONTRIBUTING.md)（DCO 1.1，签署即认证，不转让版权） · 品牌：[TRADEMARKS.md](TRADEMARKS.md)
 > - 与上游的差异清单：[docs/upstream/FORK-DIFFERENCES.md](docs/upstream/FORK-DIFFERENCES.md)

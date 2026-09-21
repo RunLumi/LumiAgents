@@ -10,10 +10,15 @@
 ## 一、Lumi Agents 分支说明
 
 本仓库是 [ZCode](https://github.com/zai-org/ZCode) 的独立维护分支，产品名为 **Lumi Agents**。
+本分支由 **CLOUDJET SOLUTIONS PTE. LTD.**（Singapore UEN **201708398E**）开发和维护。
 
-- **版权与许可**：第一方代码仍依根 [LICENSE](LICENSE) 采用 Apache-2.0，版权属上游权利人
-  （LICENSE 附录中的 “Copyright 2026 Z.AI Co., Ltd”）。本分支不转移、不替代上游著作权归属，
-  也不代表上游为 Lumi Agents 背书。
+- **项目维护主体**：CLOUDJET SOLUTIONS PTE. LTD. 负责 Lumi Agents 分支的维护、发布、品牌与路线图，
+  并作为 Cloudjet 自有 Lumi 新增/修改内容的项目 steward。维护与分发身份本身不产生对上游代码的著作权转移。
+- **版权与许可**：本公开仓库继续依根 [LICENSE](LICENSE) 采用 Apache-2.0。继承自 ZCode 的材料保留
+  Z.AI Co., Ltd 及其他上游贡献者的版权与归属；Cloudjet 仅对其实际创作或经有效转让取得的 Lumi
+  新增/修改内容主张相应权利；独立贡献者的版权仍归各自权利人，除非另有有效转让。
+  根 `LICENSE` 中的 “Copyright 2026 Z.AI Co., Ltd” 因此保留，不替换为 Cloudjet。
+  权利边界详见 [RIGHTS.md](RIGHTS.md)。
 - **分支关系**：Lumi Agents 不是 ZCode 或 Z.AI 的官方发行版；Lumi 没有 ZCode 的账户、订阅、
   关怀或支持义务，也不承诺提供上游官方产品的全部功能与活动政策。
 - **以下声明的适用范围**：从第二节开始的内容（功能与权限风险、上传接口与对外请求、本地数据与凭据、

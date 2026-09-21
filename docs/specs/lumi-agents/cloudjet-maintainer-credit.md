@@ -1,15 +1,17 @@
 # Cloudjet maintainer credit and upstream attribution
 
-Status: implemented with review fixes; merge blocked by DCO and strict material checks.
+Status: implemented; maintainer attribution and access fixes are merged. This document also records the Cloudjet rights/stewardship boundary.
 Scope: desktop About, offline Credits and Licenses, and repository introductions.
 Baseline: `143ed56ab15f638339685357f5537e5784b09214`.
 Reviewed PR head: `32c517a1fccc2b24ec29a6f96a9db4072029031e`.
 
 ## Decision
 
-The repository owner identifies **CLOUDJET SOLUTIONS PTE. LTD.** as the developer
-and maintainer of the Lumi Agents fork. This is a maintenance credit, not a claim
-that the company owns ZCode, every contribution, or all inherited code.
+The repository owner identifies **CLOUDJET SOLUTIONS PTE. LTD.** (Singapore UEN
+**201708398E**) as the developer, maintainer, and project steward of the Lumi
+Agents fork. This is not a claim that the company owns ZCode, every contribution,
+or all inherited code. Copyright follows actual authorship and valid assignments;
+see [RIGHTS.md](../../../RIGHTS.md).
 
 The normal About panel displays:
 
@@ -25,8 +27,9 @@ it with the current calendar year.
 
 ## Boundaries and invariants
 
-- Keep root `LICENSE`, `NOTICE.md`, `THIRD-PARTY-NOTICES.md`, and third-party
-  materials unchanged. No license or copyright transfer is introduced.
+- Keep the root `LICENSE` and inherited/third-party legal notices intact.
+  `NOTICE.md` may add Cloudjet attribution alongside, not instead of, upstream
+  attribution. No upstream copyright transfer is introduced.
 - Preserve applicable source notices and the existing `Modified for Lumi Agents`
   markers. Product copy is not a global replacement of Z.AI or ZCode.
 - Keep model/provider names, internal identifiers, update configuration, signing,
@@ -35,8 +38,9 @@ it with the current calendar year.
   is our discoverability choice, not an extra requirement invented for Apache.
 - Keep the HTML renderer's existing copyright input compatible for other callers;
   the new maintainer input must be escaped and distinct from a copyright claim.
-- Do not add registration status, incorporation dates, addresses, registered
-  trademark claims or an all-code Cloudjet copyright based on a directory entry.
+- Use the Singapore **UEN** for legal-entity disambiguation. Do not copy changing
+  registry status, addresses, financial-directory data, registered-trademark
+  claims, or an all-code Cloudjet copyright into licensing metadata.
 - English and Chinese READMEs identify the maintainer without removing upstream
   provenance, attribution or links to legal materials.
 
