@@ -51,11 +51,14 @@ Actions**:
 | `MACOS_CERT_P12` | Base64-encoded Developer ID Application `.p12` |
 | `MACOS_CERT_PASSWORD` | Password for the `.p12` |
 | `MACOS_SIGNING_IDENTITY` | Full `Developer ID Application: ...` identity |
-| `APPLE_ID` | Apple ID used by `notarytool` |
-| `APPLE_APP_SPECIFIC_PASSWORD` | Apple app-specific password |
+| `APPLE_API_KEY_P8` | Contents of the App Store Connect `.p8` private key |
+| `APPLE_API_KEY_ID` | App Store Connect API key ID |
+| `APPLE_API_ISSUER` | App Store Connect issuer UUID |
 | `APPLE_TEAM_ID` | Apple Developer team ID |
 
-The macOS job fails before building if any of these values is missing. Keep
+The macOS job writes `APPLE_API_KEY_P8` to the ephemeral runner's temporary
+directory and passes that path to `notarytool`. It fails before building if any
+required value is missing. Keep
 certificates, passwords, API keys, and `.p8` files out of Git.
 
 See [macOS signing and notarization](../upstream/MACOS-SIGNING-AND-NOTARIZATION.md)
