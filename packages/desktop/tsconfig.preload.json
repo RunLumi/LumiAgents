@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
@@ -5,6 +6,6 @@
     "rootDir": "src",
     "lib": ["es2025", "dom"]
   },
-  "include": ["src/preload", "src/shared/armsRumBridgeForward.ts"],
+  "include": ["src/preload"],
   "references": [{ "path": "../shared" }]
 }

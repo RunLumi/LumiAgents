@@ -81,6 +81,14 @@ export {
   resolveLumiAutoUpdateEnabled,
   resolveLumiTelemetryEnabled,
 } from "./lumiDistribution.js";
+export {
+  LUMI_TELEMETRY_ENDPOINT_ENV,
+  resolveTelemetryDelivery,
+  resolveTelemetryDeliveryFromConstants,
+  type TelemetryCustomEvent,
+  type TelemetryDelivery,
+  type TelemetryEvent,
+} from "./telemetrySourceRuntime.js";
 export * from "./errors.js";
 export type { SessionCreateSource } from "./sessionCreateSource.js";
 export { resolveSafeEndpointHostname } from "./endpointHostname.js";

@@ -1,4 +1,5 @@
-import armsRum from "@arms/rum-electron";
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+import { lumiTelemetryGetConfig, lumiTelemetrySendCustom } from "./lumiTelemetry.js";
 import {
   ZCODE_VERSION,
   type DatabaseStartupState,
@@ -39,11 +40,11 @@ function send(
         deviceMid,
         platform: process.platform,
         appVersion: ZCODE_VERSION,
-        armsEnv: armsRum.getConfig().env === "prod" ? "prod" : "local",
+        armsEnv: lumiTelemetryGetConfig().env === "prod" ? "prod" : "local",
         rendererId: 0,
       },
     });
-    armsRum.sendCustom(payload as Parameters<typeof armsRum.sendCustom>[0]);
+    lumiTelemetrySendCustom(payload);
   } catch {
     /* 上报入口失败不能阻断启动或失败提示。 */
   }

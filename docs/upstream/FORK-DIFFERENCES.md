@@ -111,6 +111,25 @@ in `styles.css`** (`.dark`, `.theme-zai-dark`) but made unreachable.
 | `packages/desktop/src/main/index.ts`       | auto-update `enabled` now requires `resolveLumiAutoUpdateEnabled(process.env)`                                                                                             | Lumi must not install upstream ZCode updates                          |
 | `packages/desktop/src/main/autoUpdater.ts` | packaged builds accept only the Lumi feed (`LUMI_UPDATE_FEED_URL`, https); upstream dev-only overrides unchanged                                                           | Explicit configuration instead of an upstream default                 |
 
+## Telemetry replacement (2026-09-21)
+
+The closed-source `@arms/rum-*` SDKs (the weakest third-party-material items — no repository,
+no license text) were **removed** and replaced by an app-owned implementation, not by silence:
+
+| File                                                                                                              | Change                                                                                                                                                                                                        | Reason                                                                        |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `packages/shared/src/telemetrySourceRuntime.ts`                                                                   | **new** single seam `resolveTelemetryDelivery` (+ event wire types): enablement via `LUMI_TELEMETRY`, endpoint via `LUMI_TELEMETRY_ENDPOINT` (then the upstream var), https-only                              | One source of truth; no embedded endpoint; nothing leaves the host by default |
+| `packages/desktop/src/main/lumiTelemetry.ts`                                                                      | **new** app-owned telemetry shim with the upstream API surface (`init`/`setConfig`/`getConfig`/`sendCustom`/`sendEvent`/`client.useReporter`) and a batched https transport                                   | Same call-site contract; delivery no longer depends on a closed SDK           |
+| `packages/desktop/src/main/appARMSBootstrap.ts` + 8 callers                                                       | switched to the shim; the `beforeReport` crash-filter/redaction pipeline and startup-delivery acknowledgement are preserved verbatim; renderer `autoInject` and the preload `arms:rum-bridge` forward removed | Keep filtering/redaction semantics; delete dead bridge code                   |
+| `packages/desktop/package.json`, root `package.json`, `pnpm-lock.yaml`, `patches/@arms__rum-electron@0.0.3.patch` | `@arms/rum-electron` + the now-orphaned `@babel/runtime` dependency and the pnpm patch removed; the `keyv`/rrweb family leaves the production graph with the SDK's optional `electron` edge                   | Remove the licence-blocked components entirely                                |
+| `third-party/npm-overrides.json` (+ inventory)                                                                    | the 3 `@arms/*` review records, `keyv@4.5.4` (its real LICENSE had been retained) and the rrweb-family records dropped as the packages no longer ship                                                         | The register must mirror what is actually distributed                         |
+| `packages/ui/test/lumiTelemetryShim.test.ts`                                                                      | **new** negative tests: dependency, patch, wiring or preload regression of `@arms` fails the drift gate; resolution-seam https/no-endpoint behaviour is unit-tested                                           | The ban must be enforced, not remembered                                      |
+
+Compatibility retained: `ZCODE_TELEMETRY_ENABLED` / `ZCODE_ARMS_RUM_ENDPOINT` variable names,
+`zcode:report-arms-custom-event` IPC channel, `ArmsEnv` type, the
+`__zcodeFinalArmsCustomEventsE2E` probe, `ARMS_BROWSER_COLLECTORS` / `parseArmsViewName`
+markers — they are protocol/contract identifiers, not branding.
+
 ## Not done / needs a separate decision
 
 - **Official brand artwork.** `brand/*` is an **interim original mark** authored for this
@@ -125,7 +144,9 @@ in `styles.css`** (`.dark`, `.theme-zai-dark`) but made unreachable.
   update feed for `app.lumi.agents` are owned by release engineering and are not
   redirected here. Auto-update stays **off** until they exist.
 - **Third-party material completeness.** `node scripts/licenses.mjs check --strict`
-  still fails on 19 pre-existing upstream gaps (e.g. `@arms/rum-*`, Skia, QuickJS-NG).
+  **passes**; the `@arms/rum-*` gaps were resolved by removing the component. Remaining
+  review determinations (e.g. Skia's undocumented build flags) still need legal sign-off
+  (`docs/licensing/COMPLIANCE.md` §9).
 - **Shared data directory / scheme.** Lumi keeps the upstream `ZCode` userData directory
   and `zcode://` registration (deliberate coexistence, no migration performed).
 - **Localized long-tail product-name strings** where the overlay's protected

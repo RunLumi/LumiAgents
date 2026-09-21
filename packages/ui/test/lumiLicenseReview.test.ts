@@ -232,7 +232,9 @@ test("真实清单：所有 materialReview 记录仍然完整可核", () => {
     reviewMaterialReviewRecords({ overrides, copied, embedded, nativeComponents }, { readText }),
   );
   assert.equal(inventory.reviewRequired.length, 0, "仓库当前不应存在未了结条目");
-  assert.ok(inventory.materialReviews.length >= 18, "复核记录数量不应减少");
+  // 下限 15：@arms/rum-*（3 条）与 keyv/rrweb 家族随遥测替换整体移除（复见
+  // lumiTelemetry.ts 与 COMPLIANCE.md §5），复核记录只减不增且不允许回退到未了结状态。
+  assert.ok(inventory.materialReviews.length >= 15, "复核记录数量不应减少（@arms 移除后的地板值）");
 });
 
 /** 从真实数据文件读出四类条目（与生成器使用同一口径）。 */

@@ -1,4 +1,5 @@
-import armsRum from "@arms/rum-electron";
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+import { lumiTelemetrySendCustom } from "./lumiTelemetry.js";
 import type { ArmsRumEnv, FinalArmsCustomEventPayload } from "@zcode/shared";
 
 import type { ZCodeDataSizeScanResult } from "./zcodeDataSizeScanner.js";
@@ -411,7 +412,7 @@ export function registerDesktopZCodeDataSizeTelemetry(options: {
     readState: () => readZCodeDataSizeTelemetryState(options.stateFile),
     report: (result) => {
       const payload = buildZCodeDataSizeArmsPayload({ context: options.context, result });
-      armsRum.sendCustom({
+      lumiTelemetrySendCustom({
         group: payload.group,
         name: payload.name,
         properties: payload.properties,

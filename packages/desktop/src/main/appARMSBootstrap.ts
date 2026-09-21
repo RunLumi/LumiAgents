@@ -1,15 +1,24 @@
-import { wrapStartupReporterRequest } from "./startupTelemetryDelivery.js";
+/* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+ *
+ * 上游版本从 @arms/rum-electron 初始化 ARMS RUM SDK。Lumi 分发以应用自有遥测
+ * shim（./lumiTelemetry.ts）替换该闭源依赖：init 参数形状保持兼容，beforeReport
+ * 过滤/富化/脱敏管线逐行保留；渲染进程浏览器采集不再注入（见 lumiTelemetry.ts
+ * 头注）。事件只进入部署方显式配置的自有端点，不发送到任何上游产品服务。
+ */
 import { randomUUID } from "node:crypto";
 import { basename } from "node:path";
-import armsRum from "@arms/rum-electron";
-import { ZCODE_AGENT_LIFECYCLE_LOG_MARKER } from "@zcode/shared/process-diagnostic";
 import {
-  ZCODE_ARMS_RUM_ENDPOINT,
+  ZCODE_AGENT_LIFECYCLE_LOG_MARKER,
   ZCODE_VERSION,
-  ZCODE_TELEMETRY_ENABLED,
   mapZCodeEnvToArmsRumEnv,
 } from "@zcode/shared";
-import { ARMS_BROWSER_COLLECTORS, parseArmsViewName } from "../shared/armsRumShared.js";
+import {
+  addLumiTelemetryReporterRequestWrapper,
+  isLumiTelemetryTransportEnabled,
+  lumiTelemetryDisabledInit,
+  lumiTelemetryInit,
+} from "./lumiTelemetry.js";
+import { wrapStartupReporterRequest } from "./startupTelemetryDelivery.js";
 import { redactArmsEventBatch } from "./armsEventRedaction.js";
 import { ensureDesktopDeviceMidSync } from "./desktopDeviceMid.js";
 import { ingestArmsApiEventsFromBatch } from "./desktopNetworkTelemetry.js";
@@ -17,8 +26,6 @@ import { desktopRuntimeEnv, runtimeApplicationName } from "./desktopRuntimeEnv.j
 import { summarizeLongTaskAttribution } from "./longTaskAttributionSummary.js";
 import { logger } from "./logger.js";
 
-// LoAF 长任务事件的 snapshots(SDK 已采集的 top-5 attribution)默认不落 SLS，此处补写进
-// event.properties，使归因摘要(top 耗时/占比/invokerType)可查询。不上报原始脚本名/URL。
 function enrichLongTaskAttribution(events: Array<Record<string, unknown>>): void {
   for (const event of events) {
     if (event.event_type !== "longTask") {
@@ -144,125 +151,98 @@ export function filterAndEnrichNativeCrashEvents(
 // ARMS 环境必须优先按运行形态标记为 local，避免开发数据污染 prod。
 const armsRumEnv = mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv);
 
-// ARMS user.id 字段被 SDK 强制改写为内部随机值（config.user.id 在事件合并时被显式跳过，
-// 无法注入），而 user.name 不受屏蔽。这里把 device_mid 写入 user.name，使 RUM 日志可按
-// 设备维度关联。device_mid 复用 telemetry-state.json 同一持久化 UUID（与数仓 / preload 注入同源，
-// ensureDesktopDeviceMidSync 幂等且不重复写盘）。
-// 注意：渲染进程事件经 ArmsEventBridge 转发到主进程后，由主进程 client 用「主进程 config」
-// 重新打包上报，故只需在主进程 init 设置一次，即可覆盖主进程 + 渲染进程的全部上报。
+// device_mid 复用 telemetry-state.json 同一持久化 UUID（与数仓 / preload 注入同源，
+// ensureDesktopDeviceMidSync 幂等且不重复写盘）。渲染进程事件经 ArmsEventBridge 转发
+// 到主进程后，由主进程统一上报，故只需在主进程 init 设置一次即可覆盖全部上报。
 const armsDeviceMid = ensureDesktopDeviceMidSync();
 
-// 原因：armsRum.init() 返回 Promise；若不 await，web-contents-created / 渲染进程注入可能晚于首窗 dom-ready，导致零上报。
-// 须在 app.whenReady() 创建 BrowserWindow 之前 await armsInitPromise（见 index.ts）。
-// SDK 的 sendCustom 只表示入队，原 request 不检查 HTTP status。
-// 在 init 通过公开 useReporter 安装时包装传输，保留原 SDK 的过滤和序列化链路。
-const useReporter = armsRum.client.useReporter.bind(armsRum.client);
-armsRum.client.useReporter = (reporter) => {
-  const request = reporter.request.bind(reporter);
-  reporter.request = wrapStartupReporterRequest(request, {
+// 与上游 useReporter 注入点对齐：包装器把 reporter.request 包上启动遥测送达确认，
+// shim 在批次进入传输前应用全部包装器（语义与上游对公开对象的就地改写一致）。
+addLumiTelemetryReporterRequestWrapper((request) =>
+  wrapStartupReporterRequest(request, {
     acknowledged: (eventIds, delivery) =>
       logger.info("[database-startup] telemetry delivery", { eventIds, delivery }),
-  });
-  useReporter(reporter);
-};
+  }),
+);
+
 function startArmsRum(): Promise<void> {
-  return armsRum
-    .init({
-      enable: true,
+  return lumiTelemetryInit({
+    enable: true,
+    version: ZCODE_VERSION,
+    env: armsRumEnv,
+    app: {
+      name: runtimeApplicationName,
       version: ZCODE_VERSION,
-      endpoint: ZCODE_ARMS_RUM_ENDPOINT,
       env: armsRumEnv,
-      // Browser SDK 由 SDK 在 dom-ready 经 executeJavaScript 注入；勿再在 preload/renderer 手动 init，避免重复采集
-      autoInject: true,
-      browserCollectors: { ...ARMS_BROWSER_COLLECTORS },
-      app: {
-        name: runtimeApplicationName,
-        version: ZCODE_VERSION,
-        env: armsRumEnv,
-        type: "electron",
-        framework: "react",
-      },
-      user: {
-        name: armsDeviceMid,
-      },
-      // 会话采样：必须为 1，否则 ARMS 默认 PV/perf/webvitals 等整会话事件会被丢弃（开发 0.1 时约 90% 看不到页面性能）
-      sessionConfig: {
-        sampleRate: 1,
-      },
-      // Electron 桌面为单页 file:// / dev-server 整页加载，无 History 路由；false 才能走 SDK 默认「完整页面加载」perf 采集
-      spaMode: false,
-      parseViewName: parseArmsViewName,
-      collectors: {
-        jsError: true,
-        consoleError: true,
-        crash: true,
-        application: true,
-        api: true,
-        rpc: true,
-      },
-      // 主进程 collectors：Electron 侧；renderer 侧见 browserCollectors + autoInject
-      // SDK tracing.sample 取值 0–100（百分比）；0.1 表示 0.1% 采样，几乎不会命中
-      tracing: {
-        enable: true,
-        sample: armsRumEnv === "prod" ? 0.1 : 1,
-      },
-      // HTTP 全链路耗时来自 ARMS api 批次；生产/本地运行均 ingest，本地运行额外打印批次摘要
-      beforeReport: (payload: { events?: Array<Record<string, unknown>> }) => {
-        // Bugfix: crash collector 会扫描共享 dump 目录，外部后代进程的 dump 也可能混入。
-        // 只保留包含当前产品可执行文件的原生 crash；过滤仅遍历现有批次元数据，不新增 IO。
-        const events = filterAndEnrichNativeCrashEvents(
-          // 已有结构化生命周期上报的本地 error 日志不再作为 console JS 异常重复采集。
-          // 只按显式标记过滤包装事件，保留真正的 uncaughtException 和其他 console.error。
-          (payload?.events ?? []).filter(
-            (event) =>
-              !(
-                event.event_type === "exception" &&
-                event.type === "error" &&
-                event.source === "console.error" &&
-                typeof event.message === "string" &&
-                event.message.includes(ZCODE_AGENT_LIFECYCLE_LOG_MARKER)
-              ),
-          ),
-          runtimeApplicationName,
-          basename(process.execPath),
+      type: "electron",
+      framework: "react",
+    },
+    user: {
+      name: armsDeviceMid,
+    },
+    // Lumi shim 不注入渲染进程浏览器采集；collectors/browserCollectors/autoInject/
+    // sessionConfig/spaMode/tracing 均为上游 SDK 专用键，本实现不消费。
+    collectors: {
+      jsError: true,
+      consoleError: true,
+      crash: true,
+      application: true,
+      api: true,
+      rpc: true,
+    },
+    // HTTP 全链路耗时来自 api 批次；生产/本地运行均 ingest，本地运行额外打印批次摘要
+    beforeReport: (payload: { events?: Array<Record<string, unknown>> }) => {
+      // Bugfix: crash collector 会扫描共享 dump 目录，外部后代进程的 dump 也可能混入。
+      // 只保留包含当前产品可执行文件的原生 crash；过滤仅遍历现有批次元数据，不新增 IO。
+      const events = filterAndEnrichNativeCrashEvents(
+        // 已有结构化生命周期上报的本地 error 日志不再作为 console JS 异常重复采集。
+        // 只按显式标记过滤包装事件，保留真正的 uncaughtException 和其他 console.error。
+        (payload?.events ?? []).filter(
+          (event) =>
+            !(
+              event.event_type === "exception" &&
+              event.type === "error" &&
+              event.source === "console.error" &&
+              typeof event.message === "string" &&
+              event.message.includes(ZCODE_AGENT_LIFECYCLE_LOG_MARKER)
+            ),
+        ),
+        runtimeApplicationName,
+        basename(process.execPath),
+      );
+      payload.events = events;
+      ingestArmsApiEventsFromBatch(events);
+      enrichLongTaskAttribution(events);
+      // 隐私收口必须排在 ingest 与归因摘要之后：网络聚合沿用自己的 interface 归一规则，
+      // longTask 摘要需要原始 snapshots；只有最终离开本机的副本才做脱敏。
+      redactArmsEventBatch(events);
+      if (desktopRuntimeEnv === "development") {
+        const perfEvents = events.filter(
+          (event) => String(event.type ?? "").toLowerCase() === "perf",
         );
-        payload.events = events;
-        ingestArmsApiEventsFromBatch(events);
-        enrichLongTaskAttribution(events);
-        // 隐私收口必须排在 ingest 与归因摘要之后：网络聚合沿用自己的 interface 归一规则，
-        // longTask 摘要需要原始 snapshots；只有最终离开本机的副本才做脱敏。
-        redactArmsEventBatch(events);
-        if (desktopRuntimeEnv === "development") {
-          const perfEvents = events.filter(
-            (event) => String(event.type ?? "").toLowerCase() === "perf",
-          );
-          const summary = events
-            .map((event) => {
-              const eventType = String(event.event_type ?? "?");
-              const subType = String(event.type ?? "");
-              const name = String(event.name ?? "");
-              if (subType === "perf") {
-                return `${eventType}:perf`;
-              }
-              return `${eventType}:${name || subType || "?"}`;
-            })
-            .join(", ");
-          logger.info(
-            `[arms] beforeReport batch=${events.length} perf=${perfEvents.length}${summary ? ` [${summary}]` : ""}`,
-          );
-        }
-        return payload;
-      },
-    })
-    .then(() => {
-      logger.info(`[arms] electron initialized env=${armsRumEnv} version=${ZCODE_VERSION}`);
-    })
-    .catch((error) => {
-      logger.error("[arms] electron init failed:", error);
-      throw error;
-    });
+        const summary = events
+          .map((event) => {
+            const eventType = String(event.event_type ?? "?");
+            const subType = String(event.type ?? "");
+            const name = String(event.name ?? "");
+            if (subType === "perf") {
+              return `${eventType}:perf`;
+            }
+            return `${eventType}:${name || subType || "?"}`;
+          })
+          .join(", ");
+        logger.info(
+          `[arms] beforeReport batch=${events.length} perf=${perfEvents.length}${summary ? ` [${summary}]` : ""}`,
+        );
+      }
+      return payload;
+    },
+  }).then(() => {
+    logger.info(`[arms] lumi telemetry initialized env=${armsRumEnv} version=${ZCODE_VERSION}`);
+  });
 }
 
-// 总开关关闭或端点未配置时不初始化 SDK。
-export const armsInitPromise: Promise<void> =
-  ZCODE_TELEMETRY_ENABLED && ZCODE_ARMS_RUM_ENDPOINT ? startArmsRum() : Promise.resolve();
+// 总开关关闭或端点未配置时不初始化传输；shim 一律 no-op，不出网。
+export const armsInitPromise: Promise<void> = isLumiTelemetryTransportEnabled()
+  ? startArmsRum()
+  : lumiTelemetryDisabledInit();
