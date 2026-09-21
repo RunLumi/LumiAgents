@@ -48,7 +48,6 @@ jobs:
       APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
       APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
       APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-      APPLE_API_KEY: ${{ runner.temp }}/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
       - name: Checkout
@@ -79,7 +78,9 @@ jobs:
       - name: Materialize App Store Connect API key
         run: |
           umask 077
-          printf '%s' "${APPLE_API_KEY_P8}" > "${APPLE_API_KEY}"
+          APPLE_API_KEY_PATH="${RUNNER_TEMP}/AuthKey_${APPLE_API_KEY_ID}.p8"
+          printf '%s' "${APPLE_API_KEY_P8}" > "${APPLE_API_KEY_PATH}"
+          printf 'APPLE_API_KEY=%s\n' "${APPLE_API_KEY_PATH}" >> "${GITHUB_ENV}"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
