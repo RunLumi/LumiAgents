@@ -476,6 +476,7 @@ function assertPackagedNodePtyPrebuild(context) {
 /** @type {import("electron-builder").Configuration} */
 export default {
   appId: desktopProductIdentity.appId,
+  buildVersion: process.env.MAS_BUILD_VERSION || undefined,
   // 安装包的人类可读版权串。不显式声明时 electron-builder 会从 extraMetadata.author.name
   // 推导，得到上游的 "ZCode"；品牌要求这里显示 Lumi。上游归属仍保留在 LICENSE /
   // NOTICE.md / THIRD-PARTY-NOTICES.md，不依赖该字段。    // 修改原因：打包版权串必须保留上游权利人；此前由 extraMetadata.author.name 推导出 "ZCode"。
@@ -744,6 +745,11 @@ export default {
       process.env.MAS_PROVISIONING_PROFILE || process.env.PROVISIONING_PROFILE || null,
     entitlements: "build/entitlements.mas.plist",
     entitlementsInherit: "build/entitlements.mas.inherit.plist",
+    // Do not synthesize application-groups for MAS. The registered profile
+    // does not grant an App Group and this app has no shared-container use;
+    // an extra group entitlement makes macOS reject the installed app at launch.
+    preAutoEntitlements: false,
+    bundleVersion: process.env.MAS_BUILD_VERSION || null,
     artifactName: buildDesktopArtifactName("mac", "pkg"),
   },
   win: {
