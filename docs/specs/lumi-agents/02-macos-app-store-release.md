@@ -102,3 +102,6 @@ values through protected secrets/files.
    readable by the installed non-root user.
 8. The release script temporarily makes only the profile source readable while
    electron-builder embeds it, then restores its original restrictive mode.
+9. MAS entitlements remain a subset of the provisioning profile; no unused
+   App Group entitlement is auto-generated, and `MAS_BUILD_VERSION` can advance
+   the build number without creating a new App Store version.
