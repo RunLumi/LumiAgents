@@ -53,9 +53,14 @@ As of 2026-09-21:
 - Bundle ID: `7MBXZKYSY4.app.lumi.agents`.
 - Provisioning profile: `Lumi Agents Mac App Store 2026-09-21`, profile UUID
   `06ce3e3e-bc1c-4bbb-b5db-7cd5f15598b9`, expires 2027-06-24.
-- Local signing admission: **blocked**; `security find-identity -v -p
-codesigning` returned `0 valid identities found`.
-- Upload status: not attempted; no `.pkg` was built or submitted.
+- Local keychain now contains the Mac App Distribution and Mac Installer
+  Distribution identities. Certificate backups are `mac_app.cer` and
+  `mac_installer.cer`; private keys must remain in the login keychain and in
+  an encrypted/offline backup.
+- A signed `.pkg` was built at
+  `packages/desktop/dist/mas-arm64/Lumi Agents-3.14.0-mac-arm64.pkg`.
+- Transporter upload was attempted and Apple rejected the package with HTTP 409
+  `STATE_ERROR.VALIDATION_ERROR`.
 
 The first signed package upload was attempted on 2026-09-21 and rejected by
 Apple with `STATE_ERROR.VALIDATION_ERROR`. Apple reported that the main app and
@@ -74,3 +79,26 @@ entitlements on every executable, readable package permissions, and the matching
 Install the matching Apple Distribution/Mac App Distribution certificate and
 the Mac App Store Installer certificate, including their private keys, into the
 login keychain. Then rerun `pnpm build:macos:mas` and `pnpm release:macos:mas`.
+
+## Backup inventory for the release owner
+
+Back up each item separately and encrypt the private material. Never commit the
+contents of any private key, certificate bundle, password, or profile to the
+application repository.
+
+| Item                              | Required backup                                                                          | Safe handling                                                                  |
+| --------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| App Store Connect API private key | `AuthKey_3XJ664VDDN.p8`                                                                  | Store encrypted/offline; local mode `0600`; key ID `3XJ664VDDN`.               |
+| App Store Connect metadata        | Issuer ID `d984cd40-432a-4d7a-86aa-84417c778a28`, key ID, role `App Manager`             | Store as non-secret metadata next to the encrypted key backup.                 |
+| Mac app certificate               | `mac_app.cer` and its matching private key                                               | The `.cer` is public; back up the private key or `.p12` encrypted.             |
+| Mac installer certificate         | `mac_installer.cer` and its matching private key                                         | The `.cer` is public; back up the private key or `.p12` encrypted.             |
+| Mac App Store profile             | `Lumi_Agents_Mac_App_Store_20260921.provisionprofile`                                    | Keep the profile with the certificate inventory; it targets `app.lumi.agents`. |
+| Certificate/profile identifiers   | App certificate serial, installer certificate serial, profile UUID, Team ID `7MBXZKYSY4` | Record for matching/recovery; these are not substitutes for private keys.      |
+| Local release configuration       | Ignored `.env` values, excluding private contents from chat/Git                          | Recreate on the replacement Mac; do not copy into the app repository.          |
+
+The replacement Mac also needs Xcode command-line tools, Transporter, the
+pinned Node/pnpm toolchain, the login-keychain identities, and the profile
+installed under `~/Library/MobileDevice/Provisioning Profiles/`. The release
+owner must independently verify `security find-identity -v -p codesigning`,
+`codesign -d --entitlements :-`, `pkgutil --check-signature`, and App Store
+Connect processing before distributing to testers.
