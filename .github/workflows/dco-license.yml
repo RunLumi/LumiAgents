@@ -63,7 +63,7 @@ jobs:
 
       - name: Required licensing/contribution documents exist
         run: |
-          for f in LICENSE LICENSING.md CONTRIBUTING.md TRADEMARKS.md \
+          for f in LICENSE LICENSING.md RIGHTS.md CONTRIBUTING.md TRADEMARKS.md \
                    docs/licensing/COMPLIANCE.md docs/licensing/MODIFICATIONS.md; do
             test -f "$f" || { echo "::error::missing required document: $f"; exit 1; }
           done
@@ -80,6 +80,10 @@ jobs:
             { echo "::error::LICENSING.md lost the competition boundary statement"; exit 1; }
           grep -q "Developer Certificate of Origin" CONTRIBUTING.md || \
             { echo "::error::CONTRIBUTING.md lost the DCO"; exit 1; }
+          grep -q "CLOUDJET SOLUTIONS PTE. LTD." RIGHTS.md || \
+            { echo "::error::RIGHTS.md lost Cloudjet stewardship"; exit 1; }
+          grep -q "Copyright 2026 Z.AI Co., Ltd" RIGHTS.md || \
+            { echo "::error::RIGHTS.md lost upstream copyright boundary"; exit 1; }
           # Normalize formatting without weakening the required declaration.
           node -e 'const text = require("node:fs").readFileSync("TRADEMARKS.md", "utf8").replace(/\s+/g, " "); if (!text.includes("does not grant rights to the name")) process.exit(1)' || \
             { echo "::error::TRADEMARKS.md lost the license/brand separation"; exit 1; }

@@ -9,15 +9,18 @@ plain language, what you may do with the code here, what a paid Lumi offering is
 expected to add, and what this licensing model does **not** do.
 
 - Policy decision: [docs/specs/lumi-agents/adr/0001-licensing-and-contribution-model.md](docs/specs/lumi-agents/adr/0001-licensing-and-contribution-model.md)
+- Rights map: [RIGHTS.md](RIGHTS.md)
 - Compliance record: [docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md)
 - Contributing: [CONTRIBUTING.md](CONTRIBUTING.md) · Brand: [TRADEMARKS.md](TRADEMARKS.md)
 
 ## The short version
 
+- **CLOUDJET SOLUTIONS PTE. LTD.** (Singapore UEN **201708398E**) develops and
+  maintains the Lumi Agents fork and is its project steward.
 - The code in this public repository is licensed under **Apache-2.0**. You may use
   it commercially, modify it, and redistribute it (including selling forks), subject
-  to its terms: keep notices and attribution, state significant changes, and carry
-  the Apache license text with your distribution.
+  to its terms: keep applicable notices and attribution, mark modified files, and
+  carry the Apache license text with your distribution.
 - **Businesses can use the community edition internally for free.** No paid license
   is needed to run Apache-licensed software.
 - Payment, in future Lumi offerings, buys **services and separately licensed
@@ -28,16 +31,34 @@ expected to add, and what this licensing model does **not** do.
 - "Lumi Agents" the name and brand are **not** granted by Apache. See
   [TRADEMARKS.md](TRADEMARKS.md).
 
+## Project stewardship and who owns what
+
+Cloudjet's role as Lumi Agents maintainer and distributor is intentionally
+separate from copyright ownership:
+
+- Inherited ZCode code and notices remain attributable to Z.AI Co., Ltd and the
+  relevant upstream contributors.
+- Cloudjet holds copyright only in Lumi-specific work that Cloudjet actually
+  authored or validly acquired by assignment.
+- Independent contributors retain copyright in their contributions unless they
+  separately assign it; the project's DCO + Apache policy grants the rights
+  needed to distribute those contributions.
+- Third-party components retain their own terms.
+
+For that reason, the root `LICENSE` is kept intact rather than replacing the
+inherited Z.AI notice with Cloudjet's name. Cloudjet's project identity and
+rights in its own work are recorded in [RIGHTS.md](RIGHTS.md), NOTICE, package
+metadata, and the About/Credits surfaces. This is the strongest truthful
+Cloudjet positioning without pretending an upstream copyright transfer occurred.
+
 ## The license is not withdrawn by future decisions
 
-Apache-2.0 grants are **perpetual and irrevocable** for code already distributed
-under it (section 3 and the license's termination clause: rights end only if you
-materially breach the license terms and don't cure). If Lumi ever ships a module
-under a different license, or changes this repository's license for _future_
-versions, every version already released under Apache-2.0 remains available under
-Apache-2.0 forever, for everyone, for any use including commercial use. The same
-applies to upstream ZCode material: its Apache grant cannot be withdrawn by either
-Z.AI or Lumi.
+Apache-2.0 grants are expressed as perpetual and irrevocable subject to the
+license's terms; the patent grant also contains the specific patent-litigation
+termination rule. A later Cloudjet licensing decision cannot retroactively turn a
+previous Apache-2.0 release into a proprietary-only release. Previously distributed
+upstream and Lumi material remains governed by the license grants applicable to
+that release.
 
 ## What is open (public community layer)
 

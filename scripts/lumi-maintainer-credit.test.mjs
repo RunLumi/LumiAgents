@@ -10,6 +10,9 @@ const root = new URL("../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root), "utf8");
 const about = read("packages/desktop/src/main/about.ts");
 const legal = read("packages/desktop/src/main/licensesWindow.ts");
+const rights = read("RIGHTS.md");
+const rootPackage = JSON.parse(read("package.json"));
+const desktopPackage = JSON.parse(read("packages/desktop/package.json"));
 const company = "CLOUDJET SOLUTIONS PTE. LTD.";
 const englishCredit = `Developed and maintained by ${company}`;
 const chineseCredit = `由 ${company} 开发和维护。`;
@@ -25,6 +28,23 @@ const baseInput = {
 
 // These source-contract checks complement the actual HTML renderer tests below.
 // They do not claim to launch Electron or validate a packaged installer.
+
+test("Cloudjet stewardship is explicit without claiming an upstream transfer", () => {
+  assert.ok(rights.includes("CLOUDJET SOLUTIONS PTE. LTD."));
+  assert.ok(rights.includes("201708398E"));
+  assert.ok(rights.includes("not a transfer of copyright"));
+  assert.ok(rights.includes("Inherited ZCode material"));
+  assert.ok(rights.includes(inheritedCopyright));
+  assert.ok(rights.includes("only to the extent"));
+});
+
+test("package metadata names Cloudjet while the public license remains Apache-2.0", () => {
+  assert.equal(rootPackage.author, company);
+  assert.equal(desktopPackage.author, company);
+  assert.equal(rootPackage.license, "Apache-2.0");
+  assert.equal(rootPackage.name, "zcode");
+});
+
 test("English and Chinese product copy identifies the same maintainer", () => {
   assert.ok(about.includes(`maintainerCredit: "${englishCredit}"`));
   assert.ok(about.includes(`maintainerCredit: "${chineseCredit}"`));

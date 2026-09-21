@@ -2,7 +2,7 @@
   "name": "@zcode/desktop",
   "private": true,
   "description": "Lumi Agents Desktop App",
-  "author": "Lumi",
+  "author": "CLOUDJET SOLUTIONS PTE. LTD.",
   "type": "module",
   "main": "out/main/index.js",
   "scripts": {
