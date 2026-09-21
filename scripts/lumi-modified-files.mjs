@@ -112,6 +112,11 @@ export const NOTICE_EXCEPTIONS = [
   { path: "package.json", mechanism: "json-no-comments" },
   { path: "packages/desktop/package.json", mechanism: "json-no-comments" },
   { path: "third-party/inventory.json", mechanism: "json-no-comments" },
+  // 以下四份是上游的三方材料登记表，Lumi 在其中加入逐包复核记录（本分支的许可了结工作）。
+  { path: "third-party/npm-overrides.json", mechanism: "json-no-comments" },
+  { path: "third-party/copied-components.json", mechanism: "json-no-comments" },
+  { path: "third-party/embedded-components.json", mechanism: "json-no-comments" },
+  { path: "third-party/native-search/sources.json", mechanism: "json-no-comments" },
   { path: "packages/desktop/build/icon.png", mechanism: "binary-generated" },
   { path: "packages/desktop/build/icon.icns", mechanism: "binary-generated" },
   { path: "packages/desktop/build/icon.ico", mechanism: "binary-generated" },

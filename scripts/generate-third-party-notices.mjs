@@ -1,4 +1,5 @@
 // Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+import { readFileSync } from "node:fs";
 import { readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { collectNpmNotices, hashBytes } from "./third-party-npm.mjs";
@@ -7,6 +8,12 @@ import {
   readNativeSearchNotices,
   repositoryRoot,
 } from "./third-party-notices.mjs";
+import {
+  collectMaterialReviews,
+  deriveReviewRequired,
+  isReviewResolved,
+  reviewMaterialReviewRecords,
+} from "./lumi-license-review.mjs";
 
 export async function generateThirdPartyNotices(root = repositoryRoot) {
   const inputs = {};
@@ -71,7 +78,8 @@ export async function generateThirdPartyNotices(root = repositoryRoot) {
       if (hashBytes(bytes) !== record.sha256)
         throw new Error(`Changed copied-source license: ${record.id}`);
       addText(bytes, record.id, record.source);
-    } else if (!record.reviewRequired) {
+    } else if (!record.reviewRequired && !isReviewResolved(record.materialReview)) {
+      // 不接受没有正文也没有复核结论的复制来源：要么给出许可正文，要么给出已了结的复核记录。
       throw new Error(`Missing copied-source license or review: ${record.id}`);
     }
     const files = [];
@@ -118,6 +126,37 @@ export async function generateThirdPartyNotices(root = repositoryRoot) {
   for (const component of native.inventory.components) {
     for (const notice of component.notices) await readInput(notice.file);
   }
+  // 修改原因：权利人从未提供声明的条目，只有把许可正文真正留存下来才算履行义务。
+  // 这里校验每条 materialReview 的完整性（缺字段、缺正文即抛错，不生成半成品清单），
+  // 并把留存的正文并入声明文件的文本记录。
+  const reviewInventory = {
+    copied,
+    overrides,
+    embedded,
+    nativeComponents: native.inventory.components,
+  };
+  const retainedReviewTexts = reviewMaterialReviewRecords(reviewInventory, {
+    readText: (file) => {
+      try {
+        return readFileSync(join(root, file), "utf8");
+      } catch {
+        return undefined;
+      }
+    },
+  });
+  for (const file of retainedReviewTexts) {
+    addText(await readInput(file), "Retained license terms for review-closed components", file);
+  }
+  const reviewRecords = collectMaterialReviews(reviewInventory);
+  const reviewSummaries = [
+    ...copied.map((item) => ({ id: item.id, review: item.materialReview })),
+    ...overrides.map((item) => ({ id: item.package, review: item.materialReview })),
+    ...embedded.map((item) => ({ id: item.id, review: item.materialReview })),
+    ...native.inventory.components.map((item) => ({
+      id: `${item.id}@${item.version}`,
+      review: item.materialReview,
+    })),
+  ].filter((entry) => entry.review);
   const sections = [
     "# Third-party notices",
     // 修改原因：本文件是上游生成物，Lumi 每次重新生成都会改动它。若只在生成物上加行内声明
@@ -131,10 +170,13 @@ export async function generateThirdPartyNotices(root = repositoryRoot) {
         `- ${item.name}@${item.version} — ${typeof item.license === "string" ? item.license : JSON.stringify(item.license)}${item.acceptedMissingNotice ? `; ${item.acceptedMissingNotice}` : ""}`,
     ),
     "## Source evidence limitations",
-    "Some publishers provide only a license identifier or a short README license section instead of a complete LICENSE file. For the following packages the supplied material explicitly identifies publisher metadata and standard terms; it is not represented as an original upstream LICENSE file. Any available README copyright notice is retained:",
-    ...overrides
-      .filter((item) => item.evidenceKind)
-      .map((item) => `- ${item.package}: ${item.source}`),
+    "Some publishers provide only a license identifier or a short README license section instead of a complete LICENSE file. Where that is the case the retained publisher text is a README section, not an original upstream LICENSE file, and any available README copyright notice is retained. See the material-review determinations below for the entries where no publisher notice exists at all.",
+    "## Material-review determinations",
+    "The entries below have no obtainable publisher copyright/license document: the rights holder declared a license identifier but supplied no complete notice in the published artifact, or in the source repository at the published revision, or the upstream build provenance is not recorded. Each entry carries an evidence-cited record (`materialReview` in `third-party/inventory.json`) and the retained license terms are reproduced below. These retained texts are documented determinations and standard license terms, **not** original publisher notices, and every entry is flagged for legal sign-off before release.",
+    ...reviewSummaries.map(
+      ({ id, review }) =>
+        `- ${id} (${review.declaredLicense}; ${review.basis}; reviewed ${review.reviewedOn}${review.legalSignOff ? "; legal sign-off pending" : ""}): retained ${review.retainedTexts.join(", ")}. Searched: ${review.searched.join(" | ")}. Residual uncertainty: ${review.residualUncertainty}`,
+    ),
     "The original import revisions of copied components are not recorded in the current checkout. Pinned license references below do not establish the original copy revision. They cover upstream-derived portions only; local adaptations do not change the upstream terms.",
     "## Copied source and assets",
     ...copied.map(
@@ -178,30 +220,12 @@ export async function generateThirdPartyNotices(root = repositoryRoot) {
     copied: copiedInventory,
     patches,
     exceptions: overrides.filter((item) => item.acceptedMissingNotice || item.evidenceKind),
+    materialReviews: reviewRecords,
     embedded,
     runtimes,
-    reviewRequired: [
-      // 修复：复制源码的缺口此前只写在 README，重生成清单后严格门禁也无法阻断。
-      ...copied
-        .filter((item) => item.reviewRequired)
-        .map((item) => ({ id: item.id, reason: item.reviewRequired })),
-      ...overrides
-        .filter((item) => item.acceptedMissingNotice || item.evidenceKind)
-        .map((item) => ({
-          id: item.package,
-          reason:
-            "Original version-specific publisher copyright/license material remains incomplete.",
-        })),
-      ...embedded
-        .filter((item) => item.reviewRequired)
-        .map((item) => ({ id: item.id, reason: item.reviewRequired })),
-      ...native.inventory.components
-        .filter((item) => !item.notices.length)
-        .map((item) => ({
-          id: `${item.id}@${item.version}`,
-          reason: "No original notice snapshot for this recorded native component.",
-        })),
-    ],
+    // 修改原因：reviewRequired 的推导（包括「配了完整复核记录才算结」的判定）集中到
+    // scripts/lumi-license-review.mjs，生成器与严格门禁共用同一份规则。
+    reviewRequired: deriveReviewRequired(reviewInventory),
   };
   await writeFile(join(root, noticesFileName), bytes);
   await writeFile(

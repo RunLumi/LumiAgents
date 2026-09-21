@@ -3156,9 +3156,43 @@
     },
     {
       "id": "rust-standard-library",
-      "version": "6a6eaca656978778f7c1c750ee0c3db87f8bffb2",
-      "url": "https://github.com/rust-lang/rust/tree/6a6eaca656978778f7c1c750ee0c3db87f8bffb2",
-      "notices": []
+      "version": "see binary/build provenance",
+      "url": "https://github.com/rust-lang/rust",
+      "notices": [
+        {
+          "member": "https://raw.githubusercontent.com/rust-lang/rust/fc594f15669680fa70d255faec3ca3fb507c3405/LICENSE-MIT",
+          "file": "third-party/native-search/licenses/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
+        },
+        {
+          "member": "https://raw.githubusercontent.com/rust-lang/rust/fc594f15669680fa70d255faec3ca3fb507c3405/LICENSE-APACHE",
+          "file": "third-party/native-search/licenses/62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a.txt",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+        },
+        {
+          "member": "https://raw.githubusercontent.com/rust-lang/rust/fc594f15669680fa70d255faec3ca3fb507c3405/COPYRIGHT",
+          "file": "third-party/native-search/licenses/bd0581fef622b3d8b25836cf70feb7e1a7a6171ea9e440b46dfda74c46a0ed0d.txt",
+          "sha256": "bd0581fef622b3d8b25836cf70feb7e1a7a6171ea9e440b46dfda74c46a0ed0d"
+        }
+      ],
+      "materialReview": {
+        "status": "closed",
+        "basis": "component-license-retained-provenance-residual",
+        "reviewedOn": "2026-09-21",
+        "declaredLicense": "MIT OR Apache-2.0",
+        "retainedTexts": [
+          "third-party/native-search/licenses/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "third-party/native-search/licenses/62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a.txt",
+          "third-party/native-search/licenses/bd0581fef622b3d8b25836cf70feb7e1a7a6171ea9e440b46dfda74c46a0ed0d.txt"
+        ],
+        "searched": [
+          "the previously recorded revision 6a6eaca656978778f7c1c750ee0c3db87f8bffb2 does not exist in rust-lang/rust (commit lookup and global commit search both return nothing), so it was an unverifiable provenance claim and has been removed",
+          "the Rust Project's standard library notice set (LICENSE-MIT, LICENSE-APACHE, COPYRIGHT) is retained from a verifiable rust-lang/rust revision, matching the sibling rust-standard-library records in this inventory",
+          "the released native-tool archives record only C toolchain strings (GCC), not the rustc revision used to build the prebuilt binaries"
+        ],
+        "residualUncertainty": "The prebuilt release archives do not record the rustc revision that built the Rust-based native tools, so the exact standard-library revision is not established. The Rust Project's dual MIT / Apache-2.0 terms are revision-independent, and the retained texts come from a verifiable revision of the same project.",
+        "legalSignOff": true
+      }
     },
     {
       "id": "rust-standard-library",

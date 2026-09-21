@@ -2412,37 +2412,47 @@ Original copyright, license and NOTICE text is retained below. Identical text is
 
 ## Source evidence limitations
 
-Some publishers provide only a license identifier or a short README license section instead of a complete LICENSE file. For the following packages the supplied material explicitly identifies publisher metadata and standard terms; it is not represented as an original upstream LICENSE file. Any available README copyright notice is retained:
+Some publishers provide only a license identifier or a short README license section instead of a complete LICENSE file. Where that is the case the retained publisher text is a README section, not an original upstream LICENSE file, and any available README copyright notice is retained. See the material-review determinations below for the entries where no publisher notice exists at all.
 
-- unsafe-pointer@0.2.0: https://registry.npmjs.org/unsafe-pointer/0.2.0
+## Material-review determinations
 
-- react-remove-scroll-bar@2.3.8: https://registry.npmjs.org/react-remove-scroll-bar/2.3.8
+The entries below have no obtainable publisher copyright/license document: the rights holder declared a license identifier but supplied no complete notice in the published artifact, or in the source repository at the published revision, or the upstream build provenance is not recorded. Each entry carries an evidence-cited record (`materialReview` in `third-party/inventory.json`) and the retained license terms are reproduced below. These retained texts are documented determinations and standard license terms, **not** original publisher notices, and every entry is flagged for legal sign-off before release.
 
-- quickjs-wasi@2.2.0: https://registry.npmjs.org/quickjs-wasi/2.2.0
+- React Best Practices skill (MIT; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained scripts/license-texts/MIT.txt, .agents/skills/react-best-practices/README.md. Searched: upstream repository vercel-labs/agent-skills at the pinned revision 063bee94c3f4df8453406c830b0a7df0f2860278: the repository root contains no LICENSE, COPYING or NOTICE file | the pinned upstream README and the vendored skill declare MIT but supply no copyright line | the vendored directory is the only redistribution of this material; local adaptations do not change the upstream terms. Residual uncertainty: none
 
-- @hono/node-ws@1.3.0: https://registry.npmjs.org/@hono%2fnode-ws/1.3.0
+- unsafe-pointer@0.2.0 (MIT; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/0ab717053f3e24736cd404a0801407fb305db75d1b58f7e6487d14feee30d28a.txt. Searched: npm archive sha512-5AzhXe8ZGzV/wVVfomw7KszPt4RPOpVcsWi66DrMrzy6fi86+rTiTx3Gu88UshFhfQLAXbFvgRyHVpQ+nZ7bvg== (published 2026-04-11T08:24:43.904Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | published revision: the registry records no gitHead; the repository default branch tree contains no license file. Residual uncertainty: none
 
-- strict-event-emitter@0.5.1: https://registry.npmjs.org/strict-event-emitter/0.5.1
+- react-remove-scroll-bar@2.3.8 (MIT; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/f158b3bd10b867740fdbf81447216f1f8685473acf61e6a105ef91ba9fe8ebc3.txt. Searched: npm archive sha512-9r+yi9+mgU33AKcj6IbT9oRCO78WriSj6t/cF8DWBZJ9aOGPOTEDvdUDz1FwKim7QXWwmHqtdHnRJfhAxEG46Q== (published 2024-12-15T02:08:28.658Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | gitHead b3b1287aad81def2e2ae707274b74531b61ddbaf does not resolve in the repository, so no revision-specific tree could be inspected | repository license history: LICENSE was added 2025-05-21 ('chore: add LICENSE file'), after this release was published. Residual uncertainty: none
 
-- lazy-val@1.0.5: https://registry.npmjs.org/lazy-val/1.0.5
+- quickjs-wasi@2.2.0 (MIT; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/f29b60ea39a2132e3baa98927c2d473b349a54143da44a0c6762b243e6459452.txt. Searched: npm archive sha512-zQxXmQMrEoD3S+jQdYsloq4qAuaxKFHZj6hHqOYGwB2iQZH+q9e/lf5zQPXCKOk0WJuAjzRFbO4KwHIp2D05Iw== (published 2026-04-06T06:10:32.790Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | published revision: the registry records no gitHead; the release tag quickjs-wasi@2.2.0 contains no license file | repository license history: LICENSE was added 2026-09-17 ('fix: include the wrapper's MIT license notice'), after this release was published. Residual uncertainty: none
 
-- semaphore@1.1.0: https://registry.npmjs.org/semaphore/1.1.0
+- @hono/node-ws@1.3.0 (MIT; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/c681d64256e752c1435814cf045f4467720a8473e425ea54103a0f5128bfc817.txt. Searched: npm archive sha512-ju25YbbvLuXdqBCmLZLqnNYu1nbHIQjoyUqA8ApZOeL1k4skuiTcw5SW77/5SUYo2Xi2NVBJoVlfQurnKEp03Q== (published 2026-01-07T02:33:52.900Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | gitHead 2c026b9d5bfff006dc9abdc1b33c53856d2d784f: repository tree contains no license file. Residual uncertainty: none
 
-- boolbase@1.0.0: https://registry.npmjs.org/boolbase/1.0.0
+- strict-event-emitter@0.5.1 (MIT; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/93f24a47f95aea2be1b0dad78de98dc6d3de01ce22c0b72dc73e453c7917b955.txt. Searched: npm archive sha512-vMgjE/GGEPEFnhFub6pa4FmJBRBVOLpIII2hvCZ8Kzb7K0hlHo7mQv6xYrBvCL2LtAIBwFUK8wvuJgTVSQ5MFQ== (published 2023-09-21T08:33:11.732Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | published revision: the registry records no gitHead; the repository default branch tree contains no license file. Residual uncertainty: none
 
-- @open-draft/deferred-promise@2.2.0: https://registry.npmjs.org/@open-draft%2fdeferred-promise/2.2.0
+- lazy-val@1.0.5 (MIT; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/f18c12b8e7daf98d572518b7db133b2dc66a713921dac4825410dd656e0c1a1a.txt. Searched: npm archive sha512-0/BnGCCfyUMkBpeDgWihanIAF9JmZhHBgUhEqzvf+adhNGLoP6TaiI5oF8oyb3I45P+PcnrqihSf01M0l0G5+Q== (published 2021-05-14T05:41:55.343Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | gitHead b69ad4119f1b19bdab13c61ee2fcc88d46b89071: repository tree contains no license file. Residual uncertainty: none
 
-- is-node-process@1.2.0: https://registry.npmjs.org/is-node-process/1.2.0
+- semaphore@1.1.0 (MIT; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/1b8910ad1a22011c632f7ff544708be6cf08818ef80e8d4b45b6808ee8b05c17.txt. Searched: npm archive sha512-O4OZEaNtkMd/K0i6js9SL+gqy0ZCBMgUvlSqHKi4IBdjhe7wB8pwztUk1BbZ1fmrvpwFrPbHzqd2w5pTcJH6LA== (published 2017-08-08T16:22:24.146Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | gitHead 88a33875b168cc7b5943d7fe987c36d08321d252: repository tree contains no license file | the published package.json declares no license field at all; MIT appears only in the README license section. Residual uncertainty: The published metadata declares no license, so the MIT grant rests on the README statement rather than a package license field. Confirm the grant with the publisher or replace the dependency before release.
 
-- ansi-to-react@6.2.6: https://registry.npmjs.org/ansi-to-react/6.2.6
+- boolbase@1.0.0 (ISC; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/2d2349188616c4b64ceeae33e1386bb546b0658864b4f7f8c9785757cb065b5d.txt. Searched: npm archive sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww== (published 2014-02-15T14:44:50.620Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | published revision: the registry records no gitHead; the repository has no tag for this version | repository license history: LICENSE was created 2015-10-14, after this release was published. Residual uncertainty: none
 
-- keyv@4.5.4: https://registry.npmjs.org/keyv/4.5.4
+- @open-draft/deferred-promise@2.2.0 (MIT; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/b1688598c3e32605b3973902a546225e0159349c05a0f74db67f76e08e116e65.txt. Searched: npm archive sha512-CecwLWx3rhxVQF6V4bAgPS5t+So2sTbPgAzafKkVizyi7tlwpcFpdFqq+wqF2OwNBmqFuu6tOyouTuxgpMfzmA== (published 2023-09-07T14:40:53.461Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | gitHead b30f1b683311030e92fcdd08d2bd6574d652b77f: repository tree contains no license file (LICENSE.md exists only on the current default branch). Residual uncertainty: none
 
-- @arms/rum-browser@0.1.8: https://registry.npmjs.org/%40arms%2frum-browser%400.1.8
+- is-node-process@1.2.0 (MIT; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/000ffa2d773c511f4459fb31d89f841806f93bf5caf2050468ab2097c081b443.txt. Searched: npm archive sha512-Vg4o6/fqPxIjtxgUH5QLJhwZ7gW5diGCVlXpuUfELC62CuxM1iHcRe51f2W1FDy04Ai4KJkagKjx3XaqyfRKXw== (published 2023-03-23T16:43:26.667Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | published revision: the registry records no gitHead; the repository default branch tree contains no license file. Residual uncertainty: none
 
-- @arms/rum-core@0.1.4: https://registry.npmjs.org/%40arms%2frum-core%400.1.4
+- ansi-to-react@6.2.6 (BSD-3-Clause; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/2c88816684a40c718113a10062a8335b665cec00d3c7b32e2b3fe9c620a3e03e.txt. Searched: npm archive sha512-Eqi0iaMK5OZ3jsVFxWvU2B74UZBnGuHlkflKMX6wTOeH+luy9KE2O0gUkc2PxhIP1R4IO0xohv62UMFInQOSeg== (published 2026-01-24T01:19:32.919Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | gitHead 145140971e9d83ccac32265f24b1c55dea437896: repository tree contains no license file. Residual uncertainty: none
 
-- @arms/rum-electron@0.0.3: https://registry.npmjs.org/%40arms%2frum-electron%400.0.3
+- @arms/rum-browser@0.1.8 (ISC; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/2c976d327b293bd74c257cd53e9b4ecef97a06b1651baa3b24327c97192cb3de.txt. Searched: npm archive sha512-XqGzZB3ziQf8nNVYCf4lDkwonclPCOQYHjk8XBr8U28u/JrTtMSF1hNYZN4JlKqyLypelGb9Nx7T8BtS5bIEhQ== (published 2026-04-03T06:14:52.093Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | the published package.json carries no repository field and no license document is published for the package. Residual uncertainty: Closed-source commercial vendor SDK: no published repository or license document exists, so the SPDX identifier in the package metadata is the only evidence of the grant. Obtain written confirmation from the publisher before release.
+
+- @arms/rum-core@0.1.4 (ISC; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/328eb7864c20ab77607b26ee1913b65a9b880f6300eea9e667b890da896a2f40.txt. Searched: npm archive sha512-if7tvpBnKhKddUKk+/u9iXKUVC+/nugiK6FGHTBuqS6LBLL0Fl8xAm4FTN3hGq07DAmP77RmWaG5mb1vmJ73SQ== (published 2026-02-06T12:17:46.222Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | the published package.json carries no repository field and no license document is published for the package. Residual uncertainty: Closed-source commercial vendor SDK: no published repository or license document exists, so the SPDX identifier in the package metadata is the only evidence of the grant. Obtain written confirmation from the publisher before release.
+
+- @arms/rum-electron@0.0.3 (MIT; publisher-supplied-notice-absent; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/38b6f63a0aa422b5c329e75f1aeecd2b02e83caab1747644c00810870d77bacb.txt. Searched: npm archive sha512-ieiMhVQNpkSEv3tgwfQZqhvy8p9cyhl3B7AS4j+8kikDcriNOA5xE0d8JwpItzfOm7kfeYqGbZYwZMF45EDl4Q== (published 2026-05-21T11:20:42.669Z): no LICENSE, COPYING, NOTICE or COPYRIGHT file inside the package | the published package.json carries no repository field and no license document is published for the package. Residual uncertainty: Closed-source commercial vendor SDK: no published repository or license document exists, so the SPDX identifier in the package metadata is the only evidence of the grant. Obtain written confirmation from the publisher before release.
+
+- Skia (BSD-3-Clause; component-license-retained-provenance-residual; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/5f787c1dee3c56547f09ccc2906ab5f5293c4d8dd6c8654e573216c38e908dbd.txt, third-party/upstream/31b15de82aa19a845156169a17a5488bf597e561b2c318d159ed583139b25e87.txt, third-party/upstream/5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f.txt, third-party/upstream/ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64.txt, third-party/upstream/43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1.txt, third-party/upstream/17510cf7a58b4879b887ec05a45d72cf1b73544dd9ec7e72f20110ed104229ee.txt, third-party/upstream/96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430.txt, third-party/upstream/75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6.txt, third-party/upstream/8405932022a556380c2d8c272eff154a923feb197233f348ce5f7334fb0a5ede.txt, third-party/upstream/91915f8ae056a68a3c5bdf05d9f6f78bb6903e27a8ca3a8434c9e4ac87300575.txt, third-party/upstream/bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526.txt, third-party/upstream/5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf.txt, third-party/upstream/cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c.txt, third-party/upstream/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt, third-party/upstream/e1cfcc55c325b3f78cf55df9664abaa066e2271dffe8213347d9fccdfbac8f2c.txt, third-party/upstream/58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd.txt, third-party/upstream/3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94.txt, third-party/upstream/37398454f23ddeb02f0b81113fef9ebdc4571b7297cb6e18376c1ccb9bb1453e.txt. Searched: Skia core LICENSE and the linked third-party notices retained for this entry are reproduced from the exact revisions recorded above (Skia fe2718df5f53a681087be6f0539045ca1b4b8c09 via @napi-rs/canvas db337893b9b53483050ca7b24c6d306e4da06741) | Skia's third_party directory at the pinned revision lists 33 entries; the notices retained here cover every component currently identified as linked into the prebuilt binaries | the published prebuilt @napi-rs/canvas packages do not record the Skia build flags that determine the per-platform link set. Residual uncertainty: The published prebuilt binaries do not record the Skia build flags, so the exact per-platform set of linked third_party libraries cannot be derived from the artifacts. Notices are retained for every component currently identified as linked; a component linked under a build flag we cannot observe would not be covered. Obtain the canvas build configuration or the vendor's notice file before release.
+
+- QuickJS-NG (MIT; component-license-retained-provenance-residual; reviewed 2026-09-21; legal sign-off pending): retained third-party/upstream/96f73f9d2a16c21a36b418f06073be26e7d6d5e7c1bc99756b21a4f2c74ef171.txt, third-party/upstream/9b405ef4c89342f5eae1dd828882f931747f71001cfba7d114801039b52ad09b.txt, third-party/upstream/2711a8b5a5cdfef0e639f96c1aca12ae23d7d64a02d0507f1bdf14d2b27bbc3a.txt, third-party/upstream/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt, third-party/upstream/268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5.txt, third-party/upstream/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt, third-party/upstream/c8b789cf5a746611e6300a0cc7750dbf92b61912a709d04e639245f7290656d0.txt, third-party/upstream/f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af.txt, third-party/upstream/539dd7aed86e8a4f12cbdd0e6c50c189c7d74847e4fecc64ce2c6ee3a01da38b.txt, third-party/upstream/e2b35be49f7284a45b7baca8fc7b3ab7440e7902392b2528a457816b5bb2a15c.txt, third-party/upstream/1a8f1058753f1ba890de984e48f0242a3a5c29a6a8f2ed9fd813f36985387e8d.txt, third-party/upstream/af0d7d2cef91fc243cf4ad98570b03d1f26f5e0227cad0f5f4a7376e2feb3160.txt, third-party/upstream/508d4676d4083e874df706f302d9d42e5e7f9aed3f5a7ea614dc6d2b2252a22f.txt, third-party/upstream/52c49219748499a9a56e0d8d10a73a2d7741f5ecf5c88bdff30593599d6dfbb6.txt, third-party/upstream/0c74e86d37d6fc7e8f22b4b8e3b801f6737c263c27a71d81c86cd8de0b6a84e5.txt, third-party/upstream/3007cd45c9afdf93812c0c8a7643ea32a7db0b24e495dc0f2312c8a43990b0dd.txt. Searched: QuickJS-NG engine notice retained (MIT), pinned to revision dec012362bd93876449f3ecff4f835b2eba89bab as recorded above | WASI libc provenance established from the upstream pinned toolchain: the quickjs-wasi@2.2.0 Makefile requires WASI SDK 32, whose wasi-libc submodule revision is 2fc32bc81b9f07f8d9525edea59bfbaf760c06d6 (wasi-sdk-32 commit 249054e5427023344c1906afde0e9073714d1930) | the retained WASI libc LICENSE enumerates its own third-party portions (dlmalloc CC0, emmalloc MIT, cloudlibc BSD-2-Clause, musl MIT, musl-fts BSD-3-Clause); LICENSE-MIT, LICENSE-APACHE and LICENSE-APACHE-LLVM are retained alongside it. Residual uncertainty: The extension modules are compiled by the upstream project with that pinned WASI SDK; the npm package does not record the exact link set of each published extension module, so a statically linked WASI component beyond the retained aggregate would not be covered.
+
+- rust-standard-library@see binary/build provenance (MIT OR Apache-2.0; component-license-retained-provenance-residual; reviewed 2026-09-21; legal sign-off pending): retained third-party/native-search/licenses/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt, third-party/native-search/licenses/62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a.txt, third-party/native-search/licenses/bd0581fef622b3d8b25836cf70feb7e1a7a6171ea9e440b46dfda74c46a0ed0d.txt. Searched: the previously recorded revision 6a6eaca656978778f7c1c750ee0c3db87f8bffb2 does not exist in rust-lang/rust (commit lookup and global commit search both return nothing), so it was an unverifiable provenance claim and has been removed | the Rust Project's standard library notice set (LICENSE-MIT, LICENSE-APACHE, COPYRIGHT) is retained from a verifiable rust-lang/rust revision, matching the sibling rust-standard-library records in this inventory | the released native-tool archives record only C toolchain strings (GCC), not the rustc revision used to build the prebuilt binaries. Residual uncertainty: The prebuilt release archives do not record the rustc revision that built the Rust-based native tools, so the exact standard-library revision is not established. The Rust Project's dual MIT / Apache-2.0 terms are revision-independent, and the retained texts come from a verifiable revision of the same project.
 
 The original import revisions of copied components are not recorded in the current checkout. Pinned license references below do not establish the original copy revision. They cover upstream-derived portions only; local adaptations do not change the upstream terms.
 
@@ -2462,15 +2472,15 @@ The original import revisions of copied components are not recorded in the curre
 
 - Superpowers skill description adaptations (MIT): packages/ui/src/lib/builtinSkillI18n.ts, apps/zcode-cli/packages/superpowers-plugin/LICENSE. License reference: https://raw.githubusercontent.com/obra/superpowers/f2cbfbefebbfef77321e4c9abc9e949826bea9d7/LICENSE. Original import revision: not recorded.
 
-- React Best Practices skill (MIT): .agents/skills/react-best-practices. License reference: https://github.com/vercel-labs/agent-skills/tree/063bee94c3f4df8453406c830b0a7df0f2860278. Original import revision: not recorded. Review required: Pinned upstream README and skill declare MIT, but a complete original copyright/license notice has not been obtained.
+- React Best Practices skill (MIT): .agents/skills/react-best-practices. License reference: https://github.com/vercel-labs/agent-skills/tree/063bee94c3f4df8453406c830b0a7df0f2860278. Original import revision: not recorded.
 
 Fig autocomplete source carries the repository's MIT license; the generated registry records npm @withfig/autocomplete@2.692.3 metadata as ISC. The original source MIT notice is retained below.
 
 ## Embedded native and WASM components
 
-- Skia inside @napi-rs/canvas@0.1.100; upstream revision fe2718df5f53a681087be6f0539045ca1b4b8c09; source: https://github.com/Brooooooklyn/canvas/tree/db337893b9b53483050ca7b24c6d306e4da06741/skia. Skia core notice retained. Per-platform linked third-party libraries and their exact build provenance still require a complete audit.
+- Skia inside @napi-rs/canvas@0.1.100; upstream revision fe2718df5f53a681087be6f0539045ca1b4b8c09; source: https://github.com/Brooooooklyn/canvas/tree/db337893b9b53483050ca7b24c6d306e4da06741/skia. 
 
-- QuickJS-NG inside quickjs-wasi@2.2.0; upstream revision dec012362bd93876449f3ecff4f835b2eba89bab; source: https://github.com/vercel-labs/quickjs-wasi/tree/cc1fea4a6a4ac1d960e0db68d35e1459064a1a23/quickjs-ng. Engine notice retained. WASI libc and extension link provenance is not fully established by the npm package.
+- QuickJS-NG inside quickjs-wasi@2.2.0; upstream revision dec012362bd93876449f3ecff4f835b2eba89bab; source: https://github.com/vercel-labs/quickjs-wasi/tree/cc1fea4a6a4ac1d960e0db68d35e1459064a1a23/quickjs-ng. 
 
 Electron/Chromium target-specific notices are shipped separately under Resources/licenses/electron. Distributions containing an independent Node runtime also include its exact-version LICENSE.node.txt; SEA includes that text in --licenses output.
 
@@ -2877,6 +2887,8 @@ SOFTWARE.
 
 - @arms/rum-browser@0.1.8: https://registry.npmjs.org/%40arms%2frum-browser%400.1.8
 
+- Retained license terms for review-closed components: third-party/upstream/2c976d327b293bd74c257cd53e9b4ecef97a06b1651baa3b24327c97192cb3de.txt
+
 
 
 ````text
@@ -2907,6 +2919,8 @@ PERFORMANCE OF THIS SOFTWARE.
 
 - @arms/rum-core@0.1.4: https://registry.npmjs.org/%40arms%2frum-core%400.1.4
 
+- Retained license terms for review-closed components: third-party/upstream/328eb7864c20ab77607b26ee1913b65a9b880f6300eea9e667b890da896a2f40.txt
+
 
 
 ````text
@@ -2936,6 +2950,8 @@ PERFORMANCE OF THIS SOFTWARE.
 ### Notice 38b6f63a0aa422b5c329e75f1aeecd2b02e83caab1747644c00810870d77bacb
 
 - @arms/rum-electron@0.0.3: https://registry.npmjs.org/%40arms%2frum-electron%400.0.3
+
+- Retained license terms for review-closed components: third-party/upstream/38b6f63a0aa422b5c329e75f1aeecd2b02e83caab1747644c00810870d77bacb.txt
 
 
 
@@ -3217,6 +3233,8 @@ SOFTWARE.
 - wuffs (inside @napi-rs/canvas@0.1.100): https://skia.googlesource.com/external/github.com/google/wuffs-mirror-release-c.git/+/e3f919ccfe3ef542cfc983a82146070258fb57f8/LICENSE?format=TEXT
 
 - Apache-2.0 licensed components: Apache License, Version 2.0
+
+- Retained license terms for review-closed components: third-party/upstream/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt
 
 
 
@@ -3952,6 +3970,8 @@ MIT
 ### Notice c681d64256e752c1435814cf045f4467720a8473e425ea54103a0f5128bfc817
 
 - @hono/node-ws@1.3.0: https://registry.npmjs.org/@hono%2fnode-ws/1.3.0
+
+- Retained license terms for review-closed components: third-party/upstream/c681d64256e752c1435814cf045f4467720a8473e425ea54103a0f5128bfc817.txt
 
 
 
@@ -5157,6 +5177,8 @@ This software is released under the terms of the MIT license.
 ### Notice b1688598c3e32605b3973902a546225e0159349c05a0f74db67f76e08e116e65
 
 - @open-draft/deferred-promise@2.2.0: https://registry.npmjs.org/@open-draft%2fdeferred-promise/2.2.0
+
+- Retained license terms for review-closed components: third-party/upstream/b1688598c3e32605b3973902a546225e0159349c05a0f74db67f76e08e116e65.txt
 
 
 
@@ -7768,6 +7790,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 - ansi-to-react@6.2.6: https://registry.npmjs.org/ansi-to-react/6.2.6
 
+- Retained license terms for review-closed components: third-party/upstream/2c88816684a40c718113a10062a8335b665cec00d3c7b32e2b3fe9c620a3e03e.txt
+
 
 
 ````text
@@ -8769,6 +8793,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ### Notice 2d2349188616c4b64ceeae33e1386bb546b0658864b4f7f8c9785757cb065b5d
 
 - boolbase@1.0.0: https://registry.npmjs.org/boolbase/1.0.0
+
+- Retained license terms for review-closed components: third-party/upstream/2d2349188616c4b64ceeae33e1386bb546b0658864b4f7f8c9785757cb065b5d.txt
 
 
 
@@ -20025,6 +20051,8 @@ _This file was generated by [verb-generate-readme](https://github.com/verbose/ve
 
 - is-node-process@1.2.0: https://registry.npmjs.org/is-node-process/1.2.0
 
+- Retained license terms for review-closed components: third-party/upstream/000ffa2d773c511f4459fb31d89f841806f93bf5caf2050468ab2097c081b443.txt
+
 
 
 ````text
@@ -21929,23 +21957,17 @@ MIT © Jared Wray
 
 ````
 
-### Notice 6f7e6eae2a2afbaa67b266650f7342e7bf8e82cb57f6ab98148b3d6e0fb4450a
+### Notice 1f7dca26d2d328c3dbb9b6fe3b15ec3cda08ffe2288e47b73d617454b256f959
 
-- keyv@4.5.4: https://registry.npmjs.org/keyv/4.5.4
+- keyv@4.5.4: https://raw.githubusercontent.com/jaredwray/keyv/e02ef9b9271fe48d8e1da6561f18e055995bfb1f/LICENSE
 
 
 
 ````text
-keyv@4.5.4
-Publisher-declared license: MIT
-Evidence: https://registry.npmjs.org/keyv%404.5.4
-Copyright holder as stated by the publisher in the package README license section:
-Copyright (c) Jared Wray
-The following is the standard license text, not a claim that an upstream LICENSE file was published.
-
 MIT License
 
-Copyright (c) Jared Wray
+Copyright (c) 2017-2021 Luke Childs
+Copyright (c) 2021-2022 Jared Wray
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22202,6 +22224,8 @@ SOFTWARE.
 ### Notice f18c12b8e7daf98d572518b7db133b2dc66a713921dac4825410dd656e0c1a1a
 
 - lazy-val@1.0.5: https://registry.npmjs.org/lazy-val/1.0.5
+
+- Retained license terms for review-closed components: third-party/upstream/f18c12b8e7daf98d572518b7db133b2dc66a713921dac4825410dd656e0c1a1a.txt
 
 
 
@@ -31482,6 +31506,8 @@ MIT. Copyright (c) [Feross Aboukhadijeh](https://feross.org).
 
 - quickjs-wasi@2.2.0: https://registry.npmjs.org/quickjs-wasi/2.2.0
 
+- Retained license terms for review-closed components: third-party/upstream/f29b60ea39a2132e3baa98927c2d473b349a54143da44a0c6762b243e6459452.txt
+
 
 
 ````text
@@ -31784,6 +31810,8 @@ MIT
 ### Notice f158b3bd10b867740fdbf81447216f1f8685473acf61e6a105ef91ba9fe8ebc3
 
 - react-remove-scroll-bar@2.3.8: https://registry.npmjs.org/react-remove-scroll-bar/2.3.8
+
+- Retained license terms for review-closed components: third-party/upstream/f158b3bd10b867740fdbf81447216f1f8685473acf61e6a105ef91ba9fe8ebc3.txt
 
 
 
@@ -33705,6 +33733,8 @@ MIT
 
 - semaphore@1.1.0: https://registry.npmjs.org/semaphore/1.1.0
 
+- Retained license terms for review-closed components: third-party/upstream/1b8910ad1a22011c632f7ff544708be6cf08818ef80e8d4b45b6808ee8b05c17.txt
+
 
 
 ````text
@@ -34478,6 +34508,8 @@ THE SOFTWARE.
 ### Notice 93f24a47f95aea2be1b0dad78de98dc6d3de01ce22c0b72dc73e453c7917b955
 
 - strict-event-emitter@0.5.1: https://registry.npmjs.org/strict-event-emitter/0.5.1
+
+- Retained license terms for review-closed components: third-party/upstream/93f24a47f95aea2be1b0dad78de98dc6d3de01ce22c0b72dc73e453c7917b955.txt
 
 
 
@@ -36827,6 +36859,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ### Notice 0ab717053f3e24736cd404a0801407fb305db75d1b58f7e6487d14feee30d28a
 
 - unsafe-pointer@0.2.0: https://registry.npmjs.org/unsafe-pointer/0.2.0
+
+- Retained license terms for review-closed components: third-party/upstream/0ab717053f3e24736cd404a0801407fb305db75d1b58f7e6487d14feee30d28a.txt
 
 
 
@@ -39329,6 +39363,8 @@ SOFTWARE.
 
 - Skia (inside @napi-rs/canvas@0.1.100): https://raw.githubusercontent.com/google/skia/fe2718df5f53a681087be6f0539045ca1b4b8c09/LICENSE
 
+- Retained license terms for review-closed components: third-party/upstream/5f787c1dee3c56547f09ccc2906ab5f5293c4d8dd6c8654e573216c38e908dbd.txt
+
 
 
 ````text
@@ -39368,6 +39404,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 - expat (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/external/github.com/libexpat/libexpat.git/+/6154446fccefbf3ca644894f598969113b0c7bcd/expat/COPYING?format=TEXT
 
+- Retained license terms for review-closed components: third-party/upstream/31b15de82aa19a845156169a17a5488bf597e561b2c318d159ed583139b25e87.txt
+
 
 
 ````text
@@ -39398,6 +39436,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ### Notice 5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f
 
 - freetype (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/chromium/src/third_party/freetype2.git/+/264b5fbf5b912b39f98d038bf75d39be0a73f21b/docs/FTL.TXT?format=TEXT
+
+- Retained license terms for review-closed components: third-party/upstream/5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f.txt
 
 
 
@@ -39578,6 +39618,8 @@ Legal Terms
 
 - harfbuzz (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/external/github.com/harfbuzz/harfbuzz.git/+/9cb1fee51069b206effb4736e443b038d230789d/COPYING?format=TEXT
 
+- Retained license terms for review-closed components: third-party/upstream/ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64.txt
+
 
 
 ````text
@@ -39629,6 +39671,8 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 ### Notice 43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1
 
 - highway (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/external/github.com/google/highway.git/+/424360251cdcfc314cfc528f53c872ecd63af0f0/LICENSE?format=TEXT
+
+- Retained license terms for review-closed components: third-party/upstream/43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1.txt
 
 
 
@@ -39839,6 +39883,8 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 ### Notice 17510cf7a58b4879b887ec05a45d72cf1b73544dd9ec7e72f20110ed104229ee
 
 - icu (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/chromium/deps/icu.git/+/364118a1d9da24bb5b770ac3d762ac144d6da5a4/LICENSE?format=TEXT
+
+- Retained license terms for review-closed components: third-party/upstream/17510cf7a58b4879b887ec05a45d72cf1b73544dd9ec7e72f20110ed104229ee.txt
 
 
 
@@ -40362,6 +40408,8 @@ without express or implied warranty.
 
 - libjpeg-turbo (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/chromium/deps/libjpeg_turbo.git/+/e14cbfaa85529d47f9f55b0f104a579c1061f9ad/LICENSE.md?format=TEXT
 
+- Retained license terms for review-closed components: third-party/upstream/96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430.txt
+
 
 
 ````text
@@ -40506,6 +40554,8 @@ that were granted to the IJG for code derived from their software.
 ### Notice 75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6
 
 - libjpeg-turbo (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/chromium/deps/libjpeg_turbo.git/+/e14cbfaa85529d47f9f55b0f104a579c1061f9ad/README.ijg?format=TEXT
+
+- Retained license terms for review-closed components: third-party/upstream/75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6.txt
 
 
 
@@ -40777,6 +40827,8 @@ Please send bug reports, offers of help, etc. to jpeg-info@jpegclub.org.
 
 - libjxl (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/external/gitlab.com/wg1/jpeg-xl.git/+/a205468bc5d3a353fb15dae2398a101dff52f2d3/LICENSE?format=TEXT
 
+- Retained license terms for review-closed components: third-party/upstream/8405932022a556380c2d8c272eff154a923feb197233f348ce5f7334fb0a5ede.txt
+
 
 
 ````text
@@ -40814,6 +40866,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 - libjxl (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/external/gitlab.com/wg1/jpeg-xl.git/+/a205468bc5d3a353fb15dae2398a101dff52f2d3/PATENTS?format=TEXT
 
+- Retained license terms for review-closed components: third-party/upstream/91915f8ae056a68a3c5bdf05d9f6f78bb6903e27a8ca3a8434c9e4ac87300575.txt
+
 
 
 ````text
@@ -40845,6 +40899,8 @@ shall terminate as of the date such litigation is filed.
 ### Notice bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526
 
 - libpng (inside @napi-rs/canvas@0.1.100): https://skia.googlesource.com/third_party/libpng.git/+/d5515b5b8be3901aac04e5bd8bd5c89f287bcd33/LICENSE?format=TEXT
+
+- Retained license terms for review-closed components: third-party/upstream/bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526.txt
 
 
 
@@ -40990,6 +41046,8 @@ be appreciated.
 
 - libwebp (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/webm/libwebp.git/+/845d5476a866141ba35ac133f856fa62f0b7445f/COPYING?format=TEXT
 
+- Retained license terms for review-closed components: third-party/upstream/5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf.txt
+
 
 
 ````text
@@ -41030,6 +41088,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 - libwebp (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/webm/libwebp.git/+/845d5476a866141ba35ac133f856fa62f0b7445f/PATENTS?format=TEXT
 
+- Retained license terms for review-closed components: third-party/upstream/cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c.txt
+
 
 
 ````text
@@ -41063,6 +41123,8 @@ litigation is filed.
 
 - zlib (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/chromium/src/third_party/zlib/+/646b7f569718921d7d4b5b8e22572ff6c76f2596/LICENSE?format=TEXT
 
+- Retained license terms for review-closed components: third-party/upstream/e1cfcc55c325b3f78cf55df9664abaa066e2271dffe8213347d9fccdfbac8f2c.txt
+
 
 
 ````text
@@ -41091,6 +41153,8 @@ freely, subject to the following restrictions:
 ### Notice 58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd
 
 - piex (inside @napi-rs/canvas@0.1.100): https://android.googlesource.com/platform/external/piex.git/+/bb217acdca1cc0c16b704669dd6f91a1b509c406/LICENSE?format=TEXT
+
+- Retained license terms for review-closed components: third-party/upstream/58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd.txt
 
 
 
@@ -41303,6 +41367,8 @@ freely, subject to the following restrictions:
 
 - brotli (inside @napi-rs/canvas@0.1.100): https://raw.githubusercontent.com/google/brotli/6d03dfbedda1615c4cba1211f8d81735575209c8/LICENSE
 
+- Retained license terms for review-closed components: third-party/upstream/3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94.txt
+
 
 
 ````text
@@ -41331,6 +41397,8 @@ THE SOFTWARE.
 ### Notice 37398454f23ddeb02f0b81113fef9ebdc4571b7297cb6e18376c1ccb9bb1453e
 
 - libjpeg-turbo arithmetic coding (inside @napi-rs/canvas@0.1.100): https://chromium.googlesource.com/chromium/deps/libjpeg_turbo.git/+/e14cbfaa85529d47f9f55b0f104a579c1061f9ad/src/jcarith.c?format=TEXT
+
+- Retained license terms for review-closed components: third-party/upstream/37398454f23ddeb02f0b81113fef9ebdc4571b7297cb6e18376c1ccb9bb1453e.txt
 
 
 
@@ -41361,6 +41429,8 @@ THE SOFTWARE.
 ### Notice 96f73f9d2a16c21a36b418f06073be26e7d6d5e7c1bc99756b21a4f2c74ef171
 
 - QuickJS-NG (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/quickjs-ng/quickjs/dec012362bd93876449f3ecff4f835b2eba89bab/LICENSE
+
+- Retained license terms for review-closed components: third-party/upstream/96f73f9d2a16c21a36b418f06073be26e7d6d5e7c1bc99756b21a4f2c74ef171.txt
 
 
 
@@ -41395,6 +41465,8 @@ THE SOFTWARE.
 ### Notice 9b405ef4c89342f5eae1dd828882f931747f71001cfba7d114801039b52ad09b
 
 - Mbed TLS (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/vercel-labs/quickjs-wasi/cc1fea4a6a4ac1d960e0db68d35e1459064a1a23/extensions/crypto/mbedtls/LICENSE
+
+- Retained license terms for review-closed components: third-party/upstream/9b405ef4c89342f5eae1dd828882f931747f71001cfba7d114801039b52ad09b.txt
 
 
 
@@ -41959,6 +42031,8 @@ Public License instead of this License.
 
 - WASI libc (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/WebAssembly/wasi-libc/2fc32bc81b9f07f8d9525edea59bfbaf760c06d6/LICENSE
 
+- Retained license terms for review-closed components: third-party/upstream/2711a8b5a5cdfef0e639f96c1aca12ae23d7d64a02d0507f1bdf14d2b27bbc3a.txt
+
 
 
 ````text
@@ -41985,6 +42059,8 @@ the MIT License, and the original licenses of the third-party works.
 ### Notice a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2
 
 - WASI libc (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/WebAssembly/wasi-libc/2fc32bc81b9f07f8d9525edea59bfbaf760c06d6/LICENSE-APACHE
+
+- Retained license terms for review-closed components: third-party/upstream/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt
 
 
 
@@ -42196,6 +42272,8 @@ limitations under the License.
 ### Notice 268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5
 
 - WASI libc (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/WebAssembly/wasi-libc/2fc32bc81b9f07f8d9525edea59bfbaf760c06d6/LICENSE-APACHE-LLVM
+
+- Retained license terms for review-closed components: third-party/upstream/268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5.txt
 
 
 
@@ -42427,6 +42505,10 @@ Software.
 
 - WASI libc (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/WebAssembly/wasi-libc/2fc32bc81b9f07f8d9525edea59bfbaf760c06d6/LICENSE-MIT
 
+- Retained license terms for review-closed components: third-party/native-search/licenses/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt
+
+- Retained license terms for review-closed components: third-party/upstream/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt
+
 
 
 ````text
@@ -42460,6 +42542,8 @@ DEALINGS IN THE SOFTWARE.
 
 - WASI libc (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/WebAssembly/wasi-libc/2fc32bc81b9f07f8d9525edea59bfbaf760c06d6/libc-bottom-half/cloudlibc/LICENSE
 
+- Retained license terms for review-closed components: third-party/upstream/c8b789cf5a746611e6300a0cc7750dbf92b61912a709d04e639245f7290656d0.txt
+
 
 
 ````text
@@ -42491,6 +42575,8 @@ SUCH DAMAGE.
 ### Notice f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af
 
 - WASI libc (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/WebAssembly/wasi-libc/2fc32bc81b9f07f8d9525edea59bfbaf760c06d6/libc-top-half/musl/COPYRIGHT
+
+- Retained license terms for review-closed components: third-party/upstream/f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af.txt
 
 
 
@@ -42694,6 +42780,8 @@ obstacle to adoption, that text has been removed.
 ### Notice 539dd7aed86e8a4f12cbdd0e6c50c189c7d74847e4fecc64ce2c6ee3a01da38b
 
 - WASI LLVM runtime (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/llvm/llvm-project/4434dabb69916856b824f68a64b029c67175e532/libcxx/LICENSE.TXT
+
+- Retained license terms for review-closed components: third-party/upstream/539dd7aed86e8a4f12cbdd0e6c50c189c7d74847e4fecc64ce2c6ee3a01da38b.txt
 
 
 
@@ -43016,6 +43104,8 @@ THE SOFTWARE.
 
 - WASI LLVM runtime (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/llvm/llvm-project/4434dabb69916856b824f68a64b029c67175e532/libcxxabi/LICENSE.TXT
 
+- Retained license terms for review-closed components: third-party/upstream/e2b35be49f7284a45b7baca8fc7b3ab7440e7902392b2528a457816b5bb2a15c.txt
+
 
 
 ````text
@@ -43336,6 +43426,8 @@ THE SOFTWARE.
 ### Notice 1a8f1058753f1ba890de984e48f0242a3a5c29a6a8f2ed9fd813f36985387e8d
 
 - WASI LLVM runtime (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/llvm/llvm-project/4434dabb69916856b824f68a64b029c67175e532/compiler-rt/LICENSE.TXT
+
+- Retained license terms for review-closed components: third-party/upstream/1a8f1058753f1ba890de984e48f0242a3a5c29a6a8f2ed9fd813f36985387e8d.txt
 
 
 
@@ -43658,6 +43750,8 @@ THE SOFTWARE.
 
 - Ada URL parser (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/ada-url/ada/v3.4.3/LICENSE-MIT
 
+- Retained license terms for review-closed components: third-party/upstream/af0d7d2cef91fc243cf4ad98570b03d1f26f5e0227cad0f5f4a7376e2feb3160.txt
+
 
 
 ````text
@@ -43685,6 +43779,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ### Notice 508d4676d4083e874df706f302d9d42e5e7f9aed3f5a7ea614dc6d2b2252a22f
 
 - Ada URL parser (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/ada-url/ada/v3.4.3/LICENSE-APACHE
+
+- Retained license terms for review-closed components: third-party/upstream/508d4676d4083e874df706f302d9d42e5e7f9aed3f5a7ea614dc6d2b2252a22f.txt
 
 
 
@@ -43897,6 +43993,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 - Project Everest (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/vercel-labs/quickjs-wasi/cc1fea4a6a4ac1d960e0db68d35e1459064a1a23/extensions/crypto/mbedtls/tf-psa-crypto/drivers/everest/library/Hacl_Curve25519_joined.c
 
+- Retained license terms for review-closed components: third-party/upstream/52c49219748499a9a56e0d8d10a73a2d7741f5ecf5c88bdff30593599d6dfbb6.txt
+
 
 
 ````text
@@ -43926,6 +44024,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ### Notice 0c74e86d37d6fc7e8f22b4b8e3b801f6737c263c27a71d81c86cd8de0b6a84e5
 
 - Project Everest (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/vercel-labs/quickjs-wasi/cc1fea4a6a4ac1d960e0db68d35e1459064a1a23/extensions/crypto/mbedtls/tf-psa-crypto/drivers/everest/library/everest.c
+
+- Retained license terms for review-closed components: third-party/upstream/0c74e86d37d6fc7e8f22b4b8e3b801f6737c263c27a71d81c86cd8de0b6a84e5.txt
 
 
 
@@ -43957,6 +44057,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 - Project Everest (inside quickjs-wasi@2.2.0): https://raw.githubusercontent.com/vercel-labs/quickjs-wasi/cc1fea4a6a4ac1d960e0db68d35e1459064a1a23/extensions/crypto/mbedtls/tf-psa-crypto/drivers/everest/library/x25519.c
 
+- Retained license terms for review-closed components: third-party/upstream/3007cd45c9afdf93812c0c8a7643ea32a7db0b24e495dc0f2312c8a43990b0dd.txt
+
 
 
 ````text
@@ -43980,6 +44082,648 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  *  This file is part of Mbed TLS (https://tls.mbed.org)
  */
+
+````
+
+### Notice e49f5e0088d47dab6687a7d501e9f3b23ce8ce7e8a8e428a2fd590e582f966da
+
+- Retained license terms for review-closed components: .agents/skills/react-best-practices/README.md
+
+
+
+````text
+# React Best Practices
+
+This directory contains the vendored React and Next.js guidance used by the skill.
+
+- [SKILL.md](SKILL.md): scope and rule selection.
+- [AGENTS.md](AGENTS.md): combined reference.
+- [rules/](rules/): individual rules and examples.
+- [metadata.json](metadata.json): source metadata.
+
+When changing a rule, update its individual file and the corresponding section in the combined reference. Use [the rule template](rules/_template.md) and [section metadata](rules/_sections.md) for structure. Keep relative links valid from the file that contains them.
+
+The examples illustrate framework patterns; apply only rules relevant to the target application's framework and execution environment.
+
+Originally created by [@shuding](https://x.com/shuding) at [Vercel](https://vercel.com).
+
+````
+
+### Notice 24f09d6d1dc1534b8efcaca939ddec1969cac255471aae25d299ab8e81ada29f
+
+- Retained license terms for review-closed components: scripts/license-texts/MIT.txt
+
+
+
+````text
+MIT License
+
+Copyright (c) <year> <copyright holders>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+````
+
+### Notice 62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a
+
+- Retained license terms for review-closed components: third-party/native-search/licenses/62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a.txt
+
+
+
+````text
+                              Apache License
+                        Version 2.0, January 2004
+                     http://www.apache.org/licenses/
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+1. Definitions.
+
+   "License" shall mean the terms and conditions for use, reproduction,
+   and distribution as defined by Sections 1 through 9 of this document.
+
+   "Licensor" shall mean the copyright owner or entity authorized by
+   the copyright owner that is granting the License.
+
+   "Legal Entity" shall mean the union of the acting entity and all
+   other entities that control, are controlled by, or are under common
+   control with that entity. For the purposes of this definition,
+   "control" means (i) the power, direct or indirect, to cause the
+   direction or management of such entity, whether by contract or
+   otherwise, or (ii) ownership of fifty percent (50%) or more of the
+   outstanding shares, or (iii) beneficial ownership of such entity.
+
+   "You" (or "Your") shall mean an individual or Legal Entity
+   exercising permissions granted by this License.
+
+   "Source" form shall mean the preferred form for making modifications,
+   including but not limited to software source code, documentation
+   source, and configuration files.
+
+   "Object" form shall mean any form resulting from mechanical
+   transformation or translation of a Source form, including but
+   not limited to compiled object code, generated documentation,
+   and conversions to other media types.
+
+   "Work" shall mean the work of authorship, whether in Source or
+   Object form, made available under the License, as indicated by a
+   copyright notice that is included in or attached to the work
+   (an example is provided in the Appendix below).
+
+   "Derivative Works" shall mean any work, whether in Source or Object
+   form, that is based on (or derived from) the Work and for which the
+   editorial revisions, annotations, elaborations, or other modifications
+   represent, as a whole, an original work of authorship. For the purposes
+   of this License, Derivative Works shall not include works that remain
+   separable from, or merely link (or bind by name) to the interfaces of,
+   the Work and Derivative Works thereof.
+
+   "Contribution" shall mean any work of authorship, including
+   the original version of the Work and any modifications or additions
+   to that Work or Derivative Works thereof, that is intentionally
+   submitted to Licensor for inclusion in the Work by the copyright owner
+   or by an individual or Legal Entity authorized to submit on behalf of
+   the copyright owner. For the purposes of this definition, "submitted"
+   means any form of electronic, verbal, or written communication sent
+   to the Licensor or its representatives, including but not limited to
+   communication on electronic mailing lists, source code control systems,
+   and issue tracking systems that are managed by, or on behalf of, the
+   Licensor for the purpose of discussing and improving the Work, but
+   excluding communication that is conspicuously marked or otherwise
+   designated in writing by the copyright owner as "Not a Contribution."
+
+   "Contributor" shall mean Licensor and any individual or Legal Entity
+   on behalf of whom a Contribution has been received by Licensor and
+   subsequently incorporated within the Work.
+
+2. Grant of Copyright License. Subject to the terms and conditions of
+   this License, each Contributor hereby grants to You a perpetual,
+   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+   copyright license to reproduce, prepare Derivative Works of,
+   publicly display, publicly perform, sublicense, and distribute the
+   Work and such Derivative Works in Source or Object form.
+
+3. Grant of Patent License. Subject to the terms and conditions of
+   this License, each Contributor hereby grants to You a perpetual,
+   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+   (except as stated in this section) patent license to make, have made,
+   use, offer to sell, sell, import, and otherwise transfer the Work,
+   where such license applies only to those patent claims licensable
+   by such Contributor that are necessarily infringed by their
+   Contribution(s) alone or by combination of their Contribution(s)
+   with the Work to which such Contribution(s) was submitted. If You
+   institute patent litigation against any entity (including a
+   cross-claim or counterclaim in a lawsuit) alleging that the Work
+   or a Contribution incorporated within the Work constitutes direct
+   or contributory patent infringement, then any patent licenses
+   granted to You under this License for that Work shall terminate
+   as of the date such litigation is filed.
+
+4. Redistribution. You may reproduce and distribute copies of the
+   Work or Derivative Works thereof in any medium, with or without
+   modifications, and in Source or Object form, provided that You
+   meet the following conditions:
+
+   (a) You must give any other recipients of the Work or
+       Derivative Works a copy of this License; and
+
+   (b) You must cause any modified files to carry prominent notices
+       stating that You changed the files; and
+
+   (c) You must retain, in the Source form of any Derivative Works
+       that You distribute, all copyright, patent, trademark, and
+       attribution notices from the Source form of the Work,
+       excluding those notices that do not pertain to any part of
+       the Derivative Works; and
+
+   (d) If the Work includes a "NOTICE" text file as part of its
+       distribution, then any Derivative Works that You distribute must
+       include a readable copy of the attribution notices contained
+       within such NOTICE file, excluding those notices that do not
+       pertain to any part of the Derivative Works, in at least one
+       of the following places: within a NOTICE text file distributed
+       as part of the Derivative Works; within the Source form or
+       documentation, if provided along with the Derivative Works; or,
+       within a display generated by the Derivative Works, if and
+       wherever such third-party notices normally appear. The contents
+       of the NOTICE file are for informational purposes only and
+       do not modify the License. You may add Your own attribution
+       notices within Derivative Works that You distribute, alongside
+       or as an addendum to the NOTICE text from the Work, provided
+       that such additional attribution notices cannot be construed
+       as modifying the License.
+
+   You may add Your own copyright statement to Your modifications and
+   may provide additional or different license terms and conditions
+   for use, reproduction, or distribution of Your modifications, or
+   for any such Derivative Works as a whole, provided Your use,
+   reproduction, and distribution of the Work otherwise complies with
+   the conditions stated in this License.
+
+5. Submission of Contributions. Unless You explicitly state otherwise,
+   any Contribution intentionally submitted for inclusion in the Work
+   by You to the Licensor shall be under the terms and conditions of
+   this License, without any additional terms or conditions.
+   Notwithstanding the above, nothing herein shall supersede or modify
+   the terms of any separate license agreement you may have executed
+   with Licensor regarding such Contributions.
+
+6. Trademarks. This License does not grant permission to use the trade
+   names, trademarks, service marks, or product names of the Licensor,
+   except as required for reasonable and customary use in describing the
+   origin of the Work and reproducing the content of the NOTICE file.
+
+7. Disclaimer of Warranty. Unless required by applicable law or
+   agreed to in writing, Licensor provides the Work (and each
+   Contributor provides its Contributions) on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied, including, without limitation, any warranties or conditions
+   of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+   PARTICULAR PURPOSE. You are solely responsible for determining the
+   appropriateness of using or redistributing the Work and assume any
+   risks associated with Your exercise of permissions under this License.
+
+8. Limitation of Liability. In no event and under no legal theory,
+   whether in tort (including negligence), contract, or otherwise,
+   unless required by applicable law (such as deliberate and grossly
+   negligent acts) or agreed to in writing, shall any Contributor be
+   liable to You for damages, including any direct, indirect, special,
+   incidental, or consequential damages of any character arising as a
+   result of this License or out of the use or inability to use the
+   Work (including but not limited to damages for loss of goodwill,
+   work stoppage, computer failure or malfunction, or any and all
+   other commercial damages or losses), even if such Contributor
+   has been advised of the possibility of such damages.
+
+9. Accepting Warranty or Additional Liability. While redistributing
+   the Work or Derivative Works thereof, You may choose to offer,
+   and charge a fee for, acceptance of support, warranty, indemnity,
+   or other liability obligations and/or rights consistent with this
+   License. However, in accepting such obligations, You may act only
+   on Your own behalf and on Your sole responsibility, not on behalf
+   of any other Contributor, and only if You agree to indemnify,
+   defend, and hold each Contributor harmless for any liability
+   incurred by, or claims asserted against, such Contributor by reason
+   of your accepting any such warranty or additional liability.
+
+END OF TERMS AND CONDITIONS
+
+````
+
+### Notice bd0581fef622b3d8b25836cf70feb7e1a7a6171ea9e440b46dfda74c46a0ed0d
+
+- Retained license terms for review-closed components: third-party/native-search/licenses/bd0581fef622b3d8b25836cf70feb7e1a7a6171ea9e440b46dfda74c46a0ed0d.txt
+
+
+
+````text
+Short version for non-lawyers:
+
+The Rust Project is dual-licensed under Apache 2.0 and MIT
+terms.
+
+
+Longer version:
+
+Copyrights in the Rust project are retained by their contributors. No
+copyright assignment is required to contribute to the Rust project.
+
+Some files include explicit copyright notices and/or license notices.
+For full authorship information, see the version control history or
+https://thanks.rust-lang.org
+
+Except as otherwise noted (below and/or in individual files), Rust is
+licensed under the Apache License, Version 2.0 <LICENSE-APACHE> or
+<http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+<LICENSE-MIT> or <http://opensource.org/licenses/MIT>, at your option.
+
+
+The Rust Project includes packages written by third parties.
+The following third party packages are included, and carry
+their own copyright notices and license terms:
+
+* LLVM, located in src/llvm-project, is licensed under the following
+  terms.
+
+    ==============================================================================
+    The LLVM Project is under the Apache License v2.0 with LLVM Exceptions:
+    ==============================================================================
+
+                                    Apache License
+                              Version 2.0, January 2004
+                            http://www.apache.org/licenses/
+
+        TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+        1. Definitions.
+
+          "License" shall mean the terms and conditions for use, reproduction,
+          and distribution as defined by Sections 1 through 9 of this document.
+
+          "Licensor" shall mean the copyright owner or entity authorized by
+          the copyright owner that is granting the License.
+
+          "Legal Entity" shall mean the union of the acting entity and all
+          other entities that control, are controlled by, or are under common
+          control with that entity. For the purposes of this definition,
+          "control" means (i) the power, direct or indirect, to cause the
+          direction or management of such entity, whether by contract or
+          otherwise, or (ii) ownership of fifty percent (50%) or more of the
+          outstanding shares, or (iii) beneficial ownership of such entity.
+
+          "You" (or "Your") shall mean an individual or Legal Entity
+          exercising permissions granted by this License.
+
+          "Source" form shall mean the preferred form for making modifications,
+          including but not limited to software source code, documentation
+          source, and configuration files.
+
+          "Object" form shall mean any form resulting from mechanical
+          transformation or translation of a Source form, including but
+          not limited to compiled object code, generated documentation,
+          and conversions to other media types.
+
+          "Work" shall mean the work of authorship, whether in Source or
+          Object form, made available under the License, as indicated by a
+          copyright notice that is included in or attached to the work
+          (an example is provided in the Appendix below).
+
+          "Derivative Works" shall mean any work, whether in Source or Object
+          form, that is based on (or derived from) the Work and for which the
+          editorial revisions, annotations, elaborations, or other modifications
+          represent, as a whole, an original work of authorship. For the purposes
+          of this License, Derivative Works shall not include works that remain
+          separable from, or merely link (or bind by name) to the interfaces of,
+          the Work and Derivative Works thereof.
+
+          "Contribution" shall mean any work of authorship, including
+          the original version of the Work and any modifications or additions
+          to that Work or Derivative Works thereof, that is intentionally
+          submitted to Licensor for inclusion in the Work by the copyright owner
+          or by an individual or Legal Entity authorized to submit on behalf of
+          the copyright owner. For the purposes of this definition, "submitted"
+          means any form of electronic, verbal, or written communication sent
+          to the Licensor or its representatives, including but not limited to
+          communication on electronic mailing lists, source code control systems,
+          and issue tracking systems that are managed by, or on behalf of, the
+          Licensor for the purpose of discussing and improving the Work, but
+          excluding communication that is conspicuously marked or otherwise
+          designated in writing by the copyright owner as "Not a Contribution."
+
+          "Contributor" shall mean Licensor and any individual or Legal Entity
+          on behalf of whom a Contribution has been received by Licensor and
+          subsequently incorporated within the Work.
+
+        2. Grant of Copyright License. Subject to the terms and conditions of
+          this License, each Contributor hereby grants to You a perpetual,
+          worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+          copyright license to reproduce, prepare Derivative Works of,
+          publicly display, publicly perform, sublicense, and distribute the
+          Work and such Derivative Works in Source or Object form.
+
+        3. Grant of Patent License. Subject to the terms and conditions of
+          this License, each Contributor hereby grants to You a perpetual,
+          worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+          (except as stated in this section) patent license to make, have made,
+          use, offer to sell, sell, import, and otherwise transfer the Work,
+          where such license applies only to those patent claims licensable
+          by such Contributor that are necessarily infringed by their
+          Contribution(s) alone or by combination of their Contribution(s)
+          with the Work to which such Contribution(s) was submitted. If You
+          institute patent litigation against any entity (including a
+          cross-claim or counterclaim in a lawsuit) alleging that the Work
+          or a Contribution incorporated within the Work constitutes direct
+          or contributory patent infringement, then any patent licenses
+          granted to You under this License for that Work shall terminate
+          as of the date such litigation is filed.
+
+        4. Redistribution. You may reproduce and distribute copies of the
+          Work or Derivative Works thereof in any medium, with or without
+          modifications, and in Source or Object form, provided that You
+          meet the following conditions:
+
+          (a) You must give any other recipients of the Work or
+              Derivative Works a copy of this License; and
+
+          (b) You must cause any modified files to carry prominent notices
+              stating that You changed the files; and
+
+          (c) You must retain, in the Source form of any Derivative Works
+              that You distribute, all copyright, patent, trademark, and
+              attribution notices from the Source form of the Work,
+              excluding those notices that do not pertain to any part of
+              the Derivative Works; and
+
+          (d) If the Work includes a "NOTICE" text file as part of its
+              distribution, then any Derivative Works that You distribute must
+              include a readable copy of the attribution notices contained
+              within such NOTICE file, excluding those notices that do not
+              pertain to any part of the Derivative Works, in at least one
+              of the following places: within a NOTICE text file distributed
+              as part of the Derivative Works; within the Source form or
+              documentation, if provided along with the Derivative Works; or,
+              within a display generated by the Derivative Works, if and
+              wherever such third-party notices normally appear. The contents
+              of the NOTICE file are for informational purposes only and
+              do not modify the License. You may add Your own attribution
+              notices within Derivative Works that You distribute, alongside
+              or as an addendum to the NOTICE text from the Work, provided
+              that such additional attribution notices cannot be construed
+              as modifying the License.
+
+          You may add Your own copyright statement to Your modifications and
+          may provide additional or different license terms and conditions
+          for use, reproduction, or distribution of Your modifications, or
+          for any such Derivative Works as a whole, provided Your use,
+          reproduction, and distribution of the Work otherwise complies with
+          the conditions stated in this License.
+
+        5. Submission of Contributions. Unless You explicitly state otherwise,
+          any Contribution intentionally submitted for inclusion in the Work
+          by You to the Licensor shall be under the terms and conditions of
+          this License, without any additional terms or conditions.
+          Notwithstanding the above, nothing herein shall supersede or modify
+          the terms of any separate license agreement you may have executed
+          with Licensor regarding such Contributions.
+
+        6. Trademarks. This License does not grant permission to use the trade
+          names, trademarks, service marks, or product names of the Licensor,
+          except as required for reasonable and customary use in describing the
+          origin of the Work and reproducing the content of the NOTICE file.
+
+        7. Disclaimer of Warranty. Unless required by applicable law or
+          agreed to in writing, Licensor provides the Work (and each
+          Contributor provides its Contributions) on an "AS IS" BASIS,
+          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+          implied, including, without limitation, any warranties or conditions
+          of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+          PARTICULAR PURPOSE. You are solely responsible for determining the
+          appropriateness of using or redistributing the Work and assume any
+          risks associated with Your exercise of permissions under this License.
+
+        8. Limitation of Liability. In no event and under no legal theory,
+          whether in tort (including negligence), contract, or otherwise,
+          unless required by applicable law (such as deliberate and grossly
+          negligent acts) or agreed to in writing, shall any Contributor be
+          liable to You for damages, including any direct, indirect, special,
+          incidental, or consequential damages of any character arising as a
+          result of this License or out of the use or inability to use the
+          Work (including but not limited to damages for loss of goodwill,
+          work stoppage, computer failure or malfunction, or any and all
+          other commercial damages or losses), even if such Contributor
+          has been advised of the possibility of such damages.
+
+        9. Accepting Warranty or Additional Liability. While redistributing
+          the Work or Derivative Works thereof, You may choose to offer,
+          and charge a fee for, acceptance of support, warranty, indemnity,
+          or other liability obligations and/or rights consistent with this
+          License. However, in accepting such obligations, You may act only
+          on Your own behalf and on Your sole responsibility, not on behalf
+          of any other Contributor, and only if You agree to indemnify,
+          defend, and hold each Contributor harmless for any liability
+          incurred by, or claims asserted against, such Contributor by reason
+          of your accepting any such warranty or additional liability.
+
+        END OF TERMS AND CONDITIONS
+
+        APPENDIX: How to apply the Apache License to your work.
+
+          To apply the Apache License to your work, attach the following
+          boilerplate notice, with the fields enclosed by brackets "[]"
+          replaced with your own identifying information. (Don't include
+          the brackets!)  The text should be enclosed in the appropriate
+          comment syntax for the file format. We also recommend that a
+          file or class name and description of purpose be included on the
+          same "printed page" as the copyright notice for easier
+          identification within third-party archives.
+
+        Copyright [yyyy] [name of copyright owner]
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+
+
+    ---- LLVM Exceptions to the Apache 2.0 License ----
+
+    As an exception, if, as a result of your compiling your source code, portions
+    of this Software are embedded into an Object form of such source code, you
+    may redistribute such embedded portions in such Object form without complying
+    with the conditions of Sections 4(a), 4(b) and 4(d) of the License.
+
+    In addition, if you combine or link compiled forms of this Software with
+    software that is licensed under the GPLv2 ("Combined Software") and if a
+    court of competent jurisdiction determines that the patent provision (Section
+    3), the indemnity provision (Section 9) or other Section of the License
+    conflicts with the conditions of the GPLv2, you may retroactively and
+    prospectively choose to deem waived or otherwise exclude such Section(s) of
+    the License, but only in their entirety and only with respect to the Combined
+    Software.
+
+    ==============================================================================
+    Software from third parties included in the LLVM Project:
+    ==============================================================================
+    The LLVM Project contains third party software which is under different license
+    terms. All such code will be identified clearly using at least one of two
+    mechanisms:
+    1) It will be in a separate directory tree with its own `LICENSE.txt` or
+      `LICENSE` file at the top containing the specific license and restrictions
+      which apply to that software, or
+    2) It will contain specific license and restriction terms at the top of every
+      file.
+
+    ==============================================================================
+    Legacy LLVM License (https://llvm.org/docs/DeveloperPolicy.html#legacy):
+    ==============================================================================
+    University of Illinois/NCSA
+    Open Source License
+
+    Copyright (c) 2003-2019 University of Illinois at Urbana-Champaign.
+    All rights reserved.
+
+    Developed by:
+
+        LLVM Team
+
+        University of Illinois at Urbana-Champaign
+
+        http://llvm.org
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of
+    this software and associated documentation files (the "Software"), to deal with
+    the Software without restriction, including without limitation the rights to
+    use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+    of the Software, and to permit persons to whom the Software is furnished to do
+    so, subject to the following conditions:
+
+        * Redistributions of source code must retain the above copyright notice,
+          this list of conditions and the following disclaimers.
+
+        * Redistributions in binary form must reproduce the above copyright notice,
+          this list of conditions and the following disclaimers in the
+          documentation and/or other materials provided with the distribution.
+
+        * Neither the names of the LLVM Team, University of Illinois at
+          Urbana-Champaign, nor the names of its contributors may be used to
+          endorse or promote products derived from this Software without specific
+          prior written permission.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+    FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+    CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE
+    SOFTWARE.
+
+* Portions of the FFI code for interacting with the native ABI
+  is derived from the Clay programming language, which carries
+  the following license.
+
+    Copyright (C) 2008-2010 Tachyon Technologies.
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with
+    or without modification, are permitted provided that the
+    following conditions are met:
+
+    1. Redistributions of source code must retain the above
+       copyright notice, this list of conditions and the
+       following disclaimer.
+
+    2. Redistributions in binary form must reproduce the
+       above copyright notice, this list of conditions and
+       the following disclaimer in the documentation and/or
+       other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR
+    IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+    PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    DEVELOPERS AND CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+    INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+    USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+    USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+    OF SUCH DAMAGE.
+
+* Portions of internationalization code use code or data from Unicode, which
+  carry the following license:
+
+      UNICODE, INC. LICENSE AGREEMENT - DATA FILES AND SOFTWARE
+
+    See Terms of Use <https://www.unicode.org/copyright.html>
+    for definitions of Unicode Inc.’s Data Files and Software.
+
+    NOTICE TO USER: Carefully read the following legal agreement.
+    BY DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING UNICODE INC.'S
+    DATA FILES ("DATA FILES"), AND/OR SOFTWARE ("SOFTWARE"),
+    YOU UNEQUIVOCALLY ACCEPT, AND AGREE TO BE BOUND BY, ALL OF THE
+    TERMS AND CONDITIONS OF THIS AGREEMENT.
+    IF YOU DO NOT AGREE, DO NOT DOWNLOAD, INSTALL, COPY, DISTRIBUTE OR USE
+    THE DATA FILES OR SOFTWARE.
+
+    COPYRIGHT AND PERMISSION NOTICE
+
+    Copyright © 1991-2022 Unicode, Inc. All rights reserved.
+    Distributed under the Terms of Use in https://www.unicode.org/copyright.html.
+
+    Permission is hereby granted, free of charge, to any person obtaining
+    a copy of the Unicode data files and any associated documentation
+    (the "Data Files") or Unicode software and any associated documentation
+    (the "Software") to deal in the Data Files or Software
+    without restriction, including without limitation the rights to use,
+    copy, modify, merge, publish, distribute, and/or sell copies of
+    the Data Files or Software, and to permit persons to whom the Data Files
+    or Software are furnished to do so, provided that either
+    (a) this copyright and permission notice appear with all copies
+    of the Data Files or Software, or
+    (b) this copyright and permission notice appear in associated
+    Documentation.
+
+    THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF
+    ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+    WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT OF THIRD PARTY RIGHTS.
+    IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS
+    NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL
+    DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+    DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+    TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THE DATA FILES OR SOFTWARE.
+
+    Except as contained in this notice, the name of a copyright holder
+    shall not be used in advertising or otherwise to promote the sale,
+    use or other dealings in these Data Files or Software without prior
+    written authorization of the copyright holder.
 
 ````
 
@@ -46766,7 +47510,7 @@ SOFTWARE.
 
 
 
-===== hermit-abi 0.1.18; itoa 0.4.7; once_cell 1.7.2; serde 1.0.126; serde_derive 1.0.126; serde_json 1.0.64; syn 1.0.73; anyhow 1.0.87; itoa 1.0.11; proc-macro2 1.0.86; quote 1.0.37; serde 1.0.210; serde_derive 1.0.210; serde_json 1.0.128; syn 2.0.77; unicode-ident 1.0.12; rust-standard-library fc594f15669680fa70d255faec3ca3fb507c3405 =====
+===== hermit-abi 0.1.18; itoa 0.4.7; once_cell 1.7.2; serde 1.0.126; serde_derive 1.0.126; serde_json 1.0.64; syn 1.0.73; anyhow 1.0.87; itoa 1.0.11; proc-macro2 1.0.86; quote 1.0.37; serde 1.0.210; serde_derive 1.0.210; serde_json 1.0.128; syn 2.0.77; unicode-ident 1.0.12; rust-standard-library see binary/build provenance; rust-standard-library fc594f15669680fa70d255faec3ca3fb507c3405 =====
 
 
 Permission is hereby granted, free of charge, to any
@@ -48092,7 +48836,7 @@ SOFTWARE.
 
 
 
-===== anyhow 1.0.87; itoa 1.0.11; libc 0.2.158; proc-macro2 1.0.86; quote 1.0.37; ryu 1.0.18; serde 1.0.210; serde_derive 1.0.210; serde_json 1.0.128; syn 2.0.77; unicode-ident 1.0.12; rust-standard-library 6b00bc3880198600130e1cf62b8f8a93494488cc; rust-standard-library fc594f15669680fa70d255faec3ca3fb507c3405 =====
+===== anyhow 1.0.87; itoa 1.0.11; libc 0.2.158; proc-macro2 1.0.86; quote 1.0.37; ryu 1.0.18; serde 1.0.210; serde_derive 1.0.210; serde_json 1.0.128; syn 2.0.77; unicode-ident 1.0.12; rust-standard-library see binary/build provenance; rust-standard-library 6b00bc3880198600130e1cf62b8f8a93494488cc; rust-standard-library fc594f15669680fa70d255faec3ca3fb507c3405 =====
 
 
                               Apache License
@@ -49690,78 +50434,7 @@ obstacle to adoption, that text has been removed.
 
 
 
-===== rust-standard-library 6b00bc3880198600130e1cf62b8f8a93494488cc =====
-
-
-Copyright (c) The Rust Project Contributors
-
-Permission is hereby granted, free of charge, to any
-person obtaining a copy of this software and associated
-documentation files (the "Software"), to deal in the
-Software without restriction, including without
-limitation the rights to use, copy, modify, merge,
-publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software
-is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice
-shall be included in all copies or substantial portions
-of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
-IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-
-
-
-===== rust-standard-library 6b00bc3880198600130e1cf62b8f8a93494488cc =====
-
-
-Short version for non-lawyers:
-
-The Rust Project is dual-licensed under Apache 2.0 and MIT
-terms.
-
-It is Copyright (c) The Rust Project Contributors.
-
-Longer version:
-
-Copyrights in the Rust project are retained by their contributors. No
-copyright assignment is required to contribute to the Rust project.
-
-Some files include explicit copyright notices and/or license notices.
-For full authorship information, see the version control history or
-<https://thanks.rust-lang.org>
-
-Except as otherwise noted, Rust is licensed under the Apache License, Version
-2.0 <LICENSE-APACHE> or <http://www.apache.org/licenses/LICENSE-2.0> or the MIT
-license <LICENSE-MIT> or <http://opensource.org/licenses/MIT>, at your option.
-
-We track licenses for third-party materials in two ways:
-
-* We use [REUSE](https://reuse.software) to track license information for
-  in-tree source files - both those authored by the Rust project and those
-  authored by third parties. See `REUSE.toml`, and our cached output of the
-  `reuse` tool which is committed to `license-metadata.json`.
-* We use `cargo` to track license information for out-of-tree dependencies.
-
-These two sources of information are collected by the tool `generate-copyright`
-into a file called `COPYRIGHT.html`, which is shipped with each binary release
-of Rust. Please refer to that file for detailed information as to the components of
-any given Rust release. We also produce a `COPYRIGHT-library.html` file which only
-covers the subset of source code used in the Rust Standard Library, as opposed
-to the toolchain as a whole.
-
-
-
-===== rust-standard-library fc594f15669680fa70d255faec3ca3fb507c3405 =====
+===== rust-standard-library see binary/build provenance; rust-standard-library fc594f15669680fa70d255faec3ca3fb507c3405 =====
 
 
 Short version for non-lawyers:
@@ -50155,6 +50828,77 @@ their own copyright notices and license terms:
     shall not be used in advertising or otherwise to promote the sale,
     use or other dealings in these Data Files or Software without prior
     written authorization of the copyright holder.
+
+
+
+===== rust-standard-library 6b00bc3880198600130e1cf62b8f8a93494488cc =====
+
+
+Copyright (c) The Rust Project Contributors
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+
+
+===== rust-standard-library 6b00bc3880198600130e1cf62b8f8a93494488cc =====
+
+
+Short version for non-lawyers:
+
+The Rust Project is dual-licensed under Apache 2.0 and MIT
+terms.
+
+It is Copyright (c) The Rust Project Contributors.
+
+Longer version:
+
+Copyrights in the Rust project are retained by their contributors. No
+copyright assignment is required to contribute to the Rust project.
+
+Some files include explicit copyright notices and/or license notices.
+For full authorship information, see the version control history or
+<https://thanks.rust-lang.org>
+
+Except as otherwise noted, Rust is licensed under the Apache License, Version
+2.0 <LICENSE-APACHE> or <http://www.apache.org/licenses/LICENSE-2.0> or the MIT
+license <LICENSE-MIT> or <http://opensource.org/licenses/MIT>, at your option.
+
+We track licenses for third-party materials in two ways:
+
+* We use [REUSE](https://reuse.software) to track license information for
+  in-tree source files - both those authored by the Rust project and those
+  authored by third parties. See `REUSE.toml`, and our cached output of the
+  `reuse` tool which is committed to `license-metadata.json`.
+* We use `cargo` to track license information for out-of-tree dependencies.
+
+These two sources of information are collected by the tool `generate-copyright`
+into a file called `COPYRIGHT.html`, which is shipped with each binary release
+of Rust. Please refer to that file for detailed information as to the components of
+any given Rust release. We also produce a `COPYRIGHT-library.html` file which only
+covers the subset of source code used in the Rust Standard Library, as opposed
+to the toolchain as a whole.
 
 
 ````
