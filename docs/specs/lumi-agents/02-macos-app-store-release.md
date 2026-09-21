@@ -1,6 +1,6 @@
 # Spec: Lumi Agents macOS App Store release
 
-Status: planned
+Status: shipped
 Owner: desktop-release
 
 ## 1. Problem
@@ -70,6 +70,15 @@ Required MAS signing variables are provisioned outside Git:
 Installer` certificate).
 - `MAS_PROVISIONING_PROFILE` or `PROVISIONING_PROFILE`.
 
+For the MAS target, the release script validates the requested app and
+installer identities, then deliberately lets electron-builder auto-discover
+the two certificate types from the login keychain. A single `CSC_NAME`
+qualifier cannot represent both certificates: electron-builder reuses that
+qualifier for the installer lookup, which can make a valid app certificate
+appear to have no matching installer identity. The identity names remain
+operator inputs and validation evidence; they are not forwarded as one shared
+qualifier.
+
 The `.env` file and `.p8` files are ignored by Git. CI must provide equivalent
 values through protected secrets/files.
 
@@ -85,3 +94,11 @@ values through protected secrets/files.
 5. MAS packaging resolves `app.asar` and packaged resources through the macOS
    `.app/Contents/Resources` layout when electron-builder reports the platform
    as either `darwin` or `mas`.
+6. MAS packaging uses certificate-type auto-discovery after validating both
+   requested identities, so app signing and installer wrapping select their
+   respective keychain identities independently.
+7. Every nested MAS executable receives the sandbox entitlement, MAS-only
+   bundled tools are signed instead of ignored, and the embedded profile is
+   readable by the installed non-root user.
+8. The release script temporarily makes only the profile source readable while
+   electron-builder embeds it, then restores its original restrictive mode.

@@ -21,6 +21,10 @@ export MAS_INSTALLER_IDENTITY="3rd Party Mac Developer Installer: <Team Name> (<
 export MAS_PROVISIONING_PROFILE="/secure/path/app.lumi.agents.provisionprofile"
 ```
 
+Use the repository-pinned Node `24.14.0` runtime (`mise exec -- pnpm ...` on a
+machine with mise). Node 26 can fail while electron-builder loads this ESM
+configuration because it contains top-level await.
+
 The app identity may use the older `3rd Party Mac Developer Application` name
 where that is what the team’s keychain exposes. The installer identity must be
 the Mac App Store installer certificate. Do not substitute a Developer ID
@@ -44,6 +48,13 @@ The script fails closed if the host, production environment, API key, signing
 identities, provisioning profile, or package signature is missing. It never
 prints the `.p8` contents, creates a review submission, or activates testers.
 
+If the login keychain cannot authorize `productbuild`, provide an explicit
+temporary keychain through `CSC_KEYCHAIN`. It must contain both private keys,
+be unlocked for the build, and grant access only to `/usr/bin/codesign` and
+`/usr/bin/productbuild`. Do not put the keychain password or PKCS#12 password
+in Git. The release script uses certificate-type auto-discovery so the app and
+installer certificates are selected independently.
+
 ## Current release evidence
 
 As of 2026-09-21:
@@ -52,33 +63,20 @@ As of 2026-09-21:
   configured in the ignored `.env`.
 - Bundle ID: `7MBXZKYSY4.app.lumi.agents`.
 - Provisioning profile: `Lumi Agents Mac App Store 2026-09-21`, profile UUID
-  `06ce3e3e-bc1c-4bbb-b5db-7cd5f15598b9`, expires 2027-06-24.
+  `920c6ba8-3807-4e7c-9329-cdc19e8e6cbb`, expires 2027-09-21.
 - Local keychain now contains the Mac App Distribution and Mac Installer
   Distribution identities. Certificate backups are `mac_app.cer` and
   `mac_installer.cer`; private keys must remain in the login keychain and in
   an encrypted/offline backup.
-- A signed `.pkg` was built at
+- A signed `.pkg` was built and verified in an isolated release worktree at
   `packages/desktop/dist/mas-arm64/Lumi Agents-3.14.0-mac-arm64.pkg`.
-- Transporter upload was attempted and Apple rejected the package with HTTP 409
-  `STATE_ERROR.VALIDATION_ERROR`.
+- Transporter accepted the package on 2026-09-21.
+- App Store Connect API readback: build ID
+  `3abfb481-f3e9-42da-ac37-019ddee1ddb9`, version `3.14.0`, processing state
+  `VALID`, audience `APP_STORE_ELIGIBLE`, expiration 2026-12-20.
 
-The first signed package upload was attempted on 2026-09-21 and rejected by
-Apple with `STATE_ERROR.VALIDATION_ERROR`. Apple reported that the main app and
-nested Electron/node-pty/helper binaries were not signed with the certificate
-embedded in the provisioning profile, several nested executables lacked the
-`com.apple.security.app-sandbox` entitlement, and some package files were root-only
-readable. Subsequent local packaging also exposed that the app bundle signature
-reported `Authority=(unavailable)` (ad-hoc), so no second upload was attempted.
-
-The current blocker is MAS signing correctness, not the App Store Connect API
-credential or bundle ID. The package must be rebuilt with a non-ad-hoc
-`3rd Party Mac Developer Application` signature on every nested executable, MAS
-entitlements on every executable, readable package permissions, and the matching
-`3rd Party Mac Developer Installer` package signature before retrying Transporter.
-
-Install the matching Apple Distribution/Mac App Distribution certificate and
-the Mac App Store Installer certificate, including their private keys, into the
-login keychain. Then rerun `pnpm build:macos:mas` and `pnpm release:macos:mas`.
+The failed attempts and corrective actions are recorded in
+`docs/upstream/MACOS-APP-STORE-POSTMORTEM.md`.
 
 ## Backup inventory for the release owner
 
