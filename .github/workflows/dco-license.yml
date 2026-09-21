@@ -80,7 +80,8 @@ jobs:
             { echo "::error::LICENSING.md lost the competition boundary statement"; exit 1; }
           grep -q "Developer Certificate of Origin" CONTRIBUTING.md || \
             { echo "::error::CONTRIBUTING.md lost the DCO"; exit 1; }
-          grep -q "does not grant rights to the name" TRADEMARKS.md || \
+          # Normalize formatting without weakening the required declaration.
+          node -e 'const text = require("node:fs").readFileSync("TRADEMARKS.md", "utf8").replace(/\s+/g, " "); if (!text.includes("does not grant rights to the name")) process.exit(1)' || \
             { echo "::error::TRADEMARKS.md lost the license/brand separation"; exit 1; }
 
   license-gates:
@@ -100,7 +101,10 @@ jobs:
           cache: pnpm
 
       - name: Maintainer attribution regression tests
-        run: node --experimental-strip-types --test scripts/lumi-maintainer-credit.test.mjs
+        run: >-
+          node --experimental-strip-types --test
+          scripts/lumi-maintainer-credit.test.mjs
+          scripts/lumi-credits-access.test.mjs
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

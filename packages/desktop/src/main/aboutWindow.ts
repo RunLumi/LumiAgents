@@ -224,7 +224,8 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
         window.open("zcode-about://licenses");
       });
       window.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" || event.key === "Enter") {
+        // 修改原因：Enter 由聚焦按钮原生处理，否则打开致谢时也会关闭父窗口。
+        if (event.key === "Escape") {
           closeWindow();
         }
       });

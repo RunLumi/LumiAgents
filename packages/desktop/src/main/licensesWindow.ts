@@ -55,23 +55,18 @@ export function getLicensesMessages(locale: Locale) {
   return LICENSES_MESSAGES[locale] ?? LICENSES_MESSAGES[DEFAULT_LOCALE];
 }
 
-/** 打包态读 resources，开发态读仓库根。返回存在的候选目录（按优先级）。 */
+/** 打包态只读随包 resources；开发态解析显式或常规仓库根目录。 */
 export function resolveLegalMaterialDirs(input: {
   isPackaged: boolean;
   resourcesPath: string;
   moduleDir: string;
   workspaceRoot?: string;
 }): string[] {
-  const dirs: string[] = [];
-  if (input.isPackaged) {
-    dirs.push(input.resourcesPath);
-  }
-  // 开发态：tsup 产物位于 packages/desktop/out/main，仓库根在上三级。
-  dirs.push(resolve(input.moduleDir, "../../.."));
-  if (input.workspaceRoot) {
-    dirs.push(input.workspaceRoot);
-  }
-  return dirs;
+  // 修改原因：发布包缺少材料时必须明确报缺失，不能从工作区读到另一份许可来掩盖问题。
+  if (input.isPackaged) return [input.resourcesPath];
+  if (input.workspaceRoot) return [input.workspaceRoot];
+  // 修改原因：packages/desktop/out/main（源码 src/main 亦同）到仓库根需上四级。
+  return [resolve(input.moduleDir, "../../../..")];
 }
 
 export interface LegalMaterial {
