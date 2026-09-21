@@ -1,4 +1,31 @@
-# ZCode 相关功能说明与第三方组件声明
+> Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+
+# 相关功能说明与第三方组件声明
+
+<!--
+  Lumi 的改动：在文件开头新增 Lumi 分支说明，并保留上游原文（原「一、二、三、四」
+  降为「二、三、四、五」），上游声明正文一字未改。修改声明见上方引用行。
+-->
+
+## 一、Lumi Agents 分支说明
+
+本仓库是 [ZCode](https://github.com/zai-org/ZCode) 的独立维护分支，产品名为 **Lumi Agents**。
+
+- **版权与许可**：第一方代码仍依根 [LICENSE](LICENSE) 采用 Apache-2.0，版权属上游权利人
+  （LICENSE 附录中的 “Copyright 2026 Z.AI Co., Ltd”）。本分支不转移、不替代上游著作权归属，
+  也不代表上游为 Lumi Agents 背书。
+- **分支关系**：Lumi Agents 不是 ZCode 或 Z.AI 的官方发行版；Lumi 没有 ZCode 的账户、订阅、
+  关怀或支持义务，也不承诺提供上游官方产品的全部功能与活动政策。
+- **以下声明的适用范围**：从第二节开始的内容（功能与权限风险、上传接口与对外请求、本地数据与凭据、
+  第三方许可与版权声明）**继承自上游 ZCode**，描述的是继承来的代码行为，**不是 Lumi 的账号政策、
+  隐私政策或服务条款**。Lumi 没有自有的账号、支付、遥测或更新后端；凡是需要上游产品服务的入口，
+  在 Lumi 的默认配置下要么不可用、要么关闭。具体差异见
+  [docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md)。
+- **本分支的默认配置差异**（相对上游）：桌面自动更新默认关闭，仅在显式配置 Lumi 自有
+  `LUMI_UPDATE_FEED_URL`（https）时启用；产品遥测默认关闭，需显式 `LUMI_TELEMETRY=1` 且自备端点。
+  两者都不会回退到 ZCode 产品服务。
+
+---
 
 本声明适用于本仓库公开的源码及其构建产物。各运行形态的功能、权限、存储位置和网络行为不同，不能将其中一种形态的默认设置理解为整个项目的统一设置。
 

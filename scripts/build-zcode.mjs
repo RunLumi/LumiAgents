@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { loadEndpointEnv } from "./load-endpoint-env.mjs";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -190,6 +191,10 @@ async function stageZCodePackage({ packageRoot, version }) {
     resolve(root, "apps/zcode-cli/packages/cli/dist/THIRD-PARTY-NOTICES.md"),
     resolve(packageRoot, "agent/THIRD-PARTY-NOTICES.md"),
   );
+  // 修改原因：CLI/SEA 发行包原先只带 THIRD-PARTY-NOTICES.md，没有第一方 LICENSE 与 NOTICE.md，
+  // 不满足 Apache-2.0 §4(a)/§4(d) 的「向接收者提供许可证与 NOTICE」。补齐到发行包根目录。
+  await cp(resolve(root, "LICENSE"), resolve(packageRoot, "LICENSE"));
+  await cp(resolve(root, "NOTICE.md"), resolve(packageRoot, "NOTICE.md"));
   await chmod(resolve(packageRoot, "agent", "zcode.cjs"), 0o755);
 
   await stageTuiRuntime(packageRoot);

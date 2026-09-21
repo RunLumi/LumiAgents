@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { createLocalTtftExporter } from "./localTtftExporter.js";
 /* eslint-disable max-lines */
 import "./desktopEarlyDataBaseDirBootstrap.js";
@@ -76,6 +77,7 @@ import {
   ZCODE_ARMS_RUM_ENDPOINT,
   buildZCodeEndpointUrls,
   resolveZCodeEndpointOrigin,
+  resolveLumiAutoUpdateEnabled,
   shouldEnableE2ETestBridge,
   type UpdateStatePayload,
   type TelemetryEventPayload,
@@ -1942,8 +1944,11 @@ app.whenReady().then(async () => {
   // 启动自动更新检查（后台执行，不阻塞主界面）
   // Preview 身份无论连接哪个后端都不自动更新：stable feed 上只分发正式 ZCode 安装包，
   // 不向 Preview 渠道提供更新。
+  // Lumi 追加约束：未配置 Lumi 自有更新源（LUMI_UPDATE_FEED_URL）时保持关闭。
+  // 原因：上游默认指向 ZCode 产品服务，若沿用会让 Lumi 从上游渠道安装更新。
+  // 关闭时桌面端呈现「更新服务未配置」的不可用状态，而不是回退到上游源。
   void initAutoUpdater({
-    enabled: ZCODE_PRODUCT_FLAVOR === "production",
+    enabled: ZCODE_PRODUCT_FLAVOR === "production" && resolveLumiAutoUpdateEnabled(process.env),
     onBeforeQuitAndInstall: async () => {
       notifyStabilityLifecycle("update_install");
       await prepareAppQuit("auto-update quitAndInstall", "update-install");

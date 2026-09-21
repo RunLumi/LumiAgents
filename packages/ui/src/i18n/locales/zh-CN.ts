@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /** 中文翻译 */
 const zhCN: Record<string, string> = {
   "startPlan.recommendation.subagentDescription":

@@ -18,9 +18,13 @@ necessary validation/maintenance support. Nothing else is changed.
 ## Identity (packaged / runtime)
 
 | File                                                    | Change                                                                                                                                                                                                       | Reason                                                      |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- | --------------------------------------- |
-| `packages/desktop/scripts/desktop-product-identity.mjs` | production `appId → app.lumi.agents`, `productName → Lumi Agents`, `linuxExecutableName/linuxPackageName → lumi-agents`; preview → `app.lumi.agents.preview` / `Lumi Agents Preview` / `lumi-agents-preview` | Application/bundle identity                                 |
-| `packages/desktop/package.json`                         | `productName → Lumi Agents`, description/author                                                                                                                                                              | Installer display name                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- | --------------------------------------- | ------------------------------------------------- | ----------------------------------------------- | ---------------------- | --- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/desktop/scripts/desktop-product-identity.mjs` | production `appId → app.lumi.agents`, `productName → Lumi Agents`, `linuxExecutableName/linuxPackageName → lumi-agents`; preview → `app.lumi.agents.preview` / `Lumi Agents Preview` / `lumi-agents-preview` | Application/bundle identity                                 |                                         | `packages/desktop/package.json`                   | `productName → Lumi Agents`, description/author | Installer display name |     | `packages/desktop/electron-builder.config.js` | explicit `copyright: "Copyright © 2026 Lumi"`, `extraMetadata.author.name → Lumi`, and the macOS sign-without-identity guard now covers every flavor | Packaged `NSHumanReadableCopyright` and fail-closed signing; upstream attribution stays in LICENSE / NOTICE.md / THIRD-PARTY-NOTICES.md |
+| `packages/desktop/scripts/bundle.mjs`                   | runs notarize + signing gate after electron-builder when macOS signing is enabled                                                                                                                            | Signed-build verification                                   |
+| `scripts/notarize-macos-release.mjs`                    | **new** notarytool submit + staple stage (env credentials only)                                                                                                                                              | Notarization                                                |
+| `scripts/verify-macos-release-signing.mjs`              | **new** fail-closed gate for Developer ID / hardened runtime / entitlements / staple                                                                                                                         | Verification gate                                           |
+| `scripts/doctor-macos-release-app.sh`                   | default app path → `/Applications/Lumi Agents.app`                                                                                                                                                           | Branding                                                    |                                         | `docs/upstream/MACOS-SIGNING-AND-NOTARIZATION.md` | **new** runbook                                 | Maintenance            |
+| `.github/workflows/macos-release.yml`                   | **new** tag-triggered build/sign/notarize/gate/publish pipeline (uploads only after the gate)                                                                                                                | Release CI for the Lumi identity                            |
 | `packages/desktop/src/main/desktopRuntimeEnv.ts`        | `runtimeApplicationName → Lumi Agents [Dev                                                                                                                                                                   | Preview]`; **new** `runtimeUserDataDirName`pinned to`ZCode` | Display name vs. user-data preservation |
 
 `ZCODE_PREVIEW_IDENTITY`, `ZCODE_ENV`, `ZCODE_DESKTOP_*` and every other
@@ -68,15 +72,57 @@ in `styles.css`** (`.dark`, `.theme-zai-dark`) but made unreachable.
 | `scripts/check-lumi-branding-drift.mjs`                 | drift check         | Fails visibly instead of silently rewriting source |
 | `package.json`                                          | `lumi:drift` script | Discoverability                                    |
 
+## Brand assets (original, generated)
+
+| File                                                                                             | Change                                                                                          | Reason                                      |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `brand/lumi-mark.svg`, `brand/lumi-app-icon.svg`, `brand/README.md`                              | **new** original interim folded-L geometry (two planes + 45° channel)                           | Replace upstream ZCode artwork              |
+| `scripts/build-lumi-brand-assets.mjs`                                                            | **new** reproducible pipeline: SVG → PNG set, `.icns`, `.ico` for desktop + `public/logo/icons` | Deterministic, reviewable, no manual export |
+| `packages/desktop/build/icon*`, `build/icons/*`, `public/logo/icons/*`, `public/icon_512@2x.png` | regenerated from `brand/` (upstream artwork replaced)                                           | Platform icons                              |
+| `packages/ui/src/components/ui/LumiBrandMark.tsx`                                                | **new** inline mark; replaces `ZCodeAboutLogo.tsx`                                              | Product logo in UI                          |
+| `packages/ui/src/assets/Z.svg`, `packages/ui/src/components/ui/ZCodeAboutLogo.tsx`               | **deleted** (upstream ZCode artwork)                                                            | Remove upstream product identity            |
+| `packages/ui/src/v4/ConversationDraftEmptyState.tsx`                                             | watermark uses the Lumi folded-L outline; upstream dark-only `<img>` variant removed            | Theme/branding                              |
+| `packages/desktop/src/main/aboutWindow.ts`                                                       | inline About logo → Lumi mark; dark `color-scheme`/black icon chip → DESIGN.md paper/white      | Branding + light-only theme                 |
+
+## Licensing, attribution, and modification notices
+
+| File                                                              | Change                                                                                                                                          | Reason                                                                                       |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `scripts/lumi-modified-files.mjs`                                 | **new** Apache-2.0 §4(b) manifest + checker + idempotent applier (42 inline files, 31 documented exceptions)                                    | Required by Apache-2.0 §4(b)                                                                 |
+| `scripts/lumi-drift-rules.mjs`                                    | **new** pure drift expectations (brand, theme, attribution, distribution defaults) — testable                                                   | Keep the delta honest across upstream sync                                                   |
+| `scripts/check-lumi-branding-drift.mjs`                           | now an umbrella: drift rules + §4(b) notices + optional `--against-upstream` manifest sync                                                      | Extended compliance check                                                                    |
+| `docs/licensing/COMPLIANCE.md`, `docs/licensing/MODIFICATIONS.md` | **new** provenance, obligations vs safeguards, per-file notice mechanisms, retained references, release blockers                                | Required compliance record                                                                   |
+| `NOTICE.md`                                                       | added a Lumi section; upstream disclosure sections retained verbatim (renumbered 二–五) and explicitly marked as inherited, **not** Lumi policy | §4(d) + truthful attribution                                                                 |
+| `README.md`, `README.en.md`                                       | product name, original logo, fork/attribution block, compliance links; upstream community links (Feishu/Discord) removed                        | Attribution must be discoverable; Lumi must not present upstream support channels as its own |
+| `packages/desktop/src/main/about.ts`, `licensesWindow.ts`         | About shows `Lumi Agents`; **new** offline “Licenses” window renders the packaged `THIRD-PARTY-NOTICES.md` / `LICENSE` / `NOTICE.md`            | §4(a)/§4(d) accessibility of legal material                                                  |
+| `AGENTS.md`                                                       | documents the Lumi branch constraints and new `pnpm lumi:*` commands                                                                            | Durable maintenance record                                                                   |
+| `THIRD-PARTY-NOTICES.md`, `third-party/inventory.json`            | regenerated via `node scripts/licenses.mjs notices` (the pre-existing manifest hash was stale after the fork edit)                              | Reuse the existing pipeline, no parallel system                                              |
+
+## Independent-distribution safety
+
+| File                                       | Change                                                                                                                                                                     | Reason                                                                |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `packages/shared/src/lumiDistribution.ts`  | **new** single seam: `resolveLumiUpdateFeedUrl` / `resolveLumiAutoUpdateEnabled` / `resolveLumiTelemetryEnabled`; records `UPSTREAM_ZCODE_PRODUCT_ORIGIN` as an audit fact | Lumi has no update/telemetry backend; never inherit upstream defaults |
+| `packages/shared/src/env.ts`               | `ZCODE_TELEMETRY_ENABLED` no longer hard-coded `true` → opt-in via `LUMI_TELEMETRY` (default **off**)                                                                      | Disable unsolicited upstream product telemetry                        |
+| `packages/desktop/src/main/index.ts`       | auto-update `enabled` now requires `resolveLumiAutoUpdateEnabled(process.env)`                                                                                             | Lumi must not install upstream ZCode updates                          |
+| `packages/desktop/src/main/autoUpdater.ts` | packaged builds accept only the Lumi feed (`LUMI_UPDATE_FEED_URL`, https); upstream dev-only overrides unchanged                                                           | Explicit configuration instead of an upstream default                 |
+
 ## Not done / needs a separate decision
 
-- **Brand artwork.** `packages/desktop/build/*`, `public/logo/*`, and the inline
-  logos still use the upstream mark. Replacing them needs the official folded-L
-  asset set and platform icon pipeline; not authored here.
+- **Official brand artwork.** `brand/*` is an **interim original mark** authored for this
+  fork, not an approved final brand. Replace with the official folded-L set and re-run
+  `pnpm lumi:brand-assets`.
+- **Upstream DMG background.** `packages/desktop/build/dmg_background(.@2x).png` is still
+  upstream promotional artwork; it is bound to the DMG window layout and is a **release
+  blocker** (see `docs/licensing/COMPLIANCE.md` §9).
 - **Geist / Geist Mono assets.** The canonical stacks are declared, but the fonts
   are not bundled, so hosts without Geist fall back to Noto/system fonts.
 - **External release configuration.** Signing identity, notarization, and the
   update feed for `app.lumi.agents` are owned by release engineering and are not
-  redirected here.
+  redirected here. Auto-update stays **off** until they exist.
+- **Third-party material completeness.** `node scripts/licenses.mjs check --strict`
+  still fails on 19 pre-existing upstream gaps (e.g. `@arms/rum-*`, Skia, QuickJS-NG).
+- **Shared data directory / scheme.** Lumi keeps the upstream `ZCode` userData directory
+  and `zcode://` registration (deliberate coexistence, no migration performed).
 - **Localized long-tail product-name strings** where the overlay's protected
   phrases do not apply — review with translators.

@@ -1,17 +1,28 @@
-# ZCode
+> Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+
+# Lumi Agents
 
 <div align="center">
-  <img src="public/logo/icons/1024x1024.png" alt="ZCode" width="128" height="128" />
+  <img src="public/logo/icons/1024x1024.png" alt="Lumi Agents" width="128" height="128" />
 </div>
-<p align="center">
-  <a href="https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=47ag983c-8fcb-4d6d-814b-5395193a712c&amp;qr_code=true">Feishu community</a> ·
-  <a href="https://discord.gg/z9aBcQXZQ3">Discord</a>
-</p>
 <p align="center">
   <a href="README.md">简体中文</a> | English
 </p>
 
-ZCode is an AI coding workspace with desktop, browser, and terminal interfaces. This repository contains the clients, backend services, shared UI, and Agent CLI and runtime source code.
+> **Lumi Agents is an independently maintained fork of ZCode.**
+>
+> Lumi Agents includes software from Z.AI Co., Ltd and other contributors under their applicable licenses. Lumi Agents is not an official ZCode or Z.AI distribution.
+>
+> - Upstream project: <https://github.com/zai-org/ZCode>
+> - Upstream baseline: `872ad960de7ec172591f7e1952f7849229f94521`
+> - Licensing and compliance: [docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md), [NOTICE.md](NOTICE.md), [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
+> - Intentional upstream differences: [docs/upstream/FORK-DIFFERENCES.md](docs/upstream/FORK-DIFFERENCES.md)
+>
+> This fork deliberately retains upstream internal identifiers for compatibility: `@zcode/*` package names, `ZCODE_*` environment variables, the `zcode://` protocol, the `zcode` CLI command, and the upstream data-directory name. These are intentional, not branding oversights — see [COMPLIANCE.md](docs/licensing/COMPLIANCE.md).
+
+Lumi Agents is an AI coding workspace with desktop, browser, and terminal interfaces. This repository contains the clients, backend services, shared UI, and Agent CLI and runtime source code.
+
+> The sections below are inherited from the upstream ZCode documentation and still describe upstream command and path names (such as the `zcode` CLI and `~/.zcode`). This fork keeps those names unchanged.
 
 | Interface                    | Purpose                                                                                   | Development command            |
 | ---------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------ |

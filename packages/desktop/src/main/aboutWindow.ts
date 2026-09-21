@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 interface CustomAboutDialogHtmlInput {
   applicationName: string;
   appVersion: string;
@@ -5,6 +6,12 @@ interface CustomAboutDialogHtmlInput {
   optimizationLine: string;
   versionLabel: string;
   okButtonLabel: string;
+  /**
+   * 新增：离线许可入口文案。为空则不渲染该按钮。
+   * 原因：Apache-2.0 §4(a)/§4(d) 要求接收者可访问许可与 NOTICE 材料，
+   * 仅把文件放进安装包不构成“可访问”。
+   */
+  licensesButtonLabel?: string;
 }
 
 function escapeHtml(value: string): string {
@@ -28,11 +35,13 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
     <title>${escapeHtml(input.applicationName)}</title>
     <style>
       :root {
-        color-scheme: light dark;
+        /* 修改原因：Lumi 是 light-only 主题（DESIGN.md §5、docs/upstream/FORK-DIFFERENCES.md），
+           原来的 light dark 取值会让 About 窗口在本机深色系统下继续渲染深色。 */
+        color-scheme: light;
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
-        --startup-page-bg: #f4f4f5;
-        --about-primary: #0a0a0a;
-        --about-primary-foreground: #fafafa;
+        --startup-page-bg: #f4f0e8;
+        --about-primary: #006093;
+        --about-primary-foreground: #ffffff;
         --about-primary-active: color-mix(in oklab, var(--about-primary) 80%, transparent);
       }
 
@@ -75,7 +84,7 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
         border: 0;
         border-radius: 0;
         background: transparent;
-        color: #1d1d1f;
+        color: #102a43;
         box-shadow: none;
         -webkit-app-region: drag;
       }
@@ -88,17 +97,18 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
         min-height: 0;
       }
 
+      /* 修改原因：去掉固定深色底/发光阴影，改为 DESIGN.md 的白色卡片 + 温和边框。 */
       .app-icon {
         width: 52px;
         height: 52px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(16, 42, 67, 0.12);
         border-radius: 12px;
-        background: linear-gradient(180deg, #000000 0%, #151718 100%);
-        color: #ffffff;
-        box-shadow: 0 10px 13px -3px rgb(0 0 0 / 0.2), 0 4px 5px -3px rgb(0 0 0 / 0.2);
+        background: #ffffff;
+        color: #006093;
+        box-shadow: none;
       }
 
       .app-logo {
@@ -124,7 +134,7 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
         line-height: 1.2;
         font-weight: 400;
         letter-spacing: 0;
-        color: #303033;
+        color: #3d5266;
       }
 
 
@@ -148,6 +158,22 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
         background: var(--about-primary-active);
       }
 
+      .licenses-button {
+        width: 100%;
+        height: 30px;
+        margin-top: 8px;
+        border: 1px solid rgba(16, 42, 67, 0.16);
+        border-radius: 15px;
+        background: transparent;
+        color: #006093;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 500;
+        outline: none;
+        cursor: default;
+        -webkit-app-region: no-drag;
+      }
+
     </style>
   </head>
   <body>
@@ -155,24 +181,21 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
       <section class="about-card" role="dialog" aria-modal="true" aria-labelledby="about-title">
         <div class="content">
           <div class="app-icon" aria-hidden="true">
+            <!--
+              修改原因：原样使用上游 ZCode 图形会继续展示上游产品标识。
+              这里改为原创的 Lumi 折叠 L 标记（与 brand/lumi-mark.svg 同源）。
+            -->
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="118"
-              height="100"
+              width="52"
+              height="52"
               fill="none"
-              viewBox="0 0 256 218"
+              viewBox="0 0 256 256"
               class="app-logo"
               focusable="false"
             >
-              <path
-                fill="currentColor"
-                d="M134.4 0.130152L116.48 25.6022C113.665 29.5699 109.054 32.0019 104.064 32.0019H6.3999V0C6.3999 0.130149 134.4 0.130152 134.4 0.130152Z"
-              />
-              <path fill="currentColor" d="M256 0.130127L102.401 217.732H0L153.599 0.130127H256Z" />
-              <path
-                fill="currentColor"
-                d="M121.601 217.732L139.65 192.134C142.465 188.166 147.076 185.734 152.067 185.734H249.604V217.736H121.601V217.732Z"
-              />
+              <path fill="currentColor" d="M56 32H120V160L56 224Z" />
+              <path fill="currentColor" fill-opacity="0.55" d="M120 176L128 168H232V232H64Z" />
             </svg>
           </div>
           <h1 id="about-title" class="title">
@@ -185,12 +208,17 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
           </div>
         </div>
         <div class="spacer"></div>
+        ${input.licensesButtonLabel ? `<button class="licenses-button" type="button" id="licenses-button">${escapeHtml(input.licensesButtonLabel)}</button>` : ""}
         <button class="ok-button" type="button" autofocus>${escapeHtml(input.okButtonLabel)}</button>
       </section>
     </main>
     <script>
       const closeWindow = () => window.close();
       document.querySelector(".ok-button")?.addEventListener("click", closeWindow);
+      // 通过 window.open 触发主进程的 setWindowOpenHandler，无需 preload/IPC 通道。
+      document.getElementById("licenses-button")?.addEventListener("click", () => {
+        window.open("zcode-about://licenses");
+      });
       window.addEventListener("keydown", (event) => {
         if (event.key === "Escape" || event.key === "Enter") {
           closeWindow();
