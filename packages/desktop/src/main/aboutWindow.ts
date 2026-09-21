@@ -148,22 +148,6 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
         background: var(--about-primary-active);
       }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --startup-page-bg: #171717;
-          --about-primary: #fafafa;
-          --about-primary-foreground: #0a0a0a;
-          --about-primary-active: color-mix(in oklab, var(--about-primary) 80%, transparent);
-        }
-
-        .about-card {
-          color: #e8e8e8;
-        }
-
-        .meta {
-          color: #e2e2e2;
-        }
-      }
     </style>
   </head>
   <body>

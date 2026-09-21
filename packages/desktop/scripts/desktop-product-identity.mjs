@@ -5,21 +5,24 @@
  */
 export const ZCODE_PREVIEW_IDENTITY_ENV = "ZCODE_PREVIEW_IDENTITY";
 
+// Lumi Agents 身份：安装包应用名、bundle id / AUMID、Linux 可执行名与协议展示名。
+// 内部标识（@zcode/* 包名、ZCODE_* 环境变量、zcode:// scheme、zcode CLI）保持不变，
+// 见 docs/upstream/FORK-DIFFERENCES.md。
 const PRODUCTION_IDENTITY = Object.freeze({
   flavor: "production",
-  appId: "dev.zcode.app",
-  productName: "ZCode",
-  linuxExecutableName: "zcode",
-  linuxPackageName: "zcode",
+  appId: "app.lumi.agents",
+  productName: "Lumi Agents",
+  linuxExecutableName: "lumi-agents",
+  linuxPackageName: "lumi-agents",
   cuaHelperInstallVariant: null,
 });
 
 const PREVIEW_IDENTITY = Object.freeze({
   flavor: "preview",
-  appId: "dev.zcode.app.preview",
-  productName: "ZCode Preview",
-  linuxExecutableName: "zcode-preview",
-  linuxPackageName: "zcode-preview",
+  appId: "app.lumi.agents.preview",
+  productName: "Lumi Agents Preview",
+  linuxExecutableName: "lumi-agents-preview",
+  linuxPackageName: "lumi-agents-preview",
   cuaHelperInstallVariant: "preview",
 });
 
@@ -69,7 +72,7 @@ export function resolveDesktopProductIdentity(env = process.env) {
 
 /**
  * 产物文件名后缀标记的是后端环境而不是身份：`_TEST` 只出现在测试后端的安装包上。
- * 生产后端的 Preview 包靠 productName（`ZCode Preview-<version>-...`）与正式包区分。
+ * 生产后端的 Preview 包靠 productName（`Lumi Agents Preview-<version>-...`）与正式包区分。
  */
 export function resolveDesktopArtifactSuffix(env = process.env) {
   return normalizeDesktopZCodeEnv(env) === "test" ? "_TEST" : "";

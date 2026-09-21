@@ -1,5 +1,6 @@
 import { PanelLeftOpen } from "lucide-react";
 import appLogoUrl from "@/assets/provider-icons/logo-zai.svg";
+import { PRODUCT_NAME } from "@/lib/productBrand.js";
 import { Button } from "@/components/ui/button.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -34,7 +35,7 @@ export function WorkspaceSidebarCollapsedRail({
             >
               <img
                 src={appLogoUrl}
-                alt="ZCode"
+                alt={PRODUCT_NAME}
                 className="size-5 transition-opacity group-hover:opacity-0"
                 draggable={false}
               />

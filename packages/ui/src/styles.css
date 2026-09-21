@@ -135,11 +135,23 @@ body {
 /* === 主题变量 === */
 
 @theme {
+  /* Lumi 品牌字体栈（DESIGN.md §6）：一个品牌家族 Geist + Geist Mono。
+   * 仓库尚未内置 Geist 字体资源，若系统/宿主未安装 Geist，会按下面的栈回退到
+   * Noto / 系统字体；这是字体资源缺口，不是新增第二字体。见 docs/upstream/FORK-DIFFERENCES.md。 */
+  --font-sans:
+    Geist, "Noto Sans", "Noto Sans Thai", "Noto Sans Arabic", "Noto Sans Devanagari",
+    "Noto Sans JP", "Noto Sans KR", "Noto Sans SC", "Noto Sans TC", ui-sans-serif, system-ui,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display:
+    Geist, "Noto Sans", "Noto Sans Thai", "Noto Sans Arabic", "Noto Sans Devanagari",
+    "Noto Sans JP", "Noto Sans KR", "Noto Sans SC", "Noto Sans TC", ui-sans-serif, system-ui,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   /* Windows 的 Consolas 不含中文字形，Tailwind 默认栈最终会让中文落到宋体。
    * 保留各平台西文等宽字体，并在通用 monospace 前显式加入各平台 CJK 无衬线字体。 */
   --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-    "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", monospace;
+    "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC",
+    monospace;
   --text-ui-xl: calc(var(--ui-font-size) + 4px);
   --text-ui-lg: calc(var(--ui-font-size) + 2px);
   --text-ui-base: var(--ui-font-size);
@@ -747,6 +759,180 @@ body {
   --color-plugin-node-foreground: #efc58f;
   --color-plugin-paid-plan-badge: #5a341b;
   --color-plugin-paid-plan-badge-foreground: #ffd8b8;
+}
+
+/*
+ * Lumi Agents 主题层（Lumi Design System 的唯一 token 集成点）。
+ *
+ * DESIGN.md §5 是 light-only：暖纸背景、白色卡片、civic ink 文字、Lumi Blue 动作。
+ * applyTheme 始终给 <html> 加上 theme-lumi，因此这里会覆盖 @theme 里的浅色默认值与
+ * 上游 .dark / .theme-zai-* 主题；后两者保留在文件中作为上游实现参照，但不再可达。
+ *
+ * 颜色值直接来自 DESIGN.md §5.1/§5.2，不要在这里另造近似色；改品牌色是独立品牌决策。
+ */
+.theme-lumi {
+  color-scheme: light;
+
+  --animated-gradient-text-strong: rgba(16, 42, 67, 1);
+  --animated-gradient-text-soft: rgba(16, 42, 67, 0.22);
+
+  /* Paper canvas + white sheets（§5.1） */
+  --color-background: #f4f0e8;
+  --color-background-win-alt: #ece6da;
+  --color-background-alt: color-mix(in oklab, var(--color-background) 70%, transparent);
+  --color-brand: #006093;
+  --color-accent: #e4f3fc;
+
+  --color-trajectory-user: #006093;
+  --color-trajectory-assistant: #1f7a4d;
+  --color-trajectory-reasoning: #6d28d9;
+  --color-trajectory-tool-call: #9a5b00;
+  --color-trajectory-tool-result: #004f80;
+  --color-workflow-rule: color-mix(in oklab, #102a43 5.5%, transparent);
+  --color-workflow-trace: color-mix(in oklab, #102a43 30%, transparent);
+  --color-workflow-trace-strong: color-mix(in oklab, #102a43 55%, transparent);
+
+  --color-find-highlight: #fff4dc;
+  --color-find-highlight-active: #f4a62a;
+
+  /* Structure borders（§8.2） */
+  --color-border: #d9dee8;
+  --color-border-hover: #c8d0de;
+  --color-hover: color-mix(in oklab, #102a43 5%, transparent);
+  --color-selected: color-mix(in oklab, #102a43 6%, transparent);
+  --color-header: #ffffff;
+  --color-panel: #ffffff;
+  --color-sidebar: #efe9de;
+  --color-surface: color-mix(in oklab, #102a43 3%, transparent);
+  --color-surface-hover: color-mix(in oklab, #102a43 5%, transparent);
+
+  --color-card: #ffffff;
+  --color-card-selected: #e4f3fc;
+  --color-card-border: var(--color-border);
+  --color-popover: #ffffff;
+  --color-popover-foreground: var(--color-foreground);
+  --color-popover-header: #f4f0e8;
+  --color-popover-border: #c8d0de;
+  --color-input: #ffffff;
+  --color-input-focused: #ffffff;
+  --color-input-border: #d9dee8;
+  --color-input-border-hover: #c8d0de;
+  --color-input-border-focused: #006093;
+
+  /* Terminal：白底 + civic ink，保证代码/终端可读（§16 readability） */
+  --color-terminal-bg: #ffffff;
+  --color-terminal-fg: #102a43;
+  --color-terminal-cursor: #102a43;
+  --color-terminal-cursor-accent: #ffffff;
+  --color-terminal-selection: color-mix(in oklab, #006093 18%, transparent);
+  --color-terminal-selection-inactive: color-mix(in oklab, #102a43 8%, transparent);
+  --color-terminal-black: #5e6677;
+  --color-terminal-red: #c2410c;
+  --color-terminal-green: #1f7a4d;
+  --color-terminal-yellow: #9a5b00;
+  --color-terminal-blue: #006093;
+  --color-terminal-magenta: #7c3aed;
+  --color-terminal-cyan: #0f766e;
+  --color-terminal-white: #5e6677;
+  --color-terminal-bright-black: #5e6677;
+  --color-terminal-bright-red: #c2410c;
+  --color-terminal-bright-green: #1f7a4d;
+  --color-terminal-bright-yellow: #9a5b00;
+  --color-terminal-bright-blue: #004f80;
+  --color-terminal-bright-magenta: #6d28d9;
+  --color-terminal-bright-cyan: #0d5f59;
+  --color-terminal-bright-white: #102a43;
+
+  --color-usage-chart-1: #006093;
+  --color-usage-chart-2: #1f7a4d;
+  --color-usage-chart-3: #7c3aed;
+  --color-usage-chart-4: #c2410c;
+  --color-usage-chart-5: #f4a62a;
+  --color-usage-chart-6: #0f766e;
+  --color-context-breakdown-1: #006093;
+  --color-context-breakdown-2: #1a7cae;
+  --color-context-breakdown-3: #4a9bc7;
+  --color-context-breakdown-4: #79b9dc;
+  --color-context-breakdown-5: #a6d3ec;
+  --color-context-breakdown-6: #cfe8f6;
+  --color-context-breakdown-7: #e4f3fc;
+  --color-usage-heatmap-0: color-mix(in oklab, #006093 0%, var(--color-surface));
+  --color-usage-heatmap-1: color-mix(in oklab, #006093 18%, var(--color-surface));
+  --color-usage-heatmap-2: color-mix(in oklab, #006093 36%, var(--color-surface));
+  --color-usage-heatmap-3: color-mix(in oklab, #006093 58%, var(--color-surface));
+  --color-usage-heatmap-4: color-mix(in oklab, #004f80 82%, var(--color-surface));
+
+  --color-tab: #f4f0e8;
+  --color-tab-active: #ffffff;
+  --color-tab-border: var(--color-border);
+  --color-menu: #ffffff;
+  --color-menu-hover: #f4f0e8;
+  --color-primary: #006093;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #e7eaf0;
+
+  --color-interaction-ask-surface: #e4f3fc;
+  --color-interaction-ask-foreground: #004f80;
+  --color-interaction-ask-fill: color-mix(in oklab, #1f7a4d 20%, transparent);
+  --color-interaction-confirmation-surface: #e9f7ef;
+  --color-interaction-confirmation-foreground: #1f7a4d;
+
+  /* Ink：标题与正文用 civic navy / ink，永远不是纯黑（§6.3） */
+  --color-foreground: #102a43;
+  --color-foreground-subtle: color-mix(in oklab, #102a43 60%, transparent);
+  --color-foreground-subtlest: color-mix(in oklab, #102a43 40%, transparent);
+  --color-foreground-inverse: #ffffff;
+
+  --color-success: #1f7a4d;
+  --color-success-foreground: #ffffff;
+  --color-idle-task: #7c3aed;
+  --color-idle-task-surface: #f5f3ff;
+  --color-destructive: #c2410c;
+  --color-destructive-foreground: #ffffff;
+  --color-warning: #9a5b00;
+  --color-feedback-privacy-hint: #9a5b00;
+  --color-warning-foreground: #ffffff;
+  --color-diff-added: #1f7a4d;
+  --color-diff-added-foreground: #ffffff;
+  --color-diff-removed: #c2410c;
+  --color-diff-removed-foreground: #ffffff;
+
+  --color-git-none: var(--color-foreground);
+  --color-git-modified: #9a5b00;
+  --color-git-added: #1f7a4d;
+  --color-git-deleted: #c2410c;
+  --color-git-renamed: #006093;
+  --color-git-untracked: #1f7a4d;
+  --color-git-ignored: var(--color-foreground-subtlest);
+  --color-git-descendant: #9a5b00;
+
+  --color-toast: #ffffff;
+  --color-tooltip: #ffffff;
+  --color-tooltip-foreground: #102a43;
+  --color-tooltip-tag: #e7eaf0;
+  --color-tooltip-tag-foreground: #5e6677;
+  --color-tag: #e7eaf0;
+
+  --color-file-node: color-mix(in oklab, #006093 14%, transparent);
+  --color-file-node-hover: color-mix(in oklab, #006093 20%, transparent);
+  --color-file-node-foreground: #006093;
+  --color-skill-node: color-mix(in oklab, #7c3aed 14%, transparent);
+  --color-skill-node-hover: color-mix(in oklab, #7c3aed 20%, transparent);
+  --color-skill-node-foreground: #6d28d9;
+  --color-command-node: color-mix(in oklab, #5e6677 14%, transparent);
+  --color-command-node-hover: color-mix(in oklab, #5e6677 20%, transparent);
+  --color-command-node-foreground: #5e6677;
+  --color-subagent-node: color-mix(in oklab, #6f7a2f 14%, transparent);
+  --color-subagent-node-hover: color-mix(in oklab, #6f7a2f 20%, transparent);
+  --color-subagent-node-foreground: #6f7a2f;
+  --color-session-node: color-mix(in oklab, #0f766e 14%, transparent);
+  --color-session-node-hover: color-mix(in oklab, #0f766e 20%, transparent);
+  --color-session-node-foreground: #0f766e;
+  --color-plugin-node: color-mix(in oklab, #9a5b00 14%, transparent);
+  --color-plugin-node-hover: color-mix(in oklab, #9a5b00 20%, transparent);
+  --color-plugin-node-foreground: #9a5b00;
+  --color-plugin-paid-plan-badge: #fff4dc;
+  --color-plugin-paid-plan-badge-foreground: #4b280f;
 }
 
 /*
