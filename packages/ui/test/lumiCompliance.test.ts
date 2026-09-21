@@ -120,7 +120,9 @@ test("漂移检查：README 归属声明被删除会失败", () => {
 
 test("§4(b) 检查：只有头部完整声明句才被认可，正文提及标记不算", () => {
   const io = createIo({
-    ".gitignore": "node_modules/\n",
+    // fixture 必须使用确实登记在 MODIFIED_FILES 里的路径，否则断言的是「清单缺文件」
+    // 而不是声明规则本身（.gitignore 现属 UNDECLARED_WORKSPACE_CHANGES，不再参与声明检查）。
+    "AGENTS.md": "# 仓库说明\n",
     // 深在正文（头部区域之后）才提到声明句 —— 必须仍被判定为缺失。
     "README.md": `# Lumi Agents\n\n${"填充。".repeat(700)}\n\n文档后半提到 ${LUMI_MODIFICATION_NOTICE}。\n`,
     "NOTICE.md": `> ${LUMI_MODIFICATION_NOTICE}\n\n# 声明\n`,
@@ -139,18 +141,24 @@ test("§4(b) 检查：只有头部完整声明句才被认可，正文提及标�
 test("§4(b) 检查：缺少修改声明的文件会失败", () => {
   // 注意：声明检查使用仓库相对的 fixture 路径（repoRoot 为空串）。
   const io = createIo({
-    ".gitignore": "node_modules/\n", // 无声明
+    "AGENTS.md": "# 仓库说明\n", // 已登记的修改文件，无声明
     // 完整声明句（写入文件头部区域）才算有效。
     "README.md": `> ${LUMI_MODIFICATION_NOTICE}\n\n# Lumi Agents\n`,
+    // 仓库所有者未提交的本地改动：不在 MODIFIED_FILES，不应被要求加 Lumi 声明。
+    ".gitignore": "node_modules/\n",
   });
   const failures = evaluateModifiedFileNotices(io);
   assert.ok(
-    failures.some((failure) => failure.startsWith(".gitignore:")),
-    "必须报告 .gitignore 缺少修改声明",
+    failures.some((failure) => failure.startsWith("AGENTS.md:")),
+    "必须报告已登记修改文件缺少声明",
   );
   assert.ok(
     !failures.some((failure) => failure.startsWith("README.md:")),
     "已带声明的文件不应被报告",
+  );
+  assert.ok(
+    !failures.some((failure) => failure.startsWith(".gitignore:")),
+    "他人未提交的本地改动不应被要求补 Lumi 声明",
   );
 });
 

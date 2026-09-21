@@ -47,19 +47,24 @@ Apache License 2.0 第 4(b) 条要求：分发 Derivative Works 时，必须让*
 JSON 标准不允许注释，内联声明会破坏文件。替代机制：
 
 - 仓库级声明：本文件 + 根 `NOTICE.md` 第一节；
-- 双文件在 `scripts/lumi-modified-files.mjs` 的 `NOTICE_EXCEPTIONS` 中登记，缺失即校验失败。
+- 下列文件在 `scripts/lumi-modified-files.mjs` 的 `NOTICE_EXCEPTIONS` 中登记，缺失即校验失败；
+  未登记的改动会被 `--against-upstream` 报告（不是静默放过）。
 
-| 文件                            | 修改内容                                         |
-| ------------------------------- | ------------------------------------------------ |
-| `package.json`                  | 新增 `lumi:drift` / `lumi:notice` 等维护命令     |
-| `packages/desktop/package.json` | `productName`、`description`、`author` 改为 Lumi |
+| 文件                                     | 修改内容                                                                            |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- |
+| `package.json`                           | 新增 `lumi:drift` / `lumi:notice` 等维护命令                                        |
+| `packages/desktop/package.json`          | `productName`、`description`、`author` 改为 Lumi                                    |
+| `third-party/npm-overrides.json`         | 逐包许可材料：新增 `materialReview` 复核记录；`keyv@4.5.4` 换成真实版本适用 LICENSE |
+| `third-party/copied-components.json`     | 复制来源（React Best Practices skill）新增 `materialReview`                         |
+| `third-party/embedded-components.json`   | Skia / QuickJS-NG 的未决标记改为带证据的 `materialReview`                           |
+| `third-party/native-search/sources.json` | `rust-standard-library` 删除不可验证的 revision，改用真实许可正文                   |
 
 ### 3.1b 生成物（由生成器保证声明）
 
 | 文件                         | 机制                                                                                                                                   |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `THIRD-PARTY-NOTICES.md`     | 声明写在生成器 `scripts/generate-third-party-notices.mjs` 的头部模板里，每次 `licenses.mjs notices` 重新生成都自带，不靠事后手改生成物 |
-| `third-party/inventory.json` | `json-no-comments`：生成物的输入哈希与 `reviewRequired` 清单本身即修改证据；声明由 `THIRD-PARTY-NOTICES.md` 与本节承担                 |
+| `third-party/inventory.json` | `json-no-comments`：生成物的输入哈希、`reviewRequired` 与 `materialReviews` 本身即修改证据；声明由 `THIRD-PARTY-NOTICES.md` 与本节承担 |
 
 ### 3.2 二进制 / 生成资产（`binary-generated`）
 
@@ -91,7 +96,13 @@ JSON 标准不允许注释，内联声明会破坏文件。替代机制：
    当前**未替换**。需要设计提供符合 DESIGN.md 的同尺寸替换图后才能移除该阻塞项。
    处理方式参见 [COMPLIANCE.md](./COMPLIANCE.md) 的发布阻塞清单。
    _This item is flagged for legal/design review; the engineering side cannot verify or clear it._
-2. **已知无法内联声明的第三方资产**：仓库内没有需要 Lumi 单方声明的第三方品牌资源；
+2. **18 条第三方材料复核结论**（`@arms/rum-*`、Skia、QuickJS-NG、`rust-standard-library`、
+   `boolbase`、`semaphore`、`ansi-to-react`、`is-node-process` 等）：权利人只声明了 SPDX 标识，
+   从未随包或随仓库提供版权/许可声明，证据不存在，因此记录为有据可查的结论并留存许可正文。
+   这类处置是否可以接受属于**法律判断**，逐条证据见 [COMPLIANCE.md](./COMPLIANCE.md) 第 5.1 节与
+   `third-party/inventory.json` 的 `materialReviews`。
+   _This item is flagged for legal review; the engineering side records evidence only._
+3. **已知无法内联声明的第三方资产**：：仓库内没有需要 Lumi 单方声明的第三方品牌资源；
    `third-party/` 下的材料属于第三方许可原文，不再叠加 Lumi 声明（叠加会篡改第三方文本）。
 
 ## 5.1 工作区内不属于 Lumi 声明的改动

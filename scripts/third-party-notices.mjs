@@ -1,8 +1,9 @@
 // Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { createHash } from "node:crypto";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
+import { evaluateMaterialReview } from "./lumi-license-review.mjs";
 
 export const repositoryRoot = resolve(import.meta.dirname, "..");
 export const noticesFileName = "THIRD-PARTY-NOTICES.md";
@@ -27,6 +28,31 @@ export async function readVerifiedNotices(root = repositoryRoot, { requireComple
   }
   if (requireComplete && !Array.isArray(manifest.reviewRequired))
     throw new Error("Missing material review inventory; regenerate third-party notices");
+  // 修复：先前只检查 reviewRequired 是否为空，手工改清单就能把条目「了结」掉。
+  // 现在严格模式同时复核每条 materialReview 的证据完整性，缺字段/缺留存文本一律失败。
+  if (requireComplete) {
+    if (!Array.isArray(manifest.materialReviews))
+      throw new Error("Missing material review records; regenerate third-party notices");
+    const failures = [];
+    for (const record of manifest.materialReviews) {
+      failures.push(
+        ...evaluateMaterialReview(record.id, record.review, {
+          readText: (file) => {
+            try {
+              return readFileSync(resolve(root, file), "utf8");
+            } catch {
+              return undefined;
+            }
+          },
+        }),
+      );
+    }
+    if (failures.length > 0) {
+      throw new Error(
+        `Incomplete third-party material review records:\n${failures.map((line) => `  ${line}`).join("\n")}`,
+      );
+    }
+  }
   if (requireComplete && manifest.reviewRequired.length) {
     throw new Error(
       `Unresolved third-party material obligations:\n${manifest.reviewRequired.map((item) => `${item.id}: ${item.reason}`).join("\n")}`,
