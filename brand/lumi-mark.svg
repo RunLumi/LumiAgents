@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Lumi Agents mark">
+  <title>Lumi Agents mark (interim)</title>
+  <!--
+    Interim Lumi Agents mark — original artwork authored for this fork.
+
+    Geometry: a geometric folded L-form. Two planes (the upright stem and the
+    horizontal foot) are divided by a precise 45-degree channel that runs from
+    the inner corner out to the lower-left edge. See DESIGN.md §2.
+
+    Plane A: M56 32 H120 V160 L56 224 Z      (region x+y <= 280)
+    Plane B: M120 176 L128 168 H232 V232 H64 Z  (region x+y >= 296)
+
+    Two flat tones, no gradients, no glow, no shadow (DESIGN.md §2.2).
+    This is NOT an approved final brand asset; replace with the official
+    folded-L artwork when it is available.
+  -->
+  <g fill="currentColor">
+    <path d="M56 32H120V160L56 224Z" />
+    <path d="M120 176L128 168H232V232H64Z" fill-opacity="0.55" />
+  </g>
+</svg>

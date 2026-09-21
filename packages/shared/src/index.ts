@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 export type {
   FileBinaryPreview,
   FileEntry,
@@ -72,6 +73,14 @@ export {
   normalizeZCodeEnv,
   normalizeZCodeProductFlavor,
 } from "./env.js";
+export {
+  LUMI_UPDATE_FEED_URL_ENV,
+  LUMI_TELEMETRY_OPT_IN_ENV,
+  UPSTREAM_ZCODE_PRODUCT_ORIGIN,
+  resolveLumiUpdateFeedUrl,
+  resolveLumiAutoUpdateEnabled,
+  resolveLumiTelemetryEnabled,
+} from "./lumiDistribution.js";
 export * from "./errors.js";
 export type { SessionCreateSource } from "./sessionCreateSource.js";
 export { resolveSafeEndpointHostname } from "./endpointHostname.js";

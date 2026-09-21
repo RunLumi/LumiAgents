@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { cn } from "@/components/lib/utils.js";
 import zaiLogoUrl from "@/assets/provider-icons/logo-zai.svg";
 import { PRODUCT_NAME } from "@/lib/productBrand.js";

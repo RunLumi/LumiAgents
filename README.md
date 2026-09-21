@@ -1,17 +1,28 @@
-# ZCode
+> Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+
+# Lumi Agents
 
 <div align="center">
-  <img src="public/logo/icons/1024x1024.png" alt="ZCode" width="128" height="128" />
+  <img src="public/logo/icons/1024x1024.png" alt="Lumi Agents" width="128" height="128" />
 </div>
-<p align="center">
-  <a href="https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=47ag983c-8fcb-4d6d-814b-5395193a712c&amp;qr_code=true">飞书社群</a> ·
-  <a href="https://discord.gg/z9aBcQXZQ3">Discord</a>
-</p>
 <p align="center">
   简体中文 | <a href="README.en.md">English</a>
 </p>
 
-ZCode 是 AI 编程工作台，提供桌面应用、浏览器界面和终端 Agent。本仓库包含客户端、后端服务、共享 UI，以及 Agent CLI 与运行时源码。
+> **Lumi Agents 是 ZCode 的独立维护分支（fork）。**
+>
+> Lumi Agents 包含来自 Z.AI Co., Ltd 及其他贡献者按各自许可提供的软件。Lumi Agents 不是 ZCode 或 Z.AI 的官方发行版。
+>
+> - 上游项目：<https://github.com/zai-org/ZCode>
+> - 上游基线：`872ad960de7ec172591f7e1952f7849229f94521`
+> - 许可与合规说明：[docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md)、[NOTICE.md](NOTICE.md)、[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
+> - 与上游的差异清单：[docs/upstream/FORK-DIFFERENCES.md](docs/upstream/FORK-DIFFERENCES.md)
+>
+> 本分支保留了大量上游内部标识以维持兼容：`@zcode/*` 包名、`ZCODE_*` 环境变量、`zcode://` 协议、`zcode` 命令行，以及上游数据目录名。这些是**刻意保留**的，不是品牌遗漏；详见 [COMPLIANCE.md](docs/licensing/COMPLIANCE.md)。
+
+Lumi Agents 是 AI 编程工作台，提供桌面应用、浏览器界面和终端 Agent。本仓库包含客户端、后端服务、共享 UI，以及 Agent CLI 与运行时源码。
+
+> 以下章节继承自上游 ZCode 文档，仍描述上游命令与路径名（如 `zcode` 命令行、`~/.zcode`），本分支保持这些名称不变。
 
 | 入口                 | 用途                                                           | 开发命令                       |
 | -------------------- | -------------------------------------------------------------- | ------------------------------ |

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 
 /* eslint-disable max-lines */
 // 该脚本聚合了打包入口、重试策略、计时与产物校验逻辑，短期内拆文件会影响 CI 稳定性。
@@ -44,6 +45,12 @@ const DEFAULT_TARGET_ARCH = "arm64";
 const desktopDistDir = process.env.ZCODE_DESKTOP_DIST_DIR || "dist";
 const desktopDistRoot = resolve(desktopRoot, desktopDistDir);
 const desktopProductIdentity = resolveDesktopProductIdentity(process.env);
+// 与 electron-builder.config.js 同一套语义：显式开关 + 存在 Developer ID 身份，
+// 才在打包后串联公证与签名验收门。缺任一项时保持“只构建、不签名”，不静默降级成
+// “看起来已签名”的发布包。
+const shouldEnableMacSigning =
+  process.env.ZCODE_ENABLE_MAC_SIGN === "1" &&
+  Boolean(process.env.APPLE_SIGNING_IDENTITY || process.env.CSC_NAME);
 
 const osAliasMap = new Map([
   ["mac", "mac"],
@@ -599,6 +606,39 @@ async function runElectronBuilderWithRetry(args, envPatch) {
   }
 }
 
+function resolveMacAppBundlePath(os, arch) {
+  if (os !== "mac") return null;
+  return resolve(
+    desktopRoot,
+    desktopDistDir,
+    arch === "arm64" ? "mac-arm64" : "mac",
+    `${desktopProductIdentity.productName}.app`,
+  );
+}
+
+// 收集当前架构的全部 mac 产物（dmg + zip），供公证提交使用。
+// findBuiltArtifact 只返回最新单个文件，不足以覆盖需要分别提交的两个产物。
+function collectMacSigningArtifacts(os, arch) {
+  const extensions = artifactExtensionsByOs[os] ?? [];
+  const archHints = artifactArchHintsByArch[arch] ?? [arch];
+  const candidates = [];
+
+  for (const entry of readdirSync(desktopDistRoot, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    const fullPath = join(desktopDistRoot, entry.name);
+    const lowerName = entry.name.toLowerCase();
+    const matchesExtension = extensions.some((extension) =>
+      lowerName.endsWith(extension.toLowerCase()),
+    );
+    const matchesArch = archHints.some((archHint) => artifactNameMatchesArch(lowerName, archHint));
+    if (!matchesExtension || !matchesArch) continue;
+    candidates.push({ path: fullPath, mtimeMs: statSync(fullPath).mtimeMs });
+  }
+
+  candidates.sort((left, right) => right.mtimeMs - left.mtimeMs);
+  return candidates.map((candidate) => candidate.path);
+}
+
 function resolveAppAsarPath(os, arch) {
   if (os === "mac") {
     return resolve(
@@ -739,6 +779,28 @@ async function main() {
   runTimedSync("bundle:verify-runtime-dependencies", () =>
     verifyPackagedRuntimeDependencies(os, arch),
   );
+
+  if (shouldEnableMacSigning && os === "mac") {
+    const appPath = resolveMacAppBundlePath(os, arch);
+    const signingArtifacts = collectMacSigningArtifacts(os, arch);
+    // 两段式：build 阶段只签名，公证与 staple 在这里独立执行；随后用验收门机械校验。
+    runTimedSync("bundle:macos-notarize", () => {
+      const notarizeArgs = [resolve(workspaceRoot, "scripts", "notarize-macos-release.mjs")];
+      for (const artifact of signingArtifacts) notarizeArgs.push("--artifact", artifact);
+      if (appPath) notarizeArgs.push("--app", appPath);
+      run(process.execPath, notarizeArgs, process.env);
+    });
+    runTimedSync("bundle:macos-signing-gate", () => {
+      const gateArgs = [
+        resolve(workspaceRoot, "scripts", "verify-macos-release-signing.mjs"),
+        "--app",
+        appPath,
+        "--require-staple",
+      ];
+      for (const artifact of signingArtifacts) gateArgs.push("--artifact", artifact);
+      run(process.execPath, gateArgs, process.env);
+    });
+  }
 
   const artifactPath = findBuiltArtifact(os, arch);
   runTimedSync("bundle:audit-bundle-size", () =>

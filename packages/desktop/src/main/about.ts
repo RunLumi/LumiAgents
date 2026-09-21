@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import type { BrowserWindow, MessageBoxReturnValue } from "electron";
 import { existsSync, readFileSync } from "node:fs";
 import { arch, hostname, platform, release, type, version as osVersion } from "node:os";
@@ -11,6 +12,7 @@ import {
   ZCODE_VERSION,
 } from "@zcode/shared";
 import { createCustomAboutDialogHtml } from "./aboutWindow.js";
+import { showLicensesWindow } from "./licensesWindow.js";
 
 interface DesktopBuildMetadata {
   appVersion?: string;
@@ -52,7 +54,9 @@ interface AboutSnapshotOptions {
   };
 }
 
-const ABOUT_APPLICATION_NAME = "ZCode Desktop App";
+// 修改原因：About 面板是用户可见的产品身份面，必须显示 Lumi Agents，而不是上游 ZCode。
+// 内部标识（@zcode/*、ZCODE_*、zcode:// scheme）不受影响，见 docs/upstream/FORK-DIFFERENCES.md。
+const ABOUT_APPLICATION_NAME = "Lumi Agents";
 // 自定义 About 内容本体是 256x280；原生窗口如果同尺寸会让内容贴满透明窗口边界。
 // 这里给 BrowserWindow 额外留出背景呼吸空间，避免正式 About 看起来比 demo 更局促。
 const ABOUT_WINDOW_WIDTH = 256;
@@ -65,21 +69,29 @@ const ABOUT_MESSAGES: Record<
     okButtonLabel: string;
     optimizedForAppleSilicon: string;
     copyright: (year: number) => string;
+    /** 离线许可入口文案；见 packages/desktop/src/main/licensesWindow.ts。 */
+    licensesButtonLabel: string;
   }
 > = {
   "zh-CN": {
-    aboutTitle: "关于 ZCode",
+    aboutTitle: "关于 Lumi Agents",
     versionLabel: "版本",
     okButtonLabel: "确定",
     optimizedForAppleSilicon: "已针对 Apple Silicon 优化。",
-    copyright: (year) => `版权所有 © ${year} ZCode。`,
+    licensesButtonLabel: "开源许可",
+    // 版权属上游权利人（LICENSE 的 “Copyright 2026 Z.AI Co., Ltd”）；
+    // 这里只陈述分支关系，不新增或转移著作权声明。
+    copyright: (year) => `版权所有 © ${year} Z.AI Co., Ltd — Lumi Agents 为独立维护分支。`,
   },
   "en-US": {
-    aboutTitle: "About ZCode",
+    aboutTitle: "About Lumi Agents",
     versionLabel: "version",
     okButtonLabel: "OK",
     optimizedForAppleSilicon: "Optimized for Apple Silicon.",
-    copyright: (year) => `Copyright © ${year} ZCode.`,
+    licensesButtonLabel: "Licenses",
+    // Upstream holds the copyright (LICENSE: “Copyright 2026 Z.AI Co., Ltd”).
+    // This line states the fork relationship only; it adds no new ownership claim.
+    copyright: (year) => `Copyright © ${year} Z.AI Co., Ltd — Lumi Agents independent fork.`,
   },
 };
 
@@ -249,6 +261,14 @@ export async function showAboutDialog(
     },
   });
   aboutWindow.setMenuBarVisibility(false);
+  // 自绘 About 是 sandbox + contextIsolation + 无 preload 的纯 data: 页面，
+  // 因此“开源许可”按钮走 window.open，由主进程在这里接管并打开离线许可窗口。
+  aboutWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith("zcode-about://licenses")) {
+      void showLicensesWindow(aboutWindow, locale, ABOUT_APPLICATION_NAME);
+    }
+    return { action: "deny" };
+  });
   aboutWindow.once("ready-to-show", () => {
     aboutWindow.show();
   });
@@ -261,6 +281,7 @@ export async function showAboutDialog(
         optimizationLine: formatAboutOptimizationLine(snapshot, locale),
         versionLabel: aboutMessages.versionLabel,
         okButtonLabel: aboutMessages.okButtonLabel,
+        licensesButtonLabel: aboutMessages.licensesButtonLabel,
       }),
     )}`,
   );

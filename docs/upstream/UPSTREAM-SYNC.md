@@ -55,13 +55,39 @@ From the repo root:
 
 ```bash
 node scripts/check-workspace-freshness.mjs
-node scripts/check-lumi-branding-drift.mjs      # fails visibly on branding/theme drift
 pnpm install                                     # pinned by mise.toml (node 24.14.0, pnpm 10.33.2)
+
+# 品牌 / 主题 / 归属 / 分发安全 + Apache-2.0 §4(b) 修改声明（失败即显式退出非 0）
+pnpm lumi:drift
+# 同步后确认「改了上游文件但没登记声明」的漏网（需本地 upstream 远端）
+node scripts/check-lumi-branding-drift.mjs --against-upstream
+
+# 第三方声明：上游动了依赖就重新生成，再校验标识与新鲜度
+node scripts/licenses.mjs notices
+node scripts/licenses.mjs check
+# 发布前必须过严格门禁（当前上游遗留 19 项缺口，见 docs/licensing/COMPLIANCE.md §9）
+node scripts/licenses.mjs check --strict
+
 pnpm architecture:check -- --changed
 pnpm typecheck
 pnpm lint
 pnpm fmt:check
+
+# 合规与分发默认值的负向测试（含首个漂移检查负向用例）
+node --import tsx --test packages/ui/test/lumiCompliance.test.ts packages/ui/test/lumiBranding.test.ts
 ```
+
+合并冲突后的额外步骤：
+
+1. 对每个冲突文件重新应用 Lumi 行，然后补齐 §4(b) 声明：
+   `node scripts/lumi-modified-files.mjs apply`。
+2. 上游新增/改名的文件如果也被 Lumi 修改，必须同时加进
+   `scripts/lumi-modified-files.mjs` 的 `MODIFIED_FILES` 或 `NOTICE_EXCEPTIONS`；
+   `--against-upstream` 会指出漏登记项。
+3. 上游如果动了品牌/主题集成点（改函数名、改 token），更新 `scripts/lumi-drift-rules.mjs`
+   而不是放宽断言。
+
+**硬性约束**：不要把自动更新或遥测默认值改回上游值；Lumi 没有对应的后端。
 
 Then re-verify the surfaces the theme touches (light-only, no dark flash):
 
@@ -90,7 +116,8 @@ shared checkout or `origin`.
 
 Land the sync as a small set of commits — typically one “merge upstream `<ref>`”
 plus at most one “re-apply Lumi branding/theme” commit. Update the baseline row in
-`FORK-DIFFERENCES.md` to the new upstream SHA.
+`FORK-DIFFERENCES.md` **and** the provenance table in `docs/licensing/COMPLIANCE.md`
+to the new upstream SHA.
 
 ## Known limitation
 

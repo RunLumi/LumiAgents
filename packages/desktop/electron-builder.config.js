@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /* eslint-disable max-lines -- Electron Builder config keeps related packaging hooks together so build order stays explicit. */
 import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { readdir, writeFile } from "node:fs/promises";
@@ -205,16 +206,14 @@ function resolveElectronDownloadMirror(env = process.env) {
 const commandStdoutMaxBuffer = 64 * 1024 * 1024;
 // 产物后缀只标记后端环境（_TEST）；身份靠 productName 区分，生产后端的 Preview 包没有后缀。
 const desktopArtifactEnvSuffix = resolveDesktopArtifactSuffix(process.env);
+const shouldBuildMacAppStorePkg = process.env.ZCODE_MAC_TARGET === "mas";
 
-// Preview 是内部签名测试包。CI 明确打开 macOS 签名时若没有身份，必须在生成未签名包前失败，
-// 避免“产物存在”被误认为已经走完和生产版相同的签名链路。
-if (
-  desktopProductIdentity.flavor === "preview" &&
-  process.env.ZCODE_ENABLE_MAC_SIGN === "1" &&
-  !macSigningIdentity
-) {
+// 任何 flavor 只要显式打开 macOS 签名（ZCODE_ENABLE_MAC_SIGN=1）就必须提供 Developer ID 身份，
+// 否则在生成未签名包之前直接失败，避免“产物存在”被误认为已经走完签名链路。
+// （此前只校验 Preview，正式包缺身份时会静默产出未签名产物。）
+if (process.env.ZCODE_ENABLE_MAC_SIGN === "1" && !macSigningIdentity) {
   throw new Error(
-    "ZCode Preview macOS packaging requires APPLE_SIGNING_IDENTITY or CSC_NAME when ZCODE_ENABLE_MAC_SIGN=1",
+    `${desktopProductIdentity.productName} macOS packaging requires APPLE_SIGNING_IDENTITY or CSC_NAME when ZCODE_ENABLE_MAC_SIGN=1`,
   );
 }
 
@@ -451,6 +450,11 @@ function assertPackagedNodePtyPrebuild(context) {
 /** @type {import("electron-builder").Configuration} */
 export default {
   appId: desktopProductIdentity.appId,
+  // 安装包的人类可读版权串。不显式声明时 electron-builder 会从 extraMetadata.author.name
+  // 推导，得到上游的 "ZCode"；品牌要求这里显示 Lumi。上游归属仍保留在 LICENSE /
+  // NOTICE.md / THIRD-PARTY-NOTICES.md，不依赖该字段。    // 修改原因：打包版权串必须保留上游权利人；此前由 extraMetadata.author.name 推导出 "ZCode"。
+  // 不新增/转移著作权声明，只陈述分发身份与分支关系（见 NOTICE.md）。
+  copyright: "Copyright © 2026 Z.AI Co., Ltd — Lumi Agents independent fork",
   // Linux deb 打包（fpm）会校验 package metadata 中的 homepage、author.email、maintainer。
   // CI 环境下若这些字段缺失会在产物阶段直接失败。这里统一在构建配置补齐，避免依赖外部注入。
   extraMetadata: {
@@ -458,7 +462,7 @@ export default {
     zcodeProductFlavor: desktopProductIdentity.flavor,
     homepage: "https://zcode.z.ai",
     author: {
-      name: "ZCode",
+      name: "Lumi",
       email: "dev@zcode.z.ai",
     },
   },
@@ -595,6 +599,18 @@ export default {
       from: "build/icon.png",
       to: "icon.png",
     },
+    // 修改原因：原本只随包分发了 THIRD-PARTY-NOTICES.md，安装包里没有第一方 LICENSE 与
+    // NOTICE.md，导致 About「开源许可」窗口只能显示不可用状态。
+    // Apache-2.0 §4(a)/§4(d) 要求向接收者提供许可证与 NOTICE，故补齐这两个文件；
+    // Electron/Chromium 的依赖条款仍单独放在 resources/licenses/electron（不与应用自身 LICENSE 混同）。
+    {
+      from: resolve(workspaceRoot, "LICENSE"),
+      to: "LICENSE",
+    },
+    {
+      from: resolve(workspaceRoot, "NOTICE.md"),
+      to: "NOTICE.md",
+    },
     ...(targetPlatform.os === "linux"
       ? [
           {
@@ -655,9 +671,9 @@ export default {
     },
   ],
   mac: {
-    target: ["dmg", "zip"],
+    target: shouldBuildMacAppStorePkg ? ["mas"] : ["dmg", "zip"],
     category: "public.app-category.developer-tools",
-    artifactName: buildDesktopArtifactName("mac"),
+    artifactName: buildDesktopArtifactName("mac", shouldBuildMacAppStorePkg ? "pkg" : "${ext}"),
     extendInfo: {
       NSAppleEventsUsageDescription: `${desktopProductIdentity.productName} needs Apple Events access to coordinate local automation workflows with user-approved desktop apps.`,
     },
@@ -686,6 +702,16 @@ export default {
       "[/\\\\]Contents[/\\\\]Resources[/\\\\]glm([/\\\\]|$)",
       "[/\\\\]Contents[/\\\\]Resources[/\\\\]tools([/\\\\]|$)",
     ],
+  },
+  mas: {
+    identity: process.env.MAS_INSTALLER_IDENTITY || process.env.CSC_INSTALLER_NAME || null,
+    cscInstallerLink: process.env.MAS_INSTALLER_CERTIFICATE || null,
+    cscInstallerKeyPassword: process.env.MAS_INSTALLER_CERTIFICATE_PASSWORD || null,
+    provisioningProfile:
+      process.env.MAS_PROVISIONING_PROFILE || process.env.PROVISIONING_PROFILE || null,
+    entitlements: "build/entitlements.mas.plist",
+    entitlementsInherit: "build/entitlements.mas.inherit.plist",
+    artifactName: buildDesktopArtifactName("mac", "pkg"),
   },
   win: {
     target: ["nsis"],

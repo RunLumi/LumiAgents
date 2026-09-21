@@ -1,4 +1,6 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { createHash } from "node:crypto";
+import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
@@ -164,6 +166,17 @@ export function thirdPartyNoticesVitePlugin(root = repositoryRoot) {
         fileName: noticesFileName,
         source: await readThirdPartyNotices(root),
       });
+      // 修改原因：Web 发行物原先只输出 THIRD-PARTY-NOTICES.md，缺少第一方许可证与 NOTICE，
+      // 不满足 Apache-2.0 §4(a)/§4(d)。这里把两份材料一并输出到站点根，便于直接访问。
+      for (const legalFile of ["LICENSE", "NOTICE.md"]) {
+        if (existsSync(resolve(root, legalFile))) {
+          this.emitFile({
+            type: "asset",
+            fileName: legalFile,
+            source: await readFile(resolve(root, legalFile)),
+          });
+        }
+      }
     },
     transformIndexHtml: {
       order: "post",

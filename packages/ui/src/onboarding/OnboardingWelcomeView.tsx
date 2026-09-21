@@ -1,6 +1,7 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { ArrowRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
-import { ZCodeAboutLogo } from "@/components/ui/ZCodeAboutLogo.js";
+import { LumiBrandMark } from "@/components/ui/LumiBrandMark.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { PRODUCT_NAME } from "@/lib/productBrand.js";
 import { OnboardingWelcomeAsciiVisual } from "@/onboarding/OnboardingWelcomeAsciiVisual.js";
@@ -23,7 +24,7 @@ export function OnboardingWelcomeView(props: { onStart: () => void; onOpenMigrat
               aria-label={PRODUCT_NAME}
               role="img"
             >
-              <ZCodeAboutLogo className="h-auto w-8" />
+              <LumiBrandMark className="size-8" />
             </div>
             <div className="text-4xl font-bold tracking-tight text-foreground">
               {intl.formatMessage({ id: "onboarding.welcome.title" })}

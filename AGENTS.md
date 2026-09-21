@@ -1,3 +1,5 @@
+> Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+
 ## 核心原则
 
 - 新增或修改行为前，先更新对应 spec；目录不存在时按需创建。先明确产品规则、状态所有者、接口和验收场景，再实现代码。
@@ -11,18 +13,21 @@
 
 以下命令从仓库根目录执行：
 
-| 用途             | 命令                                      |
-| ---------------- | ----------------------------------------- |
-| 类型检查         | `pnpm typecheck`                          |
-| Lint             | `pnpm lint` / `pnpm lint:fix`             |
-| 格式检查         | `pnpm fmt:check`                          |
-| 桌面开发         | `pnpm dev:desktop`                        |
-| Web 开发         | `pnpm dev:web`                            |
-| 提交前检查       | `pnpm verify:pre-push`（Lint 与架构检查） |
-| 架构检查         | `pnpm architecture:check --changed`       |
-| 模块阅读包       | `pnpm architecture:context <module-id>`   |
-| 未使用依赖与导出 | `pnpm knip`                               |
-| 导出引用查询     | `pnpm dep:refs --list-exports <file>`     |
+| 用途          | 命令                                                          |
+| ------------- | ------------------------------------------------------------- | --- | ---------------- | ----------- |
+| 类型检查      | `pnpm typecheck`                                              |
+| Lint          | `pnpm lint` / `pnpm lint:fix`                                 |
+| 格式检查      | `pnpm fmt:check`                                              |
+| 桌面开发      | `pnpm dev:desktop`                                            |
+| Web 开发      | `pnpm dev:web`                                                |
+| 提交前检查    | `pnpm verify:pre-push`（Lint 与架构检查）                     |
+| 架构检查      | `pnpm architecture:check --changed`                           |
+| 模块阅读包    | `pnpm architecture:context <module-id>`                       |     | 未使用依赖与导出 | `pnpm knip` |
+| 导出引用查询  | `pnpm dep:refs --list-exports <file>`                         |
+| Lumi 漂移检查 | `pnpm lumi:drift`（品牌/主题/归属/分发安全 + §4(b) 修改声明） |
+| Lumi 声明检查 | `pnpm lumi:notice`                                            |
+| Lumi 图标生成 | `pnpm lumi:brand-assets`                                      |
+| 三方许可检查  | `node scripts/licenses.mjs check`（发布前追加 `--strict`）    |
 
 测试入口以目标包当前的 `package.json` 和实际测试文件为准，不假定存在统一的单测或 E2E 命令。
 
@@ -34,6 +39,19 @@
 - `apps/zcode-cli`：Agent CLI 与运行时。
 - `CONTEXT.md`：插件商店领域词汇；修改相关 UI 前阅读。
 - `DESIGN.md`：UI 设计规范；修改 UI 前阅读。
+- `docs/licensing/COMPLIANCE.md`、`docs/licensing/MODIFICATIONS.md`：许可、归属、§4(b) 修改声明与发布阻塞项；改品牌、打包标识、更新源或遥测默认值前必读。
+- `docs/upstream/FORK-DIFFERENCES.md`、`docs/upstream/UPSTREAM-SYNC.md`：与上游 ZCode 的差异清单与同步 runbook。
+
+## Lumi 分支约束
+
+本仓库是 ZCode 的独立维护分支（产品名 **Lumi Agents**）。改动时遵守：
+
+- 保留上游归属与 `LICENSE` 原文；不把上游账号/隐私声明改写成 Lumi 的政策。
+- 修改上游文件后必须带 `Modified for Lumi Agents` 声明：`node scripts/lumi-modified-files.mjs apply`，
+  无法内联声明的格式登记进 `NOTICE_EXCEPTIONS` 并在 `docs/licensing/MODIFICATIONS.md` 说明。
+- 保留兼容性标识：`@zcode/*`、`ZCODE_*`、`zcode://`、`zcode` CLI、`ZCode` 数据目录名。
+- 自动更新与产品遥测默认关闭（`packages/shared/src/lumiDistribution.ts`）；不得改回上游默认值。
+- 品牌图形来自 `brand/`，由 `pnpm lumi:brand-assets` 生成，不手工替换打包图标。
 
 ## 实现与验证
 

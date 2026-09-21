@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 type WebThemeSeed = "light" | "dark" | "zai-light" | "zai-dark" | "system";
 
 // Lumi Agents 是 light-only（DESIGN.md §5）：Web 端默认与已保存偏好都收敛到 light。

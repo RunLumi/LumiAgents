@@ -109,9 +109,38 @@ export const PRODUCT_NAME_DEV = "Lumi Agents Dev";
 7. **Drift check** — `node scripts/check-lumi-branding-drift.mjs` exits non-zero if the
    identity, brand constant, or `.theme-lumi` contract is edited away.
 
+## 5.1 Acceptance scenarios — licensing, assets, distribution safety
+
+Added in the second pass (see `docs/licensing/COMPLIANCE.md` for results):
+
+8. **Original brand assets** — `pnpm lumi:brand-assets` regenerates platform icons from
+   `brand/` alone; `packages/ui/src/assets/Z.svg` and `ZCodeAboutLogo.tsx` no longer exist;
+   `LumiBrandMark` and the About window draw the Lumi folded-L geometry.
+9. **§4(b) modification notices** — `pnpm lumi:notice` passes; every file in `MODIFIED_FILES`
+   carries the canonical notice sentence in its header region; JSON/binary entries are
+   registered in `NOTICE_EXCEPTIONS` and documented in `docs/licensing/MODIFICATIONS.md`.
+10. **Attribution preserved** — `LICENSE` still contains `Copyright 2026 Z.AI Co., Ltd`;
+    `NOTICE.md` keeps the upstream disclosure sections verbatim and marks them as inherited
+    (not Lumi policy); both READMEs carry the fork/attribution statement.
+11. **Auto-update off by default** — with no `LUMI_UPDATE_FEED_URL`, `initAutoUpdater` is
+    called with `enabled: false`; a non-https or absent feed never enables it.
+12. **Telemetry off by default** — `ZCODE_TELEMETRY_ENABLED` resolves to `false` unless
+    `LUMI_TELEMETRY` is truthy; no endpoint is embedded in the build.
+13. **Legal material accessible offline** — the About panel exposes a Licenses entry that
+    renders the packaged `THIRD-PARTY-NOTICES.md` / `LICENSE` / `NOTICE.md` with no network
+    access, and shows an explicit unavailable state when a file is missing.
+14. **Drift detection is real** — `packages/ui/test/lumiCompliance.test.ts` proves the
+    drift and notice checks fail on representative violations (dark-theme regression,
+    restored upstream logo asset, reverted updater/telemetry defaults, removed copyright,
+    missing notice, deleted manifest file).
+
 ## 6. External configuration required (not done here)
 
 - Code signing identity, notarization credentials, and update feed for `app.lumi.agents`
   must be provisioned by release owners; no service is redirected by this change.
 - Geist / Geist Mono font assets are not bundled in this repository; the canonical stack
   is declared and falls back to system UI fonts until assets are added.
+- `packages/desktop/build/dmg_background(.@2x).png` is still upstream DMG artwork and is a
+  release blocker pending design/legal clearance.
+- `node scripts/licenses.mjs check --strict` still fails on 19 pre-existing upstream
+  third-party material gaps; a release must not treat the base check as complete.

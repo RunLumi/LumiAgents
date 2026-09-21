@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /* eslint-disable max-lines -- autoUpdater 需要集中维护 Electron 事件、菜单状态与 IPC 交互，过度拆分会让更新状态流更难追踪 */
 import type { ISettingService } from "@zcode/services";
 import {
@@ -7,6 +8,7 @@ import {
   formatDesktopMenuMessage,
   getDesktopMenuMessage,
   PlatformChannels,
+  resolveLumiUpdateFeedUrl,
   resolveRuntimeZCodeEndpointOrigin,
   ZCODE_VERSION,
   type ElectronReleaseChannel,
@@ -700,6 +702,15 @@ export function resolveUpdateFeedSourceFromStartupConfig(
 ): RuntimeUpdateFeedSource | undefined {
   const argv = options.argv ?? process.argv;
   const env = options.env ?? process.env;
+
+  // Lumi 自有更新源优先，且打包态同样生效。原因：Lumi 是独立分发，不能从上游
+  // ZCode 更新源安装更新；只有显式配置的 Lumi https 更新源才是合法来源。
+  // 详见 packages/shared/src/lumiDistribution.ts 与 docs/upstream/FORK-DIFFERENCES.md。
+  const lumiFeedUrl = resolveLumiUpdateFeedUrl(env);
+  if (lumiFeedUrl) {
+    return { url: lumiFeedUrl };
+  }
+
   const feedUrl = readSwitchValue(argv, UPDATE_FEED_URL_SWITCH) ?? env[UPDATE_FEED_URL_ENV]?.trim();
   if (!feedUrl) {
     return undefined;

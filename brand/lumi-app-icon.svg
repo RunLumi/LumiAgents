@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="Lumi Agents app icon">
+  <title>Lumi Agents app icon (interim)</title>
+  <!--
+    Interim Lumi Agents app icon — original artwork authored for this fork.
+    Derived from brand/lumi-mark.svg: warm paper rounded square (DESIGN.md §5
+    token color-paper-white #F4F0E8) with the two-plane folded-L in Lumi Blue
+    (#006093) and Civic Navy (#102A43). Flat fills only; the 1024 canvas gives
+    the mark ~1.2x clear space on every side (DESIGN.md §2.3).
+  -->
+  <rect width="1024" height="1024" rx="224" fill="#F4F0E8" />
+  <g transform="translate(256 256) scale(2)">
+    <path d="M56 32H120V160L56 224Z" fill="#006093" />
+    <path d="M120 176L128 168H232V232H64Z" fill="#102A43" />
+  </g>
+</svg>

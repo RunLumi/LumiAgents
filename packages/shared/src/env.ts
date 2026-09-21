@@ -1,4 +1,6 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import type { ZCodeRuntimeEnv } from "./runtimeEnv.js";
+import { resolveLumiTelemetryEnabled } from "./lumiDistribution.js";
 
 export type ZCodeEnv = "test" | "production";
 /** 安装包身份：决定应用名、app id、Electron 数据目录与更新策略；与后端环境 `ZCodeEnv` 是两个轴。 */
@@ -45,9 +47,13 @@ export const ZCODE_BUILD_COMMIT_ID_ENV = "ZCODE_BUILD_COMMIT_ID" as const;
 export const RUNTIME_ZCODE_DEBUG =
   typeof process !== "undefined" ? process.env.ZCODE_DEBUG : undefined;
 
-// 恢复原因：写死 false 会让运行时已配置的数仓/ARMS 永远空转。
-// 功能保持可用；实际出网由各出口的运行时端点检查决定，未配置不上报。
-export const ZCODE_TELEMETRY_ENABLED: boolean = true;
+// Lumi Agents 独立分发默认：产品遥测关闭（上游默认 true）。
+// 修改原因：Lumi 没有自有的数仓/ARMS 后端，不能因为继承了上游默认值就向 ZCode
+// 产品服务发送用量、活跃与崩溃数据。需要上报的部署方显式设置 LUMI_TELEMETRY=1
+// 并配置自己的端点；根本身不含任何内嵌端点，未配置即不出网。
+export const ZCODE_TELEMETRY_ENABLED: boolean = resolveLumiTelemetryEnabled(
+  typeof process !== "undefined" ? process.env : {},
+);
 
 /** 数仓事件上报端点：由运行时环境变量提供，未配置即停用，构建产物不内嵌。 */
 export const ZCODE_TELEMETRY_REPORT_ENDPOINT =
