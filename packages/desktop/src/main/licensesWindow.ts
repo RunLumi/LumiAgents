@@ -10,8 +10,8 @@
  * 打包态从 `process.resourcesPath` 读取（electron-builder extraResources 已放入）；
  * 开发态回退到仓库根目录。文件缺失时给出明确的不可用状态，而不是编造内容。
  *
- * 为什么需要这个入口：Apache-2.0 §4(a)/§4(d) 要求向接收者提供许可证与 NOTICE 材料，
- * 且许可文本必须在分发形态中可访问。仅把文件放进安装包不足以满足“可访问”。
+ * Apache-2.0 §4(a)/§4(d) 要求分发适用的许可与 NOTICE 材料；
+ * 离线窗口是本产品的可发现性设计，不是许可证指定的唯一实现方式。
  */
 import type { BrowserWindow as BrowserWindowType } from "electron";
 import { existsSync, readFileSync } from "node:fs";
@@ -21,25 +21,30 @@ import { DEFAULT_LOCALE, type Locale } from "@zcode/shared";
 /** 与 scripts/third-party-notices.mjs 的 noticesFileName 保持一致。 */
 export const LEGAL_NOTICES_FILE_NAME = "THIRD-PARTY-NOTICES.md";
 
+// Preserve the inherited notice exactly; do not advance its year at runtime.
+const UPSTREAM_ZCODE_COPYRIGHT = "Copyright 2026 Z.AI Co., Ltd";
+
 const LEGAL_FILES = [LEGAL_NOTICES_FILE_NAME, "LICENSE", "NOTICE.md"] as const;
 export type LegalFileName = (typeof LEGAL_FILES)[number];
 
 const LICENSES_MESSAGES: Record<
   Locale,
-  { title: string; intro: string; unavailable: string; close: string }
+  { title: string; maintainerCredit: string; intro: string; unavailable: string; close: string }
 > = {
   "zh-CN": {
-    title: "开源许可与声明",
+    title: "致谢、开源许可与声明",
+    maintainerCredit: "Lumi Agents 由 CLOUDJET SOLUTIONS PTE. LTD. 开发和维护。",
     intro:
-      "本窗口完全离线渲染随应用分发的许可材料，不发起任何网络请求。Lumi Agents 是 ZCode 的独立维护分支；下方材料包含上游 Z.AI Co., Ltd 及其他贡献者的原始版权与许可文本。",
+      "本窗口完全离线渲染随应用分发的许可材料，不发起任何网络请求。Lumi Agents 是 ZCode 的独立维护分支，不是 ZCode 或 Z.AI 的官方发行版。下方材料保留 Z.AI Co., Ltd 及其他贡献者按各自许可提供的原始版权与许可文本。",
     unavailable:
       "该材料未包含在当前构建中。请使用包含法务材料（LICENSE / NOTICE.md / 第三方声明）的完整安装包。",
     close: "关闭",
   },
   "en-US": {
-    title: "Open-source licenses and notices",
+    title: "Credits, open-source licenses and notices",
+    maintainerCredit: "Lumi Agents is developed and maintained by CLOUDJET SOLUTIONS PTE. LTD.",
     intro:
-      "This window renders the license materials shipped with the application entirely offline and makes no network requests. Lumi Agents is an independently maintained fork of ZCode; the materials below retain the original copyright and license texts of Z.AI Co., Ltd and other contributors.",
+      "This window renders the license materials shipped with the application entirely offline and makes no network requests. Lumi Agents is an independent fork of ZCode, not an official ZCode or Z.AI distribution. The materials below retain the original copyright and license texts of Z.AI Co., Ltd and other contributors under their applicable licenses.",
     unavailable:
       "This material is not included in the current build. Use a complete installation package that ships the legal materials (LICENSE / NOTICE.md / third-party notices).",
     close: "Close",
@@ -200,7 +205,9 @@ export function createLicensesWindowHtml(input: {
   <body>
     <header>
       <h1>${escapeHtml(input.applicationName)} — ${escapeHtml(messages.title)}</h1>
+      <p class="intro">${escapeHtml(messages.maintainerCredit)}</p>
       <p class="intro">${escapeHtml(messages.intro)}</p>
+      <p class="intro">${escapeHtml(UPSTREAM_ZCODE_COPYRIGHT)}</p>
     </header>
     <main>
       ${sections}

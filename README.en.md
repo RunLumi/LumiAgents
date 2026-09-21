@@ -11,6 +11,8 @@
 
 > **Lumi Agents is an independently maintained fork of ZCode.**
 >
+> Developed and maintained by **CLOUDJET SOLUTIONS PTE. LTD.** This maintainer credit does not replace upstream or contributor copyright ownership.
+>
 > Lumi Agents includes software from Z.AI Co., Ltd and other contributors under their applicable licenses. Lumi Agents is not an official ZCode or Z.AI distribution.
 >
 > - Upstream project: <https://github.com/zai-org/ZCode>
