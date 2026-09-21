@@ -67,6 +67,16 @@ state the origin and license in the PR description, and keep the original licens
 notice where the code lands. Contributions that cannot demonstrate the right to
 submit under Apache-2.0 will be declined.
 
+### Merge mode: preserve sign-offs
+
+GitHub's **squash merge** rewrites the commit: the author becomes the PR
+opener's account and per-commit trailers, including `Signed-off-by`, are
+dropped. A squash-merged commit therefore loses its certification and fails
+this check. Merge pull requests with **merge commits** (or rebase merges),
+which carry the signed commits over unchanged. Do not "repair" a lost
+sign-off by adding the line afterward on someone else's behalf — have the
+real author produce the signed commit.
+
 ## What to work on
 
 Good first areas, matching the fork's structure:
