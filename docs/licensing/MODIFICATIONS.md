@@ -50,14 +50,14 @@ JSON 标准不允许注释，内联声明会破坏文件。替代机制：
 - 下列文件在 `scripts/lumi-modified-files.mjs` 的 `NOTICE_EXCEPTIONS` 中登记，缺失即校验失败；
   未登记的改动会被 `--against-upstream` 报告（不是静默放过）。
 
-| 文件                                     | 修改内容                                                                            |
-| ---------------------------------------- | ----------------------------------------------------------------------------------- |
-| `package.json`                           | 新增 `lumi:drift` / `lumi:notice` 等维护命令                                        |
-| `packages/desktop/package.json`          | `productName`、`description`、`author` 改为 Lumi                                    |
-| `third-party/npm-overrides.json`         | 逐包许可材料：新增 `materialReview` 复核记录；`keyv@4.5.4` 换成真实版本适用 LICENSE |
-| `third-party/copied-components.json`     | 复制来源（React Best Practices skill）新增 `materialReview`                         |
-| `third-party/embedded-components.json`   | Skia / QuickJS-NG 的未决标记改为带证据的 `materialReview`                           |
-| `third-party/native-search/sources.json` | `rust-standard-library` 删除不可验证的 revision，改用真实许可正文                   |
+| 文件                                     | 修改内容                                                                                                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `package.json`                           | 新增 `lumi:drift` / `lumi:notice` 等维护命令                                                                                                           |
+| `packages/desktop/package.json`          | `productName`、`description`、`author` 改为 Lumi                                                                                                       |
+| `third-party/npm-overrides.json`         | 逐包许可材料：新增 `materialReview` 复核记录；`keyv@4.5.4` 曾换成真实版本适用 LICENSE，2026-09-21 随 `@arms/rum-*` 遥测替换整体移除（连同 rrweb 家族） |
+| `third-party/copied-components.json`     | 复制来源（React Best Practices skill）新增 `materialReview`                                                                                            |
+| `third-party/embedded-components.json`   | Skia / QuickJS-NG 的未决标记改为带证据的 `materialReview`                                                                                              |
+| `third-party/native-search/sources.json` | `rust-standard-library` 删除不可验证的 revision，改用真实许可正文                                                                                      |
 
 ### 3.1b 生成物（由生成器保证声明）
 
@@ -96,8 +96,9 @@ JSON 标准不允许注释，内联声明会破坏文件。替代机制：
    当前**未替换**。需要设计提供符合 DESIGN.md 的同尺寸替换图后才能移除该阻塞项。
    处理方式参见 [COMPLIANCE.md](./COMPLIANCE.md) 的发布阻塞清单。
    _This item is flagged for legal/design review; the engineering side cannot verify or clear it._
-2. **18 条第三方材料复核结论**（`@arms/rum-*`、Skia、QuickJS-NG、`rust-standard-library`、
-   `boolbase`、`semaphore`、`ansi-to-react`、`is-node-process` 等）：权利人只声明了 SPDX 标识，
+2. **12 条第三方材料复核结论**（Skia、QuickJS-NG、`rust-standard-library`、`boolbase`、
+   `semaphore`、`ansi-to-react`、`is-node-process` 等；原 18 条，其中 `@arms/rum-*` 与
+   rrweb 家族已于 2026-09-21 随闭源遥测 SDK 整体移除）：权利人只声明了 SPDX 标识，
    从未随包或随仓库提供版权/许可声明，证据不存在，因此记录为有据可查的结论并留存许可正文。
    这类处置是否可以接受属于**法律判断**，逐条证据见 [COMPLIANCE.md](./COMPLIANCE.md) 第 5.1 节与
    `third-party/inventory.json` 的 `materialReviews`。

@@ -65,5 +65,4 @@ pnpm lumi:drift -- --against-upstream    # 集成缝与清单一致性
 
 尚需人工处理的事项集中在 `docs/licensing/COMPLIANCE.md`。**基础检查通过不等于合规完成**：
 逐包复核记录中的 `legalSignOff: true` 项在发布前需要法务签署，其中风险最高的是
-`@arms/rum-*`（闭源商业 SDK，只有包元数据中的 SPDX 标识为凭）与 Skia（预编译二进制的
-构建开关未记录，因而无法确知每个平台链接了哪些 third_party 库）。
+Skia（预编译二进制的构建开关未记录，因而无法确知每个平台链接了哪些 third_party 库）。

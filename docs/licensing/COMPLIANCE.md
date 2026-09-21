@@ -124,9 +124,11 @@ modified file。这一点在 `MODIFICATIONS.md` 第 1 节明确记录。
 | 原生搜索工具     | `THIRD-PARTY-NOTICES.txt` + `SOURCES.json`（含二进制与来源归档哈希）                                                                                            |
 
 **边界**：npm 包元数据的 SPDX 标识、根许可证、或生成出的通知文件都不构成「所有组件已澄清」
-的证明。上游遗留的 19 项未补齐条目已在本分支逐条了结：1 项取得**真实且版本适用**的许可正文
-（`keyv@4.5.4`），其余 18 项属于「权利人从未提供声明」——证据不存在，因此按第 5.1 节的复核模型
-记录为**有据可查的结论**，而不是宣称找到了原始声明。
+的证明。上游遗留的 19 项未补齐条目已在本分支逐条了结：`@arms/rum-*` 3 项与经其传递引入的
+`keyv@4.5.4`、rrweb 家族共 5 项随**闭源遥测 SDK 的整体移除**（见下）不再进入发行物；
+`keyv` 一项曾取得**真实且版本适用**的许可正文后随组件移除而删除登记；其余 13 项属于
+「权利人从未提供声明」——证据不存在，按第 5.1 节的复核模型记录为**有据可查的结论**，
+而不是宣称找到了原始声明。
 
 ### 5.1 材料复核模型（materialReview）
 
@@ -155,12 +157,19 @@ modified file。这一点在 `MODIFICATIONS.md` 第 1 节明确记录。
 `quickjs-wasi@2.2.0` 的 Makefile 要求 WASI SDK 32 → wasi-libc revision
 `2fc32bc81b9f07f8d9525edea59bfbaf760c06d6`。
 
-**风险最高、最需要法务确认的两类**（不是「已知可忽略」）：
+**风险最高、最需要法务确认的类别**（不是「已知可忽略」）：
 
-1. **`@arms/rum-browser` / `rum-core` / `rum-electron`** —— 闭源商业厂商 SDK，没有发布的仓库或
-   许可文件，包元数据中的 SPDX 标识是**唯一**凭据。建议发布前取得厂商书面确认，或从发行物移除。
-2. **Skia** —— 预编译二进制没有记录构建开关，无法从产物反推每个平台实际链接了哪些 `third_party`
+1. **Skia** —— 预编译二进制没有记录构建开关，无法从产物反推每个平台实际链接了哪些 `third_party`
    库。已知组件都有留存声明，但无法证明没有遗漏。
+
+**已移除的最高风险组件**（原第 1 类，2026-09-21 随遥测替换整体删除）：
+
+- **`@arms/rum-browser@0.1.8` / `rum-core@0.1.4` / `rum-electron@0.0.3`** —— 闭源商业厂商 SDK，
+  没有发布的仓库或许可文件，包元数据中的 SPDX 标识曾是**唯一**凭据。Lumi 以应用自有遥测实现
+  `packages/desktop/src/main/lumiTelemetry.ts` 取代之（见第 6.4 节），三者及仅由其传递引入的
+  `@babel/runtime`、`keyv@4.5.4` 与 rrweb 家族（`rrweb`、`rrdom`、`rrweb-snapshot`、
+  `@rrweb/types`、`@rrweb/utils`、`web-vitals` 等）一并离开生产依赖图与许可登记。原先「需厂商
+  书面确认或移除」的两难已经通过移除解决。
 
 **未从仓库 Apache 许可推断的权利**：不推断托管服务访问权、模型使用授权或再分发授权。
 Lumi 没有自有的模型网关或更新后端，因此相关入口在默认配置下不可用。
@@ -204,6 +213,33 @@ Lumi 没有自有的模型网关或更新后端，因此相关入口在默认配
 bundle id、About/许可文案、侧栏与欢迎页 logo、i18n 产品名覆盖层、web 标题、README、
 平台图标与 DMG/安装器图标源、打包版权串。
 
+### 6.4 依赖替换：闭源遥测 SDK → 应用自有实现（2026-09-21）
+
+**替换了什么**：上游用 `@arms/rum-electron`（连同 `@arms/rum-browser`、`@arms/rum-core`）
+采集稳定性/资源/启动遥测并发往 ARMS 后端。这三个包闭源、无仓库、无许可文本，是第三方材料
+复核里凭据最弱的条目。本分支以应用自有实现整体替换：
+
+- 新增 `packages/shared/src/telemetrySourceRuntime.ts`：启用与端点解析的**唯一来源**
+  （`resolveTelemetryDelivery`；`LUMI_TELEMETRY_ENDPOINT` 优先、上游变量其次、都必须 https），
+  事件载荷沿用既有线上格式。
+- 新增 `packages/desktop/src/main/lumiTelemetry.ts`：与原 SDK 相同的 API 面
+  （`init`/`setConfig`/`getConfig`/`sendCustom`/`sendEvent`/`client.useReporter`），
+  内置批量 https 传输（尽力而为、不落盘、失败即丢弃）。`beforeReport` 过滤/富化/脱敏管线、
+  启动遥测送达确认（`wrapStartupReporterRequest`）逐行保留。
+- 10 个上游主进程遥测调用点改指向 shim；渲染进程浏览器自动采集（`autoInject`）与
+  preload `arms:rum-bridge` 转发随 SDK 一并移除（无 SDK 注入后是死代码）；
+  pnpm patch `patches/@arms__rum-electron@0.0.3.patch` 删除。
+- **兼容标识保留**：`ZCODE_TELEMETRY_ENABLED` / `ZCODE_ARMS_RUM_ENDPOINT` 变量名继续被读取
+  （作为上游兼容入口，端点语义不变）；`zcode:report-arms-custom-event` 等 IPC 通道名、
+  `ArmsEnv` 类型、E2E 探针 `__zcodeFinalArmsCustomEventsE2E`、`mapZCodeEnvToArmsRumEnv`
+  等标识不改（协议契约，见 6.1）。
+- **未实现（诚实披露）**：ARMS 控制台专用 PV/WebVitals 浏览器自动采集、崩溃 dump 归集、
+  tracing 采样、事件重试与本地持久化。部署方开启遥测后得到的是应用自有 custom/event
+  事件流；默认（`LUMI_TELEMETRY` 未设置）完全不出网。
+- 验证：`licenses check --strict` 通过（缺省项随组件消失）；负向测试
+  `packages/ui/test/lumiTelemetryShim.test.ts` 证明 @arms 从依赖、补丁、接线、preload
+  任一方向回归都会失败；打包产物 asar 内 `@arms` 文件与字符串为 0。
+
 ---
 
 ## 7. 迁移 / 网络 / 更新 / 签名决策
@@ -230,10 +266,11 @@ bundle id、About/许可文案、侧栏与欢迎页 logo、i18n 产品名覆盖�
     （`ZCODE_UPDATE_FEED_URL` / `--zcode-update-feed-url`）仍按上游行为仅在非打包态生效。
   - 因此 Lumi **不会**从 ZCode 更新源安装更新，也不会因继承了上游默认值而指向
     `https://zcode.z.ai`。
-- **产品遥测默认关闭**：`ZCODE_TELEMETRY_ENABLED` 由硬编码 `true` 改为
-  `resolveLumiTelemetryEnabled(process.env)`（默认 false）。需要上报的部署方显式设置
-  `LUMI_TELEMETRY=1` 并自备 `ZCODE_TELEMETRY_REPORT_ENDPOINT` / `ZCODE_ARMS_RUM_ENDPOINT`。
-  仓库本身不内嵌任何端点，未配置即不出网。
+- **产品遥测默认关闭且不再依赖闭源 SDK**：`ZCODE_TELEMETRY_ENABLED` 由硬编码 `true` 改为
+  `resolveLumiTelemetryEnabled(process.env)`（默认 false）。采集由应用自有 shim 承载
+  （见 6.4），端点解析收口于 `resolveTelemetryDelivery`：部署方显式设置 `LUMI_TELEMETRY=1`
+  并自备 `LUMI_TELEMETRY_ENDPOINT`（优先）或兼容的 `ZCODE_ARMS_RUM_ENDPOINT`，且都必须是
+  https。仓库本身不内嵌任何端点，未配置即不出网、不排队。
 - 用户自选的模型 Provider 流量（BYOK）不受影响，属正常功能。
 
 ### 7.3 签名与发布
@@ -317,18 +354,18 @@ shebang 之后插入，并加了 `place` 约束与行内说明。
 
 以下项目**必须由所有者处理**，本次不代为决定。它们全部是「发布前必办」，不是「已知可忽略」。
 
-| #   | 阻塞项                                                                                                               | 现状                                                   | 需要的行动                                                                         | 所有者          |
-| --- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------- | --------------- |
-| 1   | 18 条第三方材料复核结论需**法务签署**；其中 `@arms/rum-*`（闭源、仅有包元数据凭据）与 Skia（构建开关不可查）风险最高 | `check --strict` 已通过，结论标注 `legalSignOff: true` | 确认「权利人只声明标识符、无版权声明」的处置可接受；否则移除对应组件               | 法务            |
-| 2   | `dmg_background.png` / `@2x` 仍是上游 DMG 背景图                                                                     | 未替换                                                 | 由设计按 DMG 窗口尺寸产出 DESIGN.md 合规替换图                                     | 设计 + 法务     |
-| 3   | 品牌资产为**过渡原创标记**（`brand/*`，非官方品牌）                                                                  | 已生成全平台图标，非最终品牌                           | 取得官方 folded-L 原图后替换 `brand/` 并重跑 `scripts/build-lumi-brand-assets.mjs` | 品牌            |
-| 4   | Geist / Geist Mono **字体未随包**                                                                                    | 已声明字体栈，回退系统字体                             | 取得字体授权并内嵌，或确认回退可接受                                               | 品牌 + 法务     |
-| 5   | 自动更新未配置                                                                                                       | 默认关闭（安全）                                       | 提供 Lumi 自有 https 更新源与产物；在此之前保持关闭                                | 发布工程        |
-| 6   | 遥测未配置                                                                                                           | 默认关闭（安全）                                       | 若需上报，配置 `LUMI_TELEMETRY=1` 与自备端点；否则保持关闭                         | 发布工程 + 隐私 |
-| 7   | macOS 签名 / 公证未执行                                                                                              | 无 Developer ID 身份与公证凭据                         | 按 `docs/upstream/MACOS-SIGNING-AND-NOTARIZATION.md` 配置后执行门禁                | 发布工程        |
-| 8   | Lumi 与 ZCode 共享数据目录与 `zcode://` scheme                                                                       | 刻意共存，未迁移                                       | 决定是否拆分；若拆分需幂等、可回滚、备好备份的迁移                                 | 产品 + 工程     |
-| 9   | OAuth 回调 / 深链接 / 平台注册仍指向既有标识                                                                         | 未改动、未重定向                                       | 若 Lumi 需要独立账号体系，需单独注册与迁移决策                                     | 产品 + 发布     |
-| 10  | 翻译长尾中的产品名（未落入覆盖层保护名单的少数文案）                                                                 | 覆盖层已处理主体                                       | 与译者复核；不要用全局替换解决                                                     | 本地化          |
+| #   | 阻塞项                                                                                                      | 现状                                                   | 需要的行动                                                                         | 所有者          |
+| --- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------- | --------------- |
+| 1   | 剩余 12 条第三方材料复核结论需**法务签署**（`@arms/rum-*` 已随遥测替换移除；Skia 构建开关不可查的风险最高） | `check --strict` 已通过，结论标注 `legalSignOff: true` | 确认「权利人只声明标识符、无版权声明」的处置可接受；对应组件已移除即无需处置       | 法务            |
+| 2   | `dmg_background.png` / `@2x` 仍是上游 DMG 背景图                                                            | 未替换                                                 | 由设计按 DMG 窗口尺寸产出 DESIGN.md 合规替换图                                     | 设计 + 法务     |
+| 3   | 品牌资产为**过渡原创标记**（`brand/*`，非官方品牌）                                                         | 已生成全平台图标，非最终品牌                           | 取得官方 folded-L 原图后替换 `brand/` 并重跑 `scripts/build-lumi-brand-assets.mjs` | 品牌            |
+| 4   | Geist / Geist Mono **字体未随包**                                                                           | 已声明字体栈，回退系统字体                             | 取得字体授权并内嵌，或确认回退可接受                                               | 品牌 + 法务     |
+| 5   | 自动更新未配置                                                                                              | 默认关闭（安全）                                       | 提供 Lumi 自有 https 更新源与产物；在此之前保持关闭                                | 发布工程        |
+| 6   | 遥测未配置                                                                                                  | 默认关闭（安全）                                       | 若需上报，配置 `LUMI_TELEMETRY=1` 与自备端点；否则保持关闭                         | 发布工程 + 隐私 |
+| 7   | macOS 签名 / 公证未执行                                                                                     | 无 Developer ID 身份与公证凭据                         | 按 `docs/upstream/MACOS-SIGNING-AND-NOTARIZATION.md` 配置后执行门禁                | 发布工程        |
+| 8   | Lumi 与 ZCode 共享数据目录与 `zcode://` scheme                                                              | 刻意共存，未迁移                                       | 决定是否拆分；若拆分需幂等、可回滚、备好备份的迁移                                 | 产品 + 工程     |
+| 9   | OAuth 回调 / 深链接 / 平台注册仍指向既有标识                                                                | 未改动、未重定向                                       | 若 Lumi 需要独立账号体系，需单独注册与迁移决策                                     | 产品 + 发布     |
+| 10  | 翻译长尾中的产品名（未落入覆盖层保护名单的少数文案）                                                        | 覆盖层已处理主体                                       | 与译者复核；不要用全局替换解决                                                     | 本地化          |
 
 **不得**把「界面显示 Lumi Agents」等同于「分支已可分发」。第 1 项（复核结论的法务签署）、
 第 2 项（DMG 背景图）、第 7 项（签名/公证）、第 9 项（账号与深链）未解决前，不应对外发布安装包。

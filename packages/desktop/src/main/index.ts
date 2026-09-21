@@ -6,11 +6,11 @@ import "./desktopEarlyChromiumHardwareAccelerationBootstrap.js";
 import { powerMonitor, powerSaveBlocker } from "electron";
 import { crashCapturePaths } from "./appCrashCaptureBootstrap.js";
 import { armsInitPromise } from "./appARMSBootstrap.js";
+import { lumiTelemetrySetConfig } from "./lumiTelemetry.js";
 import {
   onLocalDatabaseStartupReady,
   configureDatabaseStartupQuit,
 } from "./databaseStartupRelay.js";
-import armsRum from "@arms/rum-electron";
 import { createArmsUserIdentitySync } from "./armsUserIdentity.js";
 import { ensureDesktopDeviceMidSync } from "./desktopDeviceMid.js";
 import {
@@ -833,7 +833,7 @@ const armsUserIdentitySync = createArmsUserIdentitySync({
   // 采集停用时 SDK 未初始化，setConfig 会抛错。
   setUser:
     ZCODE_TELEMETRY_ENABLED && ZCODE_ARMS_RUM_ENDPOINT
-      ? (user) => armsRum.setConfig("user", user)
+      ? (user) => lumiTelemetrySetConfig("user", user)
       : () => {},
 });
 

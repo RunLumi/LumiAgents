@@ -1,4 +1,5 @@
-import armsRum from "@arms/rum-electron";
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+import { lumiTelemetrySendCustom } from "./lumiTelemetry.js";
 import type { ZCodeMcpTelemetryEvent } from "@zcode/shared";
 
 interface DesktopMcpTelemetryContext {
@@ -21,7 +22,7 @@ export function reportMcpTelemetryToArms(
   if (!context || event.kind === "memory") return;
   const mapped = mapMcpTelemetryEvent(event);
   try {
-    armsRum.sendCustom({
+    lumiTelemetrySendCustom({
       group: mapped.group,
       name: mapped.name,
       properties: stringifyProperties({

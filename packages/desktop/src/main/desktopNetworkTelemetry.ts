@@ -1,5 +1,6 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /* eslint-disable max-lines -- 网络指标采集/聚合/ARMS 上报 */
-import armsRum from "@arms/rum-electron";
+import { lumiTelemetrySendCustom, lumiTelemetrySetConfig } from "./lumiTelemetry.js";
 import { mapZCodeEnvToArmsRumEnv } from "@zcode/shared";
 import type { NetworkObservation } from "@zcode/rpc";
 import {
@@ -71,7 +72,7 @@ function reportNetworkCustom(
   });
 
   try {
-    armsRum.sendCustom({
+    lumiTelemetrySendCustom({
       name,
       type: "custom",
       group: "network",
@@ -141,7 +142,7 @@ export function ingestHostNetworkObservations(observations: NetworkObservation[]
 
 export function configureDesktopNetworkTelemetry(context: NetworkGlobalContext): void {
   globalContext = context;
-  armsRum.setConfig("properties", {
+  lumiTelemetrySetConfig("properties", {
     device_mid: context.deviceMid,
     platform: normalizeOsCategory(context.platform),
     app_version: context.appVersion,

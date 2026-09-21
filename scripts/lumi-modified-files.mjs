@@ -56,6 +56,19 @@ export const MODIFIED_FILES = [
   // 保证每次重新生成都自带声明（不能靠事后手改生成物）。
   { path: "THIRD-PARTY-NOTICES.md", comment: "md" },
   { path: "packages/desktop/electron-builder.config.js", comment: "line" },
+  // Lumi 遥测替换：以下文件改自上游的 @arms/rum-* SDK 接线，见 lumiTelemetry.ts。
+  { path: "packages/desktop/src/main/appARMSBootstrap.ts", comment: "line" },
+  { path: "packages/desktop/src/main/databaseStartupTelemetry.ts", comment: "line" },
+  { path: "packages/desktop/src/main/desktopMainIpcRemote.ts", comment: "line" },
+  { path: "packages/desktop/src/main/desktopMcpTelemetry.ts", comment: "line" },
+  { path: "packages/desktop/src/main/desktopNetworkTelemetry.ts", comment: "line" },
+  { path: "packages/desktop/src/main/desktopResourceTelemetry.ts", comment: "line" },
+  { path: "packages/desktop/src/main/desktopStabilityTelemetry.ts", comment: "line" },
+  { path: "packages/desktop/src/main/desktopZCodeDataSizeTelemetry.ts", comment: "line" },
+  { path: "packages/desktop/src/preload/index.ts", comment: "line" },
+  { path: "packages/desktop/src/shared/armsRumShared.ts", comment: "line" },
+  { path: "packages/desktop/tsconfig.preload.json", comment: "line" },
+  { path: "packages/desktop/tsup.config.ts", comment: "line" },
   // shebang 必须是脚本第一行，声明只能插在其后，否则脚本不再可执行。
   { path: "packages/desktop/scripts/bundle.mjs", comment: "line", place: "afterShebang" },
   { path: "packages/desktop/scripts/desktop-product-identity.mjs", comment: "line" },
@@ -99,6 +112,8 @@ export const MODIFIED_FILES = [
   // shebang 必须是脚本第一行，声明只能插在其后，否则脚本不再可执行。
   // shebang 必须是脚本第一行，声明只能插在其后，否则脚本不再可执行。
   { path: "scripts/build-zcode.mjs", comment: "line", place: "afterShebang" },
+  // pnpm-lock.yaml 记录了移除 @arms/rum-* 依赖后的锁定态（YAML # 注释）。
+  { path: "pnpm-lock.yaml", comment: "hash" },
   { path: "scripts/generate-third-party-notices.mjs", comment: "line" },
   { path: "scripts/doctor-macos-release-app.sh", comment: "hash", place: "afterShebang" },
   { path: "scripts/third-party-notices.mjs", comment: "line" },

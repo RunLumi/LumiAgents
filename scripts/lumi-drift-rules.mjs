@@ -165,6 +165,62 @@ export const EXPECTATIONS = [
     description: "打包态只接受 Lumi 自有更新源，不忽略它",
     mustInclude: [/resolveLumiUpdateFeedUrl\(env\)/],
   },
+  // ── 遥测替换：闭源 @arms/rum-* SDK 不得回归 ──
+  {
+    file: "packages/desktop/src/main/lumiTelemetry.ts",
+    description: "产品遥测由应用自有 shim 承载，事件只进入部署方显式配置的 https 端点",
+    mustInclude: [
+      /resolveTelemetryDeliveryFromConstants/,
+      /lumiTelemetrySendCustom/,
+      /lumiTelemetrySendEvent/,
+    ],
+    mustExclude: [/from "@arms\//],
+  },
+  {
+    file: "packages/shared/src/telemetrySourceRuntime.ts",
+    description: "遥测启用/端点解析单一来源存在且要求 https",
+    mustInclude: [
+      /LUMI_TELEMETRY_ENDPOINT_ENV/,
+      /export function resolveTelemetryDelivery/,
+      /protocol === "https:"/,
+    ],
+  },
+  {
+    file: "packages/desktop/package.json",
+    description: "闭源 @arms/rum-* 依赖已从生产依赖移除",
+    mustExclude: [/@arms\//],
+  },
+  {
+    file: "package.json",
+    description: "@arms/rum-electron 的 pnpm 补丁配置已移除",
+    mustExclude: [/@arms\//],
+  },
+  {
+    file: "packages/desktop/src/main/appARMSBootstrap.ts",
+    description: "遥测引导走 Lumi shim 且 beforeReport 过滤/脱敏管线保留",
+    mustInclude: [
+      /lumiTelemetryInit/,
+      /beforeReport/,
+      /redactArmsEventBatch/,
+      /filterAndEnrichNativeCrashEvents/,
+    ],
+    mustExclude: [/from "@arms\//],
+  },
+  {
+    file: "packages/desktop/src/preload/index.ts",
+    description: "preload 不再安装 ARMS 桥接转发（无 SDK 注入后是死代码）",
+    mustExclude: [
+      /installArmsRumBridgeIpcForward/,
+      /scheduleArmsEventBridgePatch/,
+      /armsRumBridgeForward/,
+    ],
+  },
+  {
+    file: "packages/desktop/src/main/desktopStabilityTelemetry.ts",
+    description: "稳定性遥测调用点已切换到 Lumi shim",
+    mustInclude: [/lumiTelemetrySendCustom/],
+    mustExclude: [/from "@arms\//],
+  },
   // ── 法务材料可访问 ──
   {
     file: "packages/desktop/src/main/licensesWindow.ts",
