@@ -84,21 +84,26 @@ cutoff commit; new commits must carry genuine author sign-off.
 
 Do **not** expand the frozen legacy-exception cutoff and do not rewrite public
 `main` history merely to add a trailer. If a post-enforcement commit was already
-merged without DCO, the repository accepts a narrowly scoped retrospective
-attestation only when all of these are true:
+merged without DCO, only that commit's original author may remediate it by making a
+**later, signed, non-merge commit** whose message contains one line per exact target:
 
-1. `docs/licensing/dco-attestations.json` names the **exact target SHA**, original
-   author email and subject, plus the canonical DCO 1.1 attestation statement.
-2. The commit that first introduces that target SHA into the attestation file is
-   a **later non-merge commit by the same normalized author email**.
-3. That introducing commit carries the attestor's genuine `Signed-off-by`.
-4. CI verifies that the attestation commit descends from the target commit and
-   that no other author can certify it.
+```text
+DCO-Attests: <40-character-target-SHA>
+Signed-off-by: Your Name <the-same-author-email>
+```
 
-This is a provenance remediation for one exact contribution, not a copyright
-assignment, not a blanket exception, and not permission for maintainers or tools
-to sign on another person's behalf. Until the original author signs the
-attestation-introducing commit, the DCO gate must remain red.
+The checker accepts such an attestation only when:
+
+1. the target is a real post-cutoff, unsigned, non-merge ancestor of the attesting commit;
+2. the attestor's normalized author email matches the target author's normalized email;
+3. the attesting commit itself has the attestor's genuine `Signed-off-by`;
+4. the target is an exact 40-character SHA and is not already directly signed;
+5. no duplicate retrospective attestation exists for the same target.
+
+This is a DCO 1.1 provenance remediation for exact earlier contributions, not a
+copyright assignment, blanket exception, or permission for maintainers/tools to
+sign on another person's behalf. An unsigned `DCO-Attests:` trailer has no effect
+and makes the DCO gate fail.
 
 ### Merge mode: preserve sign-offs
 

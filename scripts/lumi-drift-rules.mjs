@@ -303,24 +303,15 @@ export const EXPECTATIONS = [
     ],
   },
   {
-    file: "docs/licensing/dco-attestations.json",
-    description: "post-enforcement DCO remediation is exact-SHA and same-author only",
-    mustInclude: [
-      /fa48dd3ec9e4cda8363b7bd1e2f819c23afe7493/,
-      /same normalized email/,
-      /retrospective DCO 1\.1 provenance certification/,
-      /not a copyright assignment/,
-    ],
-  },
-  {
     file: "scripts/check-dco.mjs",
     description: "DCO 检查器存在且导入基线例外收口在上游基点",
     mustInclude: [
       /Signed-off-by:/,
       /872ad960de7ec172591f7e1952f7849229f94521/,
       /evaluateDco/,
-      /readRetrospectiveDcoAttestations/,
-      /DCO_ATTESTATION_STATEMENT/,
+      /extractDcoAttestedHashes/,
+      /DCO_ATTESTATION_MARKER/,
+      /DCO-Attests:/,
     ],
   },
   {

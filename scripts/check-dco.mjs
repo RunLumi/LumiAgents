@@ -18,8 +18,9 @@
  *   其祖先天然不在区间内；例外只覆盖已记录的导入基线
  *   （872ad960de7ec172591f7e1952f7849229f94521，见 COMPLIANCE.md §2），绝不后移。
  * - **post-cutoff remediation 收口**：不得后移 legacy cutoff。已误 merge 的 unsigned commit
- *   只能由原作者在 `docs/licensing/dco-attestations.json` 对 exact SHA 认证；checker 会核对
- *   target metadata、ancestry、same-author 与 attestation commit 自身的 Signed-off-by。
+ *   只能由原作者在后续 signed non-merge commit 的提交正文中加入
+ *   `DCO-Attests: <exact-40-char-sha>`；checker 会核对 target ancestry、same-author、
+ *   target 本身确实 unsigned，以及 attestation commit 自身的 Signed-off-by。
  * - **邮箱一致性**：sign-off / attestation 邮箱与作者邮箱按 GitHub noreply 规则归一后必须一致，
  *   防止拿别人的名字凑签名。
  *
@@ -39,9 +40,7 @@ export const KNOWN_IMPORT_BASES = ["872ad960de7ec172591f7e1952f7849229f94521"];
 // They are exceptions to the CI gate, NOT retroactive DCO certifications.
 export const LEGACY_DCO_CUTOFF = "b0d31a1e3ae29c2afcb08d8eb04db34d5fdbc42d";
 const LEGACY_DCO_FILE = new URL("../docs/licensing/dco-legacy-exceptions.json", import.meta.url);
-const DCO_ATTESTATION_FILE = new URL("../docs/licensing/dco-attestations.json", import.meta.url);
-export const DCO_ATTESTATION_STATEMENT =
-  "I certify under Developer Certificate of Origin 1.1 that I had the right to submit the contribution contained in the exact target commit under this project's license.";
+export const DCO_ATTESTATION_MARKER = "DCO-Attests:";
 
 function git(args) {
   return execFileSync("git", args, { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
@@ -68,6 +67,16 @@ export function extractSignOffEmails(body) {
       return normalizeEmail(bracket ? bracket[1] : rest);
     })
     .filter((email) => email.includes("@"));
+}
+
+/** 从提交正文提取 retrospective DCO exact-SHA trailers。 */
+export function extractDcoAttestedHashes(body) {
+  return (body ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith(DCO_ATTESTATION_MARKER))
+    .map((line) => line.slice(DCO_ATTESTATION_MARKER.length).trim().toLowerCase())
+    .filter(Boolean);
 }
 
 /**
@@ -158,119 +167,95 @@ function assertLegacyExceptionsAreHistorical(document, hashes) {
   }
 }
 
-export function readRetrospectiveDcoAttestations() {
-  const document = JSON.parse(readFileSync(DCO_ATTESTATION_FILE, "utf8"));
-  if (document.schemaVersion !== 1) {
-    throw new Error("[dco] unsupported retrospective attestation schema");
-  }
-  if (document.canonicalStatement !== DCO_ATTESTATION_STATEMENT) {
-    throw new Error("[dco] retrospective attestation canonical statement changed");
-  }
-  const entries = Array.isArray(document.attestations) ? document.attestations : [];
+function collectRetrospectiveDcoAttestations() {
+  const history = listCommits(`${KNOWN_IMPORT_BASES[0]}..HEAD`);
   const hashes = new Set();
 
-  for (const entry of entries) {
-    const targetSha = entry.targetSha ?? "";
-    if (!/^[0-9a-f]{40}$/u.test(targetSha)) {
-      throw new Error(`[dco] invalid retrospective attestation target SHA: ${String(targetSha)}`);
-    }
-    if (hashes.has(targetSha)) {
-      throw new Error(`[dco] duplicate retrospective attestation target: ${targetSha}`);
-    }
-    if (entry.statement !== DCO_ATTESTATION_STATEMENT) {
-      throw new Error(`[dco] retrospective attestation statement mismatch for ${targetSha}`);
-    }
+  for (const attestor of history) {
+    const targets = extractDcoAttestedHashes(attestor.body);
+    if (targets.length === 0) continue;
 
-    const [targetAuthorEmail, targetSubject, targetBody] = git([
-      "show",
-      "-s",
-      "--format=%ae%x00%s%x00%b",
-      targetSha,
-    ])
-      .trimEnd()
-      .split("\u0000");
-
-    const targetParents = git(["rev-list", "--parents", "-n", "1", targetSha]).trim().split(/\s+/u);
-    if (targetParents.length !== 2) {
-      throw new Error(`[dco] retrospective attestation target must be a non-merge commit: ${targetSha}`);
-    }
-    try {
-      git(["merge-base", "--is-ancestor", LEGACY_DCO_CUTOFF, targetSha]);
-      git(["merge-base", "--is-ancestor", targetSha, "HEAD"]);
-    } catch {
-      throw new Error(
-        `[dco] retrospective attestation target must be post-cutoff and in current HEAD ancestry: ${targetSha}`,
-      );
-    }
-    if (
-      evaluateDco({
-        commits: [{ hash: targetSha, authorEmail: targetAuthorEmail, body: targetBody ?? "" }],
-        exemptHashes: new Set(),
-      }).length === 0
-    ) {
-      throw new Error(`[dco] retrospective attestation target is already directly signed: ${targetSha}`);
-    }
-    if (
-      normalizeEmail(targetAuthorEmail) !== normalizeEmail(entry.targetAuthorEmail) ||
-      targetSubject !== entry.targetSubject
-    ) {
-      throw new Error(
-        `[dco] retrospective attestation target metadata mismatch for ${targetSha}`,
-      );
-    }
-
-    const introducing = git([
-      "log",
-      "--reverse",
-      "--format=%H",
-      `-S${targetSha}`,
-      "--",
-      "docs/licensing/dco-attestations.json",
-    ])
-      .trim()
-      .split("\n")
-      .filter(Boolean)[0];
-    if (!introducing) {
-      throw new Error(`[dco] no introducing commit found for retrospective attestation ${targetSha}`);
-    }
-
-    try {
-      git(["merge-base", "--is-ancestor", targetSha, introducing]);
-    } catch {
-      throw new Error(
-        `[dco] retrospective attestation ${introducing} does not descend from target ${targetSha}`,
-      );
-    }
-
-    const parentFields = git(["rev-list", "--parents", "-n", "1", introducing]).trim().split(/\s+/u);
-    if (parentFields.length !== 2) {
-      throw new Error(
-        `[dco] retrospective attestation must be introduced by a non-merge commit: ${introducing}`,
-      );
-    }
-
-    const [attestorEmail, attestorBody] = git(["show", "-s", "--format=%ae%x00%b", introducing])
-      .trimEnd()
-      .split("\u0000");
-    if (normalizeEmail(attestorEmail) !== normalizeEmail(targetAuthorEmail)) {
-      throw new Error(
-        `[dco] retrospective attestation author ${attestorEmail} does not match target author ${targetAuthorEmail}`,
-      );
-    }
-    const attestationFailures = evaluateDco({
-      commits: [{ hash: introducing, authorEmail: attestorEmail, body: attestorBody ?? "" }],
+    const attestorFailures = evaluateDco({
+      commits: [attestor],
       exemptHashes: new Set(),
     });
-    if (attestationFailures.length > 0) {
+    if (attestorFailures.length > 0) {
       throw new Error(
-        `[dco] retrospective attestation commit ${introducing} lacks the target author's valid Signed-off-by`,
+        `[dco] retrospective attestation commit ${attestor.hash} lacks the attestor's valid Signed-off-by`,
       );
     }
 
-    hashes.add(targetSha);
+    const attestorParents = git(["rev-list", "--parents", "-n", "1", attestor.hash])
+      .trim()
+      .split(/\s+/u);
+    if (attestorParents.length !== 2) {
+      throw new Error(
+        `[dco] retrospective attestation must be a non-merge commit: ${attestor.hash}`,
+      );
+    }
+
+    for (const targetSha of targets) {
+      if (!/^[0-9a-f]{40}$/u.test(targetSha)) {
+        throw new Error(
+          `[dco] invalid retrospective attestation target SHA in ${attestor.hash}: ${targetSha}`,
+        );
+      }
+      if (targetSha === attestor.hash) {
+        throw new Error(`[dco] a commit cannot retrospectively attest itself: ${targetSha}`);
+      }
+      if (hashes.has(targetSha)) {
+        throw new Error(`[dco] duplicate retrospective attestation target: ${targetSha}`);
+      }
+
+      const [targetAuthorEmail, targetBody] = git([
+        "show",
+        "-s",
+        "--format=%ae%x00%b",
+        targetSha,
+      ])
+        .trimEnd()
+        .split("\u0000");
+
+      const targetParents = git(["rev-list", "--parents", "-n", "1", targetSha])
+        .trim()
+        .split(/\s+/u);
+      if (targetParents.length !== 2) {
+        throw new Error(
+          `[dco] retrospective attestation target must be a non-merge commit: ${targetSha}`,
+        );
+      }
+
+      try {
+        git(["merge-base", "--is-ancestor", LEGACY_DCO_CUTOFF, targetSha]);
+        git(["merge-base", "--is-ancestor", targetSha, attestor.hash]);
+      } catch {
+        throw new Error(
+          `[dco] retrospective attestation target must be post-cutoff and an ancestor of attestor: ${targetSha}`,
+        );
+      }
+
+      if (normalizeEmail(targetAuthorEmail) !== normalizeEmail(attestor.authorEmail)) {
+        throw new Error(
+          `[dco] attestor ${attestor.authorEmail} does not match target author ${targetAuthorEmail} for ${targetSha}`,
+        );
+      }
+
+      if (
+        evaluateDco({
+          commits: [{ hash: targetSha, authorEmail: targetAuthorEmail, body: targetBody ?? "" }],
+          exemptHashes: new Set(),
+        }).length === 0
+      ) {
+        throw new Error(
+          `[dco] retrospective attestation target is already directly signed: ${targetSha}`,
+        );
+      }
+
+      hashes.add(targetSha);
+    }
   }
 
-  return { document, hashes };
+  return hashes;
 }
 
 function listCommits(range) {
@@ -319,7 +304,7 @@ function main() {
   // before enforcement. They are never treated as signed or as ownership evidence.
   const { document: legacyDocument, hashes: legacyHashes } = readLegacyDcoExceptions();
   assertLegacyExceptionsAreHistorical(legacyDocument, legacyHashes);
-  const { hashes: attestedHashes } = readRetrospectiveDcoAttestations();
+  const attestedHashes = collectRetrospectiveDcoAttestations();
   const acceptedHashes = new Set([...legacyHashes, ...attestedHashes]);
   const failures = evaluateDco({ commits, exemptHashes: acceptedHashes });
   if (failures.length > 0) {
@@ -330,8 +315,9 @@ function main() {
       console.error(`  - ${failure.hash.slice(0, 10)}: ${failure.reason}`);
     }
     console.error(
-      "\n处理：git commit --amend -s（或 rebase 每个提交 -s）后重推；" +
-        "DCO 是溯源认证，不是版权转让，维护者不会代签。",
+      "\n处理：未合并提交用 git commit --amend -s（或 rebase 每个提交 -s）后重推；" +
+        "若 post-cutoff unsigned commit 已误合入 main，由原作者在后续 signed non-merge commit 中加入 " +
+        "DCO-Attests: <exact-sha>。DCO 是溯源认证，不是版权转让，维护者不会代签。",
     );
     process.exit(1);
   }

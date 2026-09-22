@@ -24,7 +24,7 @@ Configure a repository ruleset targeting the default branch with:
    - `scripts/check-dco.mjs`, `scripts/licenses.mjs`,
      `scripts/third-party-npm.mjs`;
    - `docs/licensing/dco-legacy-exceptions.json`;
-   - `docs/licensing/dco-attestations.json`.
+   - `scripts/check-dco.mjs` and DCO policy text in `CONTRIBUTING.md`.
 
 ## Why this is an owner action
 

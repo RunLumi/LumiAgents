@@ -95,8 +95,9 @@ node --import tsx --test packages/ui/test/lumiCompliance.test.ts packages/ui/tes
 任何新的同步/冲突解决/cherry-pick 提交都由实际提交作者本人 `-s` 签名。
 
 若 post-cutoff unsigned commit 已误合入 main，**不得**把它追加到 legacy exceptions，也不为
-历史提交伪造 trailer；只允许 `docs/licensing/dco-attestations.json` 定义的 same-author、
-exact-SHA retrospective attestation，由原作者在后续 non-merge commit 中真实 `-s` 认证。
+历史提交伪造 trailer；只允许原作者在后续 signed non-merge commit 中加入
+`DCO-Attests: <exact-40-char-sha>`。Checker 会验证 same-author、target ancestry、target
+确实 unsigned，以及 attesting commit 自身的真实 `Signed-off-by`。
 
 Then re-verify the surfaces the theme touches (light-only, no dark flash):
 
