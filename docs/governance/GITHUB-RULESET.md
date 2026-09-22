@@ -23,7 +23,8 @@ Configure a repository ruleset targeting the default branch with:
    - `.github/workflows/dco-license.yml`;
    - `scripts/check-dco.mjs`, `scripts/licenses.mjs`,
      `scripts/third-party-npm.mjs`;
-   - `docs/licensing/dco-legacy-exceptions.json`.
+   - `docs/licensing/dco-legacy-exceptions.json`;
+   - `docs/licensing/dco-attestations.json`.
 
 ## Why this is an owner action
 

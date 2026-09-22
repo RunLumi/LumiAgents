@@ -92,8 +92,11 @@ node --import tsx --test packages/ui/test/lumiCompliance.test.ts packages/ui/tes
 **DCO 与上游同步**：上游导入基线本身不要求 Lumi DCO；另外，
 `docs/licensing/dco-legacy-exceptions.json` 精确冻结了 DCO 门禁启用前已合入 main 的
 历史 unsigned fork 提交。这些 exact-SHA 例外不是 DCO 认证或版权转让，cutoff 不得后移。
-任何新的同步/冲突解决/cherry-pick 提交都由实际提交作者本人 `-s` 签名；不得为上游或
-历史提交伪造签名。
+任何新的同步/冲突解决/cherry-pick 提交都由实际提交作者本人 `-s` 签名。
+
+若 post-cutoff unsigned commit 已误合入 main，**不得**把它追加到 legacy exceptions，也不为
+历史提交伪造 trailer；只允许 `docs/licensing/dco-attestations.json` 定义的 same-author、
+exact-SHA retrospective attestation，由原作者在后续 non-merge commit 中真实 `-s` 认证。
 
 Then re-verify the surfaces the theme touches (light-only, no dark flash):
 
