@@ -25,10 +25,16 @@
  * CI（PR 场景）：node scripts/check-dco.mjs origin/${{ base }}..HEAD
  */
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 const DCO_MARKER = "Signed-off-by:";
 /** 已记录的上游导入基线（Lumi 分叉点）。见 docs/licensing/COMPLIANCE.md §2。 */
 export const KNOWN_IMPORT_BASES = ["872ad960de7ec172591f7e1952f7849229f94521"];
+// Historical fork commits merged before DCO became merge-blocking. This cutoff is
+// immutable policy state: entries may only be exact ancestors of this commit.
+// They are exceptions to the CI gate, NOT retroactive DCO certifications.
+export const LEGACY_DCO_CUTOFF = "b0d31a1e3ae29c2afcb08d8eb04db34d5fdbc42d";
+const LEGACY_DCO_FILE = new URL("../docs/licensing/dco-legacy-exceptions.json", import.meta.url);
 
 function git(args) {
   return execFileSync("git", args, { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
@@ -79,6 +85,72 @@ export function evaluateDco({ commits, exemptHashes = new Set() }) {
   return failures;
 }
 
+export function readLegacyDcoExceptions() {
+  const document = JSON.parse(readFileSync(LEGACY_DCO_FILE, "utf8"));
+  if (document.cutoffMain !== LEGACY_DCO_CUTOFF) {
+    throw new Error(
+      `[dco] legacy exception cutoff changed: expected ${LEGACY_DCO_CUTOFF}, got ${String(document.cutoffMain)}`,
+    );
+  }
+  if (document.upstreamImportBase !== KNOWN_IMPORT_BASES[0]) {
+    throw new Error("[dco] legacy exception import base does not match the recorded upstream baseline");
+  }
+  const entries = Array.isArray(document.exceptions) ? document.exceptions : [];
+  const hashes = new Set();
+  for (const entry of entries) {
+    if (!/^[0-9a-f]{40}$/u.test(entry.sha ?? "")) {
+      throw new Error(`[dco] invalid legacy exception SHA: ${String(entry.sha)}`);
+    }
+    if (hashes.has(entry.sha)) throw new Error(`[dco] duplicate legacy exception: ${entry.sha}`);
+    hashes.add(entry.sha);
+  }
+  return { document, hashes };
+}
+
+function assertLegacyExceptionsAreHistorical(document, hashes) {
+  for (const entry of document.exceptions) {
+    const hash = entry.sha;
+    try {
+      git(["merge-base", "--is-ancestor", hash, LEGACY_DCO_CUTOFF]);
+    } catch {
+      throw new Error(
+        `[dco] legacy exception ${hash} is not an ancestor of immutable cutoff ${LEGACY_DCO_CUTOFF}`,
+      );
+    }
+
+    const parents = git(["rev-list", "--parents", "-n", "1", hash]).trim().split(/\s+/u);
+    if (parents.length !== 2) {
+      throw new Error(`[dco] legacy exception must be a non-merge commit: ${hash}`);
+    }
+
+    const [authorEmail, subject] = git(["show", "-s", "--format=%ae%x00%s", hash])
+      .trimEnd()
+      .split("\u0000");
+    if (authorEmail !== entry.authorEmail || subject !== entry.subject) {
+      throw new Error(
+        `[dco] legacy exception metadata drift for ${hash}: expected ${entry.authorEmail} / ${entry.subject}`,
+      );
+    }
+  }
+
+  // The exception document must equal the complete unsigned non-merge history
+  // between the imported upstream base and the immutable cutoff. This prevents
+  // both silent omission and expansion to unrelated historical commits.
+  const historical = listCommits(`${KNOWN_IMPORT_BASES[0]}..${LEGACY_DCO_CUTOFF}`);
+  const unsigned = new Set(
+    evaluateDco({ commits: historical, exemptHashes: new Set() }).map((item) => item.hash),
+  );
+  const missing = [...unsigned].filter((hash) => !hashes.has(hash)).sort();
+  const extra = [...hashes].filter((hash) => !unsigned.has(hash)).sort();
+  if (missing.length || extra.length) {
+    throw new Error(
+      "[dco] legacy exception set does not exactly match pre-cutoff unsigned history." +
+        `\nMissing exceptions: ${missing.join(", ")}` +
+        `\nUnexpected exceptions: ${extra.join(", ")}`,
+    );
+  }
+}
+
 function listCommits(range) {
   const out = git(["log", "--no-merges", "--pretty=format:%H%x00%ae%x00%b%x01", range]);
   return out
@@ -121,8 +193,10 @@ function main() {
     process.exit(2);
   }
   const commits = listCommits(range);
-  // 导入例外：显式 --base 时豁免 base 自身（不在区间内，无需处理祖先）。
-  const exemptHashes = new Set();
+  // Historical exceptions are exact pre-cutoff commits that were already merged
+  // before enforcement. They are never treated as signed or as ownership evidence.
+  const { document: legacyDocument, hashes: exemptHashes } = readLegacyDcoExceptions();
+  assertLegacyExceptionsAreHistorical(legacyDocument, exemptHashes);
   const failures = evaluateDco({ commits, exemptHashes });
   if (failures.length > 0) {
     console.error(

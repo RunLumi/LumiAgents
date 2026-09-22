@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "upstreamImportBase": "872ad960de7ec172591f7e1952f7849229f94521",
+  "cutoffMain": "b0d31a1e3ae29c2afcb08d8eb04db34d5fdbc42d",
+  "policy": "Exact historical exceptions only. New commits require genuine author Signed-off-by. Entries do not certify DCO, authorship ownership, employment, or assignment.",
+  "exceptions": [
+    {
+      "sha": "33752ff0222a87da351e4c3d8b947e486a36bd16",
+      "authorName": "j",
+      "authorEmail": "hong@cloudjetkpi.com",
+      "subject": "feat: rebrand fork as Lumi Agents with light-only theme",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "45195cff3e066488d0c5edb1a018a1a0f6589eb4",
+      "authorName": "j",
+      "authorEmail": "hong@cloudjetkpi.com",
+      "subject": "feat: complete Lumi branding, licensing, and release-safety for the fork",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "80e0fb292c65297d91e3e7b9110e57e19eb018ba",
+      "authorName": "j",
+      "authorEmail": "hong@cloudjetkpi.com",
+      "subject": "fix: close the third-party material gaps so the strict licence gate passes",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "f6177aa97dcad9d19e1ca0208f3546e9775bf57f",
+      "authorName": "j",
+      "authorEmail": "hong@cloudjetkpi.com",
+      "subject": "feat: replace closed-source @arms/rum-* telemetry with an app-owned shim",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "08d06d266f1bad8c2d10da2b85f026e33e1767ce",
+      "authorName": "j",
+      "authorEmail": "hong@cloudjetkpi.com",
+      "subject": "docs: document macOS App Store release handoff",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "71820b4ec850d513b56c6f5da96a92132aaa6324",
+      "authorName": "j",
+      "authorEmail": "hong@cloudjetkpi.com",
+      "subject": "fix: remove the stale @arms patch reference from package.json",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "149510cb25f740ac4bc8364cfa83b602b3a8f471",
+      "authorName": "j",
+      "authorEmail": "hong@cloudjetkpi.com",
+      "subject": "docs: correct MAS release evidence and backup inventory",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "c754eedbf47edc643b80fa8a56846a2f85ab2688",
+      "authorName": "j",
+      "authorEmail": "hong@cloudjetkpi.com",
+      "subject": "fix: complete macOS App Store TestFlight release",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "55eb7a19673ac7fd46565fb039bc06a32c8f3380",
+      "authorName": "Stream Entry",
+      "authorEmail": "978862+streamentry@users.noreply.github.com",
+      "subject": "feat: licensing framework — open-core policy, DCO contributions, trademark guidance (#8)",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "4ee5f69612530d5f83da75afbb427306eb833b78",
+      "authorName": "Stream Entry",
+      "authorEmail": "978862+streamentry@users.noreply.github.com",
+      "subject": "docs: specify Cloudjet maintainer credit and preserved upstream attribution",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "32c517a1fccc2b24ec29a6f96a9db4072029031e",
+      "authorName": "Stream Entry",
+      "authorEmail": "978862+streamentry@users.noreply.github.com",
+      "subject": "fix: credit Cloudjet as Lumi maintainer while retaining upstream notices",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "970f281366470bb955280523f107013efbbb1163",
+      "authorName": "Stream Entry",
+      "authorEmail": "978862+streamentry@users.noreply.github.com",
+      "subject": "fix: repair credits access and whitespace-sensitive licensing check",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "2706445442321c6d564f6a7ecc28287510b0aded",
+      "authorName": "j",
+      "authorEmail": "hong@cloudjetkpi.com",
+      "subject": "fix: align MAS entitlements with launch profile",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    },
+    {
+      "sha": "881f4e76498426ab8a0b7b692f9ccc9bb53b20f0",
+      "authorName": "Stream Entry",
+      "authorEmail": "978862+streamentry@users.noreply.github.com",
+      "subject": "docs: establish Cloudjet stewardship without rewriting upstream rights",
+      "status": "legacy-no-dco",
+      "rationale": "Merged before DCO enforcement was made merge-blocking; this is an exact historical exception, not a retroactive DCO certification or copyright assignment."
+    }
+  ]
+}

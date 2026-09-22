@@ -477,20 +477,21 @@ function assertPackagedNodePtyPrebuild(context) {
 export default {
   appId: desktopProductIdentity.appId,
   buildVersion: process.env.MAS_BUILD_VERSION || undefined,
-  // 安装包的人类可读版权串。不显式声明时 electron-builder 会从 extraMetadata.author.name
-  // 推导，得到上游的 "ZCode"；品牌要求这里显示 Lumi。上游归属仍保留在 LICENSE /
-  // NOTICE.md / THIRD-PARTY-NOTICES.md，不依赖该字段。    // 修改原因：打包版权串必须保留上游权利人；此前由 extraMetadata.author.name 推导出 "ZCode"。
-  // 不新增/转移著作权声明，只陈述分发身份与分支关系（见 NOTICE.md）。
-  copyright: "Copyright © 2026 Z.AI Co., Ltd — Lumi Agents independent fork",
-  // Linux deb 打包（fpm）会校验 package metadata 中的 homepage、author.email、maintainer。
-  // CI 环境下若这些字段缺失会在产物阶段直接失败。这里统一在构建配置补齐，避免依赖外部注入。
+  // 安装包的人类可读版权/归属串必须同时满足两件事：
+  // 1) 不把继承的 ZCode 版权错误转移给 Cloudjet；2) 不把 Lumi Agents 呈现成 Z.AI 官方产品。
+  // Cloudjet 的维护主体身份与上游版权在同一字段中明确分开，完整权利边界见 RIGHTS.md。
+  copyright:
+    "ZCode portions © 2026 Z.AI Co., Ltd; Lumi Agents developed and maintained by CLOUDJET SOLUTIONS PTE. LTD.",
+  // Linux deb/rpm 等打包会读取这些产品元数据。这里必须指向 Lumi/Cloudjet，
+  // 不能沿用上游 ZCode 官网或联系地址，否则最终安装包会与 README/NOTICE 的维护主体冲突。
   extraMetadata: {
     version: buildMetadata.appVersion,
     zcodeProductFlavor: desktopProductIdentity.flavor,
-    homepage: "https://zcode.z.ai",
+    homepage: "https://agents.runlumi.app",
     author: {
-      name: "Lumi",
-      email: "dev@zcode.z.ai",
+      name: "CLOUDJET SOLUTIONS PTE. LTD.",
+      // 该地址已出现在本仓库的签名提交历史中；避免凭空发明一个未验证的联系邮箱。
+      email: "hong@cloudjetkpi.com",
     },
   },
   // macOS 签名阶段会对 Electron Framework 下每个语言包逐个 codesign。
@@ -761,11 +762,11 @@ export default {
     artifactName: buildDesktopArtifactName("linux"),
     // desktop 包名是 scoped package（@zcode/desktop），electron-builder 默认会把
     // Linux executable/Icon 推成 @zcodedesktop。部分桌面环境无法按这个 icon name 命中
-    // hicolor 图标，最终回退成系统齿轮。这里固定成稳定的小写名称，让 Icon=zcode
-    // 与 /usr/share/icons/hicolor/*/apps/zcode.png 保持一致。
+    // hicolor 图标，最终回退成系统齿轮。这里固定成 Lumi 的稳定小写可执行名，
+    // 让桌面文件与 /usr/share/icons/hicolor/*/apps/<lumi executable>.png 保持一致。
     executableName: desktopProductIdentity.linuxExecutableName,
     category: "Development",
-    maintainer: "ZCode <dev@zcode.z.ai>",
+    maintainer: "CLOUDJET SOLUTIONS PTE. LTD. <hong@cloudjetkpi.com>",
   },
   deb: {
     // 生产版与 Preview 必须是两个 dpkg package；只改可执行名仍会让安装器把另一版本当成升级替换。
@@ -797,13 +798,14 @@ export default {
     // 丢失 Electron Framework 主二进制，安装后启动直接报 DYLD Library missing。
     // 显式放大 DMG 容量，避免拷贝截断导致的“Framework 目录存在但核心文件缺失”。
     size: "3200m",
-    // 使用自定义安装背景图。
-    background: "build/dmg_background.png",
+    // 不复用上游 ZCode DMG 背景图。electron-builder v26 在无背景图时支持纯色背景；
+    // 使用 Lumi warm-paper 颜色，避免任何上游图形资产进入直接下载的 DMG。
+    background: null,
+    backgroundColor: "#f4f0e8",
     // 安装盘图标统一使用安装专用素材，避免复用应用图标导致安装识别度不足。
     icon: "build/icon_installer.icns",
     contents: [
-      // 实验性调整：为隐藏资源文件显式指定图标坐标，尽量把它们移到角落区域。
-      { x: 640, y: 56, type: "file", path: ".background.tiff" },
+      // 为隐藏卷图标文件显式指定坐标，尽量把它移到角落区域。
       { x: 640, y: 56, type: "file", path: ".VolumeIcon.icns" },
       { x: 130, y: 220 },
       { x: 410, y: 220, type: "link", path: "/Applications" },

@@ -21,9 +21,11 @@ branding:
   Z.AI Co., Ltd and other upstream contributors. The root [LICENSE](LICENSE)
   preserves the inherited Apache License 2.0 text and its
   `Copyright 2026 Z.AI Co., Ltd` notice.
-- **Cloudjet-authored or validly assigned Lumi-specific additions and
-  modifications** are owned by CLOUDJET SOLUTIONS PTE. LTD. only to the extent
-  Cloudjet actually holds those rights. Those public-repository works are
+- **Cloudjet-owned Lumi-specific additions and modifications** are owned by
+  CLOUDJET SOLUTIONS PTE. LTD. only where Cloudjet actually holds the copyright,
+  for example through applicable employee-work ownership or a valid written
+  assignment. Repository authorship, maintenance, package metadata, or a Git
+  account alone is not proof of ownership. Covered public-repository works are
   distributed under Apache-2.0 unless a file explicitly states otherwise.
 - **Independent contributor work** remains copyrighted by its respective
   author(s) unless separately assigned. Public contributions are accepted under
@@ -36,11 +38,13 @@ because Cloudjet maintains, modifies, distributes, or brands the fork.
 
 ## Licensing boundary
 
-The public repository remains **Apache-2.0**. Apache-2.0 permits Cloudjet to
-modify and distribute the upstream work while requiring preservation of the
-applicable license and notices. It also permits a distributor to add its own
-copyright statement for its own modifications, but that does not transfer
-ownership of upstream code.
+Cloudjet first-party Lumi code and inherited ZCode material covered by the root
+license remain **Apache-2.0**. Third-party components, vendored material,
+runtimes, and assets remain under their own applicable terms. Apache-2.0 permits
+Cloudjet to modify and distribute covered upstream work while requiring
+preservation of the applicable license and notices. It also permits a distributor
+to add its own copyright statement for its own modifications, but that does not
+transfer ownership of upstream code.
 
 Accordingly:
 
@@ -57,9 +61,11 @@ Accordingly:
 
 ## Brand rights
 
-Software copyright and trademark rights are separate. The Apache-2.0 license
-does not grant rights to the Lumi Agents name or Lumi brand assets. See
-[TRADEMARKS.md](TRADEMARKS.md).
+Copyright and trademark rights are separate. Covered Lumi artwork files published
+under Apache-2.0 receive the copyright permissions of that license. Apache-2.0
+section 6 does not grant trademark permission to use the Lumi Agents name or
+folded-L mark as a source identifier in a way that implies official origin or
+endorsement. See [TRADEMARKS.md](TRADEMARKS.md).
 
 ## Upstream credit
 

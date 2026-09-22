@@ -89,10 +89,11 @@ node --import tsx --test packages/ui/test/lumiCompliance.test.ts packages/ui/tes
 
 **硬性约束**：不要把自动更新或遥测默认值改回上游值；Lumi 没有对应的后端。
 
-**DCO 与上游同步**：上游导入历史没有 `Signed-off-by` 是已知事实，DCO 检查
-（`scripts/check-dco.mjs`）的例外只收口在导入基线 `872ad960de7ec172591f7e1952f7849229f94521`。
-同步产生的新提交（冲突解决、cherry-pick 重放）由执行同步的维护者本人 `-s` 签名认证；
-不得为上游历史伪造签名。
+**DCO 与上游同步**：上游导入基线本身不要求 Lumi DCO；另外，
+`docs/licensing/dco-legacy-exceptions.json` 精确冻结了 DCO 门禁启用前已合入 main 的
+历史 unsigned fork 提交。这些 exact-SHA 例外不是 DCO 认证或版权转让，cutoff 不得后移。
+任何新的同步/冲突解决/cherry-pick 提交都由实际提交作者本人 `-s` 签名；不得为上游或
+历史提交伪造签名。
 
 Then re-verify the surfaces the theme touches (light-only, no dark flash):
 

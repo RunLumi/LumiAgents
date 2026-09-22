@@ -166,11 +166,13 @@ pnpm bundle:desktop -- --help
 
 默认目标为 macOS arm64，默认输出目录为 `packages/desktop/dist/`。`--os` 支持 `mac`、`win`、`linux`，`--arch` 支持 `x64`、`arm64`；实际打包与签名需要目标平台对应的工具和配置。
 
-安装：双击打开产物 DMG，将 ZCode 拖入"应用程序"。本地构建未签名，首次打开若被 macOS 拦截，执行：
+安装：双击打开产物 DMG，将 **Lumi Agents** 拖入“应用程序”。仅针对你自己构建且确认可信的未签名本地开发包，若 macOS 阻止启动，可执行：
 
 ```bash
-sudo xattr -rd com.apple.quarantine /Applications/ZCode.app
+sudo xattr -rd com.apple.quarantine "/Applications/Lumi Agents.app"
 ```
+
+正式发布包不应要求用户关闭或绕过 macOS 安全检查；签名、公证状态以发布说明为准。
 
 ### ZCode 命令行版
 

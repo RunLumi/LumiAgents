@@ -244,13 +244,63 @@ export const EXPECTATIONS = [
   },
   {
     file: "TRADEMARKS.md",
-    description: "商标页保持许可/品牌分离且不宣称注册或排他权利",
+    description: "商标页区分 Apache artwork copyright permission 与 trademark permission",
     mustInclude: [
-      /brand permissions/,
+      /copyright-license permissions/,
+      /grant trademark permission/,
+      /does \*\*not\*\* retract copyright permissions/,
       /Nothing here claims trademark registration/,
       /independent fork/,
     ],
     mustExclude: [/is a registered trademark/],
+  },
+  {
+    file: "RIGHTS.md",
+    description: "权利图保持 Cloudjet stewardship 与上游/贡献者权利分离",
+    mustInclude: [
+      /CLOUDJET SOLUTIONS PTE\. LTD\./,
+      /Inherited ZCode material/,
+      /Repository authorship, maintenance, package metadata/,
+      /Copyright 2026 Z\.AI Co\., Ltd/,
+    ],
+  },
+  {
+    file: "packages/desktop/electron-builder.config.js",
+    description: "最终安装包元数据指向 Cloudjet/Lumi，同时保留上游版权事实",
+    mustInclude: [
+      /homepage: "https:\/\/agents\.runlumi\.app"/,
+      /name: "CLOUDJET SOLUTIONS PTE\. LTD\."/,
+      /maintainer: "CLOUDJET SOLUTIONS PTE\. LTD\./,
+      /ZCode portions © 2026 Z\.AI Co\., Ltd/,
+      /background: null/,
+      /backgroundColor: "#f4f0e8"/,
+    ],
+    mustExclude: [
+      /homepage: "https:\/\/zcode\.z\.ai"/,
+      /dev@zcode\.z\.ai/,
+      /dmg_background\.png/,
+    ],
+  },
+  {
+    file: ".env.example",
+    description: "示例环境不默认启用 ZCode 产品基础设施",
+    mustInclude: [
+      /^ZCODE_BASE_URL=$/m,
+      /^ZAI_OAUTH_ORIGIN=$/m,
+      /^ZAI_OAUTH_CLIENT_ID=$/m,
+      /^ZCODE_CDN_BASE_URL=$/m,
+      /^ZCODE_CONVERSATION_SHARE_WEB_URL=$/m,
+      /^ZCODE_REMOTE_ASSET_CDN_BASE_URL=$/m,
+    ],
+  },
+  {
+    file: "docs/licensing/dco-legacy-exceptions.json",
+    description: "DCO 历史例外是固定 cutoff 的精确清单",
+    mustInclude: [
+      /b0d31a1e3ae29c2afcb08d8eb04db34d5fdbc42d/,
+      /legacy-no-dco/,
+      /not a retroactive DCO certification or copyright assignment/,
+    ],
   },
   {
     file: "scripts/check-dco.mjs",

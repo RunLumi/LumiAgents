@@ -14,9 +14,11 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import {
   KNOWN_IMPORT_BASES,
+  LEGACY_DCO_CUTOFF,
   evaluateDco,
   extractSignOffEmails,
   normalizeEmail,
+  readLegacyDcoExceptions,
 } from "../../../scripts/check-dco.mjs";
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
@@ -76,7 +78,17 @@ test("DCO：导入基线白名单只含已记录的上游基点", () => {
   assert.deepEqual(KNOWN_IMPORT_BASES, ["872ad960de7ec172591f7e1952f7849229f94521"]);
 });
 
-test("DCO：豁免集合精确豁免（导入祖先不误报，新提交不豁免）", () => {
+test("DCO：历史例外固定在不可移动 cutoff，且不是新提交通配符", () => {
+  const { document, hashes } = readLegacyDcoExceptions();
+  assert.equal(document.cutoffMain, LEGACY_DCO_CUTOFF);
+  assert.match(document.policy, /do not certify DCO/);
+  assert.match(document.policy, /New commits require genuine author Signed-off-by/);
+  assert.ok(document.exceptions.every((entry) => entry.status === "legacy-no-dco"));
+  assert.equal(hashes.size, document.exceptions.length);
+  assert.ok(hashes.size > 0);
+});
+
+test("DCO：豁免集合精确豁免（历史提交不误报，新提交不豁免）", () => {
   const exempt = new Set(["base0", "base1"]);
   const failures = evaluateDco({
     commits: [
@@ -96,7 +108,7 @@ test("LICENSING.md：永久授权 + 竞争边界 + FAQ 存在", () => {
   assert.match(doc, /perpetual and irrevocable/);
   assert.match(doc, /Competitors may lawfully build/);
   assert.match(doc, /Can a business use Lumi Agents for free/);
-  assert.match(doc, /Does Apache grant rights to the Lumi name/);
+  assert.match(doc, /Does Apache grant trademark rights to the Lumi name or mark/);
   assert.match(doc, /What can't this licensing model protect/);
   assert.match(doc, /Must ordinary contributors assign copyright\?/);
 });
@@ -112,7 +124,8 @@ test("CONTRIBUTING.md：DCO 1.1 官方原文存在且未被改写", () => {
 
 test("TRADEMARKS.md：许可与品牌分离、无注册/排他声明", () => {
   const doc = read("TRADEMARKS.md").replace(/\n/g, " ");
-  assert.match(doc, /does not grant\s+rights to the name/);
+  assert.match(doc, /does \*\*not\*\*.*grant trademark permission/);
+  assert.match(doc, /does \*\*not\*\* retract copyright permissions/);
   assert.match(doc, /Nothing here claims trademark registration/);
   assert.match(doc, /independent fork/);
   assert.match(doc, /ZCode/);

@@ -64,7 +64,8 @@ jobs:
       - name: Required licensing/contribution documents exist
         run: |
           for f in LICENSE LICENSING.md RIGHTS.md CONTRIBUTING.md TRADEMARKS.md \
-                   docs/licensing/COMPLIANCE.md docs/licensing/MODIFICATIONS.md; do
+                   docs/licensing/COMPLIANCE.md docs/licensing/MODIFICATIONS.md \
+                   docs/licensing/dco-legacy-exceptions.json; do
             test -f "$f" || { echo "::error::missing required document: $f"; exit 1; }
           done
 
@@ -84,9 +85,9 @@ jobs:
             { echo "::error::RIGHTS.md lost Cloudjet stewardship"; exit 1; }
           grep -q "Copyright 2026 Z.AI Co., Ltd" RIGHTS.md || \
             { echo "::error::RIGHTS.md lost upstream copyright boundary"; exit 1; }
-          # Normalize formatting without weakening the required declaration.
-          node -e 'const text = require("node:fs").readFileSync("TRADEMARKS.md", "utf8").replace(/\s+/g, " "); if (!text.includes("does not grant rights to the name")) process.exit(1)' || \
-            { echo "::error::TRADEMARKS.md lost the license/brand separation"; exit 1; }
+          # Normalize formatting without weakening the copyright/trademark distinction.
+          node -e 'const text = require("node:fs").readFileSync("TRADEMARKS.md", "utf8").replace(/\s+/g, " "); if (!text.includes("does **not**") || !text.includes("grant trademark permission") || !text.includes("does **not** retract copyright permissions")) process.exit(1)' || \
+            { echo "::error::TRADEMARKS.md lost the copyright/trademark separation"; exit 1; }
 
   license-gates:
     runs-on: ubuntu-latest
@@ -104,14 +105,18 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
 
-      - name: Maintainer attribution regression tests
+      - name: Attribution and dependency-graph regression tests
         run: >-
           node --experimental-strip-types --test
           scripts/lumi-maintainer-credit.test.mjs
           scripts/lumi-credits-access.test.mjs
+          scripts/third-party-npm.test.mjs
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Licensing policy tests
+        run: node --import tsx --test packages/ui/test/lumiLicensingPolicy.test.ts
 
       - name: Third-party material gate (strict)
         run: node scripts/licenses.mjs check --strict

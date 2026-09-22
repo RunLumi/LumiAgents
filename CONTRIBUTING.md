@@ -12,8 +12,10 @@ licensing and contribution policy is set in
 
 Contributions to first-party public code are made under the **Developer
 Certificate of Origin 1.1** (below) plus the **Apache-2.0** license. You sign off
-every commit you submit (`git commit -s`); you keep copyright; Lumi and everyone
-else receive the Apache grant for your contribution as part of the distribution.
+every new commit you submit (`git commit -s`); the applicable copyright owner
+retains copyright unless a separate assignment says otherwise, while Lumi and
+everyone else receive the Apache grant for the contribution as part of the
+distribution.
 You do **not** assign copyright and there is no CLA to sign. If you are not the
 sole author of your contribution, or your employer may have rights in it, you must
 have their authorization before submitting — that is what the DCO's "(d)" line is
@@ -41,10 +43,11 @@ If your commits fail the DCO check, push corrected commits with proper sign-off
 ### Employer / third-party authorization
 
 If you contribute as part of your job, or your employer's IP policy could claim
-your work, get their approval first. The DCO's "(d)" certification covers this:
-_"I understand and agree that this project and the contribution are public and
-that a record of the contribution is maintained indefinitely."_ plus the right to
-submit under the license. When in doubt, ask your employer before opening the PR.
+your work, get their approval first. DCO clauses (a)–(c) require that you have the
+right to submit the contribution under the project's license. Clause (d) separately
+records your understanding that the contribution and contribution record are
+public and maintained indefinitely. When in doubt, ask your employer before
+opening the PR.
 
 ### AI-assisted contributions
 
@@ -66,6 +69,15 @@ Copied third-party or existing code requires attribution and evidence of license
 state the origin and license in the PR description, and keep the original license
 notice where the code lands. Contributions that cannot demonstrate the right to
 submit under Apache-2.0 will be declined.
+
+### Historical exceptions are not retroactive DCOs
+
+The exact pre-enforcement commits listed in
+[`docs/licensing/dco-legacy-exceptions.json`](docs/licensing/dco-legacy-exceptions.json)
+are grandfathered only so CI can evaluate current history without falsifying old
+trailers. Those entries are **not** DCO certifications, copyright assignments, or
+proof that Cloudjet owns the work. The exception set is frozen at an immutable
+cutoff commit; new commits must carry genuine author sign-off.
 
 ### Merge mode: preserve sign-offs
 

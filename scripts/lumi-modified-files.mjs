@@ -52,6 +52,7 @@ export const MODIFIED_FILES = [
   { path: "NOTICE.md", comment: "md" },
   { path: "README.md", comment: "md" },
   { path: "README.en.md", comment: "md" },
+  { path: ".env.example", comment: "hash" },
   // 生成物：声明由 scripts/generate-third-party-notices.mjs 的头部模板产出，
   // 保证每次重新生成都自带声明（不能靠事后手改生成物）。
   { path: "THIRD-PARTY-NOTICES.md", comment: "md" },
@@ -124,6 +125,8 @@ export const MODIFIED_FILES = [
   { path: "scripts/generate-third-party-notices.mjs", comment: "line" },
   { path: "scripts/doctor-macos-release-app.sh", comment: "hash", place: "afterShebang" },
   { path: "scripts/third-party-notices.mjs", comment: "line" },
+  { path: "scripts/licenses.mjs", comment: "line", place: "afterShebang" },
+  { path: "scripts/third-party-npm.mjs", comment: "line" },
 ];
 
 /**
@@ -179,11 +182,6 @@ export const NOTICE_EXCEPTIONS = [
  */
 export const UNDECLARED_WORKSPACE_CHANGES = [
   {
-    path: ".env.example",
-    reason:
-      "仓库所有者的本地改动（App Store Connect / MAS 凭据占位符），非 Lumi 品牌或合规改动，不由本分支声明",
-  },
-  {
     path: ".gitignore",
     reason:
       "仓库所有者的本地改动（忽略 App Store Connect 的 *.p8 私钥），非 Lumi 品牌或合规改动，不由本分支声明",
@@ -199,10 +197,7 @@ export const UNDECLARED_WORKSPACE_CHANGES = [
  * 上游资源被 Lumi 原创资产整体替换、因而不需要逐像素声明的位置。
  * 这些条目同样登记在 docs/licensing/MODIFICATIONS.md。
  */
-export const REPLACED_ASSETS = [
-  { path: "packages/desktop/build/dmg_background.png", status: "still-upstream" },
-  { path: "packages/desktop/build/dmg_background@2x.png", status: "still-upstream" },
-];
+export const REPLACED_ASSETS = [];
 
 function noticeBlock(comment) {
   switch (comment) {

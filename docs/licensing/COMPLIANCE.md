@@ -9,19 +9,18 @@
 
 ## 1. 结论摘要
 
-| 项目                 | 状态                                                                                                                                     |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --- | -------------- | --------------------------------------------------------- |
-| 项目维护主体         | **CLOUDJET SOLUTIONS PTE. LTD.**（Singapore UEN **201708398E**）；负责 Lumi Agents 分支维护与发布，不据此取得上游版权 |
-| 第一方许可证         | **Apache-2.0**，保留上游 `LICENSE` 原文（含 `Copyright 2026 Z.AI Co., Ltd`）；Cloudjet 自有/受让 Lumi 内容的权利边界见 `RIGHTS.md` |
-| 上游归属与 NOTICE    | 保留；NOTICE 原文段落一字未改，Lumi 说明单独成节                                                                                         |     | §4(b) 修改声明 | 42 个已修改文件内联声明 + 31 个注释/二进制例外（第 4 节） |
-| 第三方材料           | 复用上游 `scripts/licenses.mjs` 管线；已重新生成并校验通过                                                                               |
-| 第三方材料**完整性** | ✅ 19 项逐条了结（1 项真实版本适用许可正文 + 18 项有据可查的复核结论）；`check --strict` 通过。**18 条结论仍需法务签署**（第 5.1、9 节） |
-| 法务材料可访问性     | 桌面端新增离线“开源许可”窗口；Web 输出声明资源 + `<link rel="license">`                                                                  |
-| 自动更新             | **默认关闭**；仅在显式配置 Lumi 自有 https 更新源时启用                                                                                  |
-| 产品遥测             | **默认关闭**；需 `LUMI_TELEMETRY=1` 且自备端点                                                                                           |
-| 上游数据目录 / 协议  | **保留不变**（`ZCode`、`zcode://`、`@zcode/*`、`ZCODE_*`、`zcode` CLI）                                                                  |
-| 贡献溯源（DCO）      | 门禁已就位并如实运行；main 现存 **9 个未签名提交**（第 9 节 #11），未代签，等作者本人认证                                                |
-| 发布就绪             | ❌ 否 —— 第 9 节列出必须由所有者处理的阻塞项                                                                                             |
+| 项目 | 当前状态 |
+| --- | --- |
+| 项目维护主体 | **CLOUDJET SOLUTIONS PTE. LTD.**（Singapore UEN **201708398E**）负责 Lumi Agents 分支维护、发布、品牌与路线图；维护身份本身不转移上游版权 |
+| Apache 覆盖内容 | 根 `LICENSE` 与上游字节一致，保留 `Copyright 2026 Z.AI Co., Ltd`；Cloudjet/Lumi 第一方内容只在实际拥有权利的范围内主张版权 |
+| 第三方内容 | 继续按各自许可分发；`third-party/inventory.json` 当前有 **15** 条人工材料复核记录、`reviewRequired=0`，15 条均仍标记 `legalSignOff: true` |
+| NOTICE | Lumi addendum 与上游 NOTICE 正文分离；上游正文保持逐字一致 |
+| 打包元数据 | 本修复分支将 homepage/author/maintainer 指向 Lumi/Cloudjet，同时保留 ZCode 上游版权事实，不再把 Z.AI/ZCode 产品联系方式伪装成 Lumi 联系方式 |
+| DMG 上游背景图 | 本修复分支已删除两张继承 ZCode 背景图，并改用无图片的 Lumi warm-paper 纯色背景 |
+| DCO | 截至 `b0d31a1e3ae29c2afcb08d8eb04db34d5fdbc42d` 有 **14** 个历史非 merge 提交缺少 DCO；以精确 SHA 冻结为 legacy exception，**不**补签、不视为 DCO/版权转让；所有新提交仍必须真实签署 |
+| CI strict license gate | main 上最近一次失败源于跨平台 optional dependency 被错误当作当前平台必装；本修复分支改为通用 optional-edge 语义，必须以 CI 重新通过 `check --strict` 为完成标准 |
+| 分支保护 | 当前 GitHub `main` 未启用 required status checks；工作流存在但不能阻止管理员/直接 merge。需按 `docs/governance/GITHUB-RULESET.md` 在 GitHub 设置中启用 |
+| 发布就绪 | **尚未自动判定为就绪**：至少需要 CI 全绿、第三方复核的人工法务判断、目标平台签名/公证（如适用），以及商业权利链的私下书面证据 |
 
 ### 关于「保留 Apache-2.0」的边界
 
@@ -95,11 +94,11 @@ node scripts/lumi-modified-files.mjs check
 - 例外机制：
   - `package.json` 等 JSON（`json-no-comments`）：新增 `lumi:…` 脚本；声明落在
     `MODIFICATIONS.md` + 根 `NOTICE.md`，并由清单校验存在性。
-  - 位图/容器格式（`binary-generated`）：全部由
+  - 位图/容器格式（`binary-generated`）：由
     `scripts/build-lumi-brand-assets.mjs` 从 `brand/` 原创 SVG 确定性生成，不含上游字节；
-    31 个路径逐条登记（30 个二进制 + `third-party/inventory.json`）。
-- 待法务复核：`packages/desktop/build/dmg_background(.@2x).png` 仍是上游 DMG 背景图，
-  见第 9 节。
+    当前 `NOTICE_EXCEPTIONS` 登记 **28** 个此类生成资产。其余无法内联声明的 JSON/生成清单
+    以 `json-no-comments` 机制登记。具体数量以 `scripts/lumi-modified-files.mjs` 为单一事实源。
+- 继承的 `packages/desktop/build/dmg_background*.png` 已删除，不再属于声明例外或法务 blocker。
 
 **偏差说明**：只为「修改了上游内容」的文件加声明；为 Lumi 新增的独立文件（例如
 `licensesWindow.ts`、`lumiDistribution.ts`、`brand/*`）属于 addition，不属于 §4(b) 的
@@ -129,11 +128,10 @@ modified file。这一点在 `MODIFICATIONS.md` 第 1 节明确记录。
 | 原生搜索工具     | `THIRD-PARTY-NOTICES.txt` + `SOURCES.json`（含二进制与来源归档哈希）                                                                                            |
 
 **边界**：npm 包元数据的 SPDX 标识、根许可证、或生成出的通知文件都不构成「所有组件已澄清」
-的证明。上游遗留的 19 项未补齐条目已在本分支逐条了结：`@arms/rum-*` 3 项与经其传递引入的
-`keyv@4.5.4`、rrweb 家族共 5 项随**闭源遥测 SDK 的整体移除**（见下）不再进入发行物；
-`keyv` 一项曾取得**真实且版本适用**的许可正文后随组件移除而删除登记；其余 13 项属于
-「权利人从未提供声明」——证据不存在，按第 5.1 节的复核模型记录为**有据可查的结论**，
-而不是宣称找到了原始声明。
+的证明。当前 `third-party/inventory.json` 有 **15** 条 `materialReviews`、`reviewRequired=0`；
+15 条 review 均仍要求人工 `legalSignOff`。此前风险最高的闭源 `@arms/rum-*` 遥测 SDK 及仅由它
+带入的相关生产依赖已被整体移除，不再进入发行物。现存 review 是“有证据的处置记录”，不是机器
+替法务宣告风险为零。
 
 ### 5.1 材料复核模型（materialReview）
 
@@ -151,8 +149,9 @@ modified file。这一点在 `MODIFICATIONS.md` 第 1 节明确记录。
   缺口仍然进入 `reviewRequired`，`--strict` 仍然失败（负向用例见
   `packages/ui/test/lumiLicenseReview.test.ts`）。
 
-**证据基础（逐项可复核）**：对 15 个 npm 包，用 registry 发布记录逐一核对归档哈希、发布时点、
-`gitHead` 与许可文件的提交历史。结论是 14 个包在其**发布版本对应的时点**根本没有许可文件：
+**证据基础（逐项可复核）**：对 npm、vendored 与预编译材料按各自可获得的 registry/archive/
+revision 证据核对发布时点、哈希、`gitHead` 与许可文件历史。部分 npm 条目在其**发布版本对应的时点**
+没有许可文件，例如：
 `boolbase`、`quickjs-wasi`、`react-remove-scroll-bar` 的 LICENSE 是在发布**之后**才补上的
 （`quickjs-wasi` 的补交提交本身就写着 "fix: include the wrapper's MIT license notice"），
 `unsafe-pointer`、`strict-event-emitter`、`lazy-val`、`semaphore`、`is-node-process`、
@@ -280,8 +279,10 @@ bundle id、About/许可文案、侧栏与欢迎页 logo、i18n 产品名覆盖�
 
 ### 7.3 签名与发布
 
-- 打包版权串改为 `Copyright © 2026 Z.AI Co., Ltd — Lumi Agents independent fork`，
-  不再从 `extraMetadata.author.name` 推导出上游 `ZCode`。
+- 打包版权/归属串在本修复中改为
+  `ZCode portions © 2026 Z.AI Co., Ltd; Lumi Agents developed and maintained by CLOUDJET SOLUTIONS PTE. LTD.`。
+  该字段保留上游版权事实，同时不把 Lumi Agents 呈现为 Z.AI 官方发行版，也不虚构 Cloudjet
+  对全部 fork 代码的版权转让。
 - macOS 签名/公证**未执行**（本机无 Developer ID Application 身份）。签名门禁
   `pnpm verify:macos-release-signing` 在未签名构建上**已知失败**（fail-closed），
   这是预期行为，不是回归。
@@ -290,93 +291,73 @@ bundle id、About/许可文案、侧栏与欢迎页 logo、i18n 产品名覆盖�
 
 ---
 
-## 8. 验证：实际执行的命令与结果
+## 8. 验证：当前证据状态
 
-| 命令                                                                                                              | 结果                                                                                |
-| ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `node scripts/check-workspace-freshness.mjs`                                                                      | ✅ 通过（main 与 origin/main 同步，ahead 0 / behind 0）                             |
-| `pnpm architecture:check -- --changed`                                                                            | ✅ `architecture: OK`，violations 0 / new 0                                         |
-| `pnpm typecheck`                                                                                                  | ✅ 通过（无输出）                                                                   |
-| `pnpm lint`                                                                                                       | ✅ **0 errors**，70 warnings（与改动前基线一致，均为存量告警）                      |
-| `pnpm fmt:check`                                                                                                  | ⚠ 仅 `DESIGN.md` 未格式化（**改动前即失败的本地未提交工作**，刻意保留）             |
-| `node scripts/licenses.mjs check`                                                                                 | ✅ 通过（1734 个实装包；重新生成声明后新鲜度校验通过）                              |
-| `node scripts/licenses.mjs check --strict`                                                                        | ✅ 通过：19 项逐条了结，`reviewRequired` 为空（18 条结论待法务签署，见第 5.1/9 节） |
-| `node scripts/lumi-modified-files.mjs check`                                                                      | ✅ 通过（42 个已修改文件 + 35 个登记例外）                                          |
-| `node scripts/check-lumi-branding-drift.mjs`                                                                      | ✅ 通过（23 项集成点 + §4(b) 声明）                                                 |
-| `node scripts/check-lumi-branding-drift.mjs --against-upstream`                                                   | ✅ 通过（无「改了上游文件却没登记」的漏网）                                         |
-| `node --import tsx --test packages/ui/test/{lumiCompliance,lumiLicenseReview,lumiBranding}.test.ts`               | ✅ 35/35 通过（含漂移检查与复核判定的负向用例）                                     |
-| `node scripts/build-lumi-brand-assets.mjs`                                                                        | ✅ 生成 9 个 PNG 尺寸 + `.icns`(11) + `.ico`(7)                                     |
-| `pnpm --filter @zcode/desktop build:no-runtime-assets`                                                            | ✅ 通过（tsup + vite）                                                              |
-| `ZCODE_ENV=production node packages/desktop/scripts/bundle.mjs --skip-prepare --skip-build --os mac --arch arm64` | ✅ 通过（bundle-size audit 167.8 MiB / 500 MiB）                                    |
+本节只记录**当前可追溯的证据**，不把历史某次 green run 当成现在的状态。
 
-### 8.1 打包产物实际检查（macOS arm64 `.app` 与 `.dmg`/`.zip`）
+### 8.1 main 合入本修复前的最近事实
 
-对**重新打包**的 `packages/desktop/dist/mac-arm64/Lumi Agents.app` 逐项检查：
+- PR #18 的 `licensing-docs` 与 Cloudjet attribution regression tests 通过。
+- 同一 run 的 `license-gates` 在
+  `@napi-rs/canvas-linux-arm64-musl@0.1.100` 停止：锁文件中的跨平台
+  `optionalDependencies` 被 scanner 错当成当前 Linux/glibc 必装项。
+- 同一 run 的 DCO job 因 PR #18 提交缺少真实作者 `Signed-off-by` 而失败。
+- 由于 strict gate 提前退出，后续 modification-notice / drift steps 没有执行，因此不能写成通过。
+- GitHub `main` 当时没有 required-status-check 保护，所以 red workflow 仍被 merge。
 
-| 检查项                                                        | 实测值                                                                                                                                | 结论                   |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| `CFBundleIdentifier`                                          | `app.lumi.agents`                                                                                                                     | ✅                     |
-| `CFBundleName` / `CFBundleDisplayName` / `CFBundleExecutable` | `Lumi Agents`                                                                                                                         | ✅                     |
-| `NSHumanReadableCopyright`                                    | `Copyright © 2026 Z.AI Co., Ltd — Lumi Agents independent fork`                                                                       | ✅ 保留上游权利人      |
-| `CFBundleURLSchemes`                                          | `zcode`（仅显示名改为 Lumi Agents）                                                                                                   | ✅ 兼容性保留          |
-| 应用图标                                                      | `Resources/icon.icns`、`icon.png` 与 `packages/desktop/build/` **字节完全相同**（sha256 一致）                                        | ✅ 已是 Lumi 原创资产  |
-| 第一方许可证                                                  | `Resources/LICENSE`，第 190 行为 `Copyright 2026 Z.AI Co., Ltd`                                                                       | ✅                     |
-| NOTICE                                                        | `Resources/NOTICE.md`（含 Lumi 分支说明，上游正文保留）                                                                               | ✅                     |
-| 第三方声明                                                    | `Resources/THIRD-PARTY-NOTICES.md`（2,032,497 B），本次重打包后与仓库内源文件 **字节完全相同**（`cmp` 一致），并含第 5.1 节的复核结论 | ✅                     |
-| 依赖专属条款                                                  | `Resources/licenses/electron/{LICENSE,LICENSES.chromium.html,SOURCES.json}`，与应用自身 `LICENSE` **分开存放**                        | ✅                     |
-| 更新元数据                                                    | 包内 `app-update.yml` → `provider: generic, url: http://localhost:8081`；**不含 `zcode.z.ai`**（`grep -c` = 0）                       | ✅ 未指向上游          |
-| 签名                                                          | `Signature=adhoc`，`TeamIdentifier=not set`                                                                                           | ⚠ 未签名（第 9 节 #7） |
+### 8.2 本 2026-09 compliance repair 的完成标准
 
-**产物检查发现并修复的真实缺陷**：首次打包后 `Resources/` 里**只有** `THIRD-PARTY-NOTICES.md`，
-没有第一方 `LICENSE` 与 `NOTICE.md`（CLI/SEA 发行包同样缺失）。这意味着 About「开源许可」窗口只能显示
-不可用状态，且不满足 §4(a)/§4(d)。已在 `packages/desktop/electron-builder.config.js`（extraResources）与
-`scripts/build-zcode.mjs`（CLI/SEA 包根）补齐，并对 Web 构建插件（`third-party-notices.mjs` 的 vite 插件）
-一并输出 `LICENSE` 与 `NOTICE.md`，随后重新打包验证通过（见上表）。
+必须在最终 PR head 上全部满足：
 
-**回归对照**：改动前基线为 lint 0 errors / 70 warnings、typecheck 通过、fmt 仅 `DESIGN.md`
-失败。本次工作后三项均与基线一致。**发现并修复的自身回归**：修改声明插入到
-`bundle.mjs` / `doctor-macos-release-app.sh` 的 shebang 之前会导致脚本不可执行；已改为
-shebang 之后插入，并加了 `place` 约束与行内说明。
+```bash
+node --experimental-strip-types --test \
+  scripts/lumi-maintainer-credit.test.mjs \
+  scripts/lumi-credits-access.test.mjs \
+  scripts/third-party-npm.test.mjs
+node --import tsx --test packages/ui/test/lumiLicensingPolicy.test.ts
+node scripts/licenses.mjs check --strict
+node scripts/lumi-modified-files.mjs check
+node scripts/check-lumi-branding-drift.mjs
+pnpm typecheck
+pnpm lint
+pnpm fmt:check
+pnpm architecture:check -- --changed
+```
 
-**未执行**（环境或凭据不可用，不做任何通过声明）：
+另外检查：
 
-- macOS 签名 / 公证（无 Developer ID 身份与公证凭据）。
-- Windows / Linux 打包与签名（本机为 macOS arm64）。
-- 应用启动与 GUI 交互冒烟（未启动 Electron）。因此 About「开源许可」窗口与折叠 L 标记的
-  渲染效果是**静态核对**（读已打包文件与源码），不是界面截图验证；Web 输出同样未在浏览器中打开。
-- E2E 交互覆盖（本 checkout 未接入统一 E2E 入口）。
-- 桌面/Web 小屏与窄视口截图对比。
-- **法务审查**：第 5.1 节的 18 条复核结论是工程侧的证据记录，不构成法律意见；签署前不应视为合规完成。
-- 注：重打包时系统卷空间耗尽（`ENOSPC`），`asar` 解包需要临时空间，已将 `TMPDIR` 指向
-  仓库内被忽略的 `.tmp/` 后成功；该临时目录已删除。
-- 注：`tsconfig.main.json`（`src/main`）**不在** `pnpm typecheck` 的命令范围内；单独用 tsc 跑该配置
-  会报 83 个**存量**错误（与本次改动无关的浏览器/遥测类型），本次改动的 main 进程文件（`about.ts`、
-  `aboutWindow.ts`、`licensesWindow.ts`、`autoUpdater.ts`）不在错误列表中。语法层面由 `pnpm lint` 覆盖。
+- root `LICENSE` blob 必须仍为 `550d8df4cfc74878663a511caa97852f15fd9592`；
+- 从“本声明适用于……”起，`NOTICE.md` 的 inherited body 必须与 upstream 字节一致；
+- `packages/desktop/build/dmg_background*.png` 必须不存在，DMG 配置不得引用它们；
+- packaged metadata 不得把 `zcode.z.ai` / `dev@zcode.z.ai` / `ZCode <...>` 当作 Lumi homepage/author/maintainer；
+- 最终单一 PR commit 必须由真实作者 DCO 签署；工具不得代签。
+
+未实际执行/通过的项必须写成“未验证”，不能从旧记录推断为通过。
 
 ---
 
 ## 9. 发布阻塞项与所有者行动
 
-以下项目**必须由所有者处理**，本次不代为决定。它们全部是「发布前必办」，不是「已知可忽略」。
+以下只保留真实的发布/治理阻塞项；已经解决或只是产品选择的事项不再伪装成 blocker。
 
-| #   | 阻塞项                                                                                                                                          | 现状                                                   | 需要的行动                                                                                                           | 所有者             |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| 1   | 剩余 12 条第三方材料复核结论需**法务签署**（`@arms/rum-*` 已随遥测替换移除；Skia 构建开关不可查的风险最高）                                     | `check --strict` 已通过，结论标注 `legalSignOff: true` | 确认「权利人只声明标识符、无版权声明」的处置可接受；对应组件已移除即无需处置                                         | 法务               |
-| 2   | `dmg_background.png` / `@2x` 仍是上游 DMG 背景图                                                                                                | 未替换                                                 | 由设计按 DMG 窗口尺寸产出 DESIGN.md 合规替换图                                                                       | 设计 + 法务        |
-| 3   | 品牌资产为**过渡原创标记**（`brand/*`，非官方品牌）                                                                                             | 已生成全平台图标，非最终品牌                           | 取得官方 folded-L 原图后替换 `brand/` 并重跑 `scripts/build-lumi-brand-assets.mjs`                                   | 品牌               |
-| 4   | Geist / Geist Mono **字体未随包**                                                                                                               | 已声明字体栈，回退系统字体                             | 取得字体授权并内嵌，或确认回退可接受                                                                                 | 品牌 + 法务        |
-| 5   | 自动更新未配置                                                                                                                                  | 默认关闭（安全）                                       | 提供 Lumi 自有 https 更新源与产物；在此之前保持关闭                                                                  | 发布工程           |
-| 6   | 遥测未配置                                                                                                                                      | 默认关闭（安全）                                       | 若需上报，配置 `LUMI_TELEMETRY=1` 与自备端点；否则保持关闭                                                           | 发布工程 + 隐私    |
-| 7   | macOS 签名 / 公证未执行                                                                                                                         | 无 Developer ID 身份与公证凭据                         | 按 `docs/upstream/MACOS-SIGNING-AND-NOTARIZATION.md` 配置后执行门禁                                                  | 发布工程           |
-| 8   | Lumi 与 ZCode 共享数据目录与 `zcode://` scheme                                                                                                  | 刻意共存，未迁移                                       | 决定是否拆分；若拆分需幂等、可回滚、备好备份的迁移                                                                   | 产品 + 工程        |
-| 9   | OAuth 回调 / 深链接 / 平台注册仍指向既有标识                                                                                                    | 未改动、未重定向                                       | 若 Lumi 需要独立账号体系，需单独注册与迁移决策                                                                       | 产品 + 发布        |
-| 10  | 翻译长尾中的产品名（未落入覆盖层保护名单的少数文案）                                                                                            | 覆盖层已处理主体                                       | 与译者复核；不要用全局替换解决                                                                                       | 本地化             |
-| 11  | DCO 溯源：main 上 **9 个提交缺少 `Signed-off-by`**（8 个分叉压缩提交，加 PR #8 的 squash 提交 `55eb7a1`——GitHub squash 重写作者并丢弃 trailer） | `check-dco.mjs` 已如实报告；未代签                     | 由真实作者本人补签（`git commit --amend -s` 后 force-push，或由本人重新 squash）；今后合并使用 merge commit 保留签名 | 所有者（作者本人） |
+| # | 阻塞项 | 当前事实 | 完成条件 | 所有者 |
+| --- | --- | --- | --- | --- |
+| 1 | 第三方材料复核的人工法律判断 | `third-party/inventory.json` 当前有 **15** 条 `materialReviews`，全部 `legalSignOff: true`；机器门禁不能代替法律判断 | 对 15 条记录逐项确认其证据/残余不确定性可接受，并把签署证据保存在私有法务档案；公开仓库只记录状态，不存特权材料 | 法务/所有者 |
+| 2 | CI 必须全绿 | main 最近的 strict gate 因 optional cross-platform native package 扫描错误而失败；本修复分支已修 scanner 与回归测试 | PR 上 `dco`、`licensing-docs`、`license-gates` 全部通过，包括 `check --strict`、修改声明与 drift gate | 工程 |
+| 3 | 当前修复 PR 的 DCO | 工具不能代表作者作 DCO 认证 | 由真实提交作者对最终单一提交执行 `git commit -s`/等价真实签署后再 merge | 提交作者 |
+| 4 | GitHub merge governance | `main` 当前未保护，失败的检查仍可被 merge | 按 `docs/governance/GITHUB-RULESET.md` 启用 PR + required checks + 禁止 force-push/delete；保留 merge/rebase 以保存 DCO trailers | Repo admin |
+| 5 | macOS 直接分发签名/公证 | 是否完成取决于具体 release workflow 与凭据，不由源码声明证明 | 对目标 release 运行签名、公证和安装后验证；未验证时不得把 artifact 标为正式可信 release | 发布工程 |
+| 6 | 商业权利链 | README/package author/steward 字段不是版权转让证据 | 对 founder/employee/contractor/brand work 保存适用的雇佣/IP 条款或书面 assignment；VC/商业尽调以这些私有证据为准 | Cloudjet/法务 |
 
-**不得**把「界面显示 Lumi Agents」等同于「分支已可分发」。第 1 项（复核结论的法务签署）、
-第 2 项（DMG 背景图）、第 7 项（签名/公证）、第 9 项（账号与深链）未解决前，不应对外发布安装包。
-第 1 项的**工程侧工作已完成**（`check --strict` 通过、复核记录可核），剩下的只有人的判断，
-因此它仍然是阻塞项：不能用「检查通过」代替法务签署。
+### 已解决或降级为非阻塞
+
+- **上游 DMG 背景图**：本修复分支删除 `dmg_background.png` / `@2x`，并使用无图片的 Lumi 纯色 DMG。
+- **自动更新/遥测**：默认关闭是安全状态；只有启用相应 Lumi 服务时才需要额外发布/隐私审查。
+- **Geist 字体**：当前未随包分发，使用系统 fallback，因此不存在“未获授权字体被打包”的问题；若未来内嵌再单独核对字体许可。
+- **ZCode 数据目录、`zcode://`、`@zcode/*`、`ZCODE_*`**：作为兼容性标识保留，不属于产品品牌归属错误；如未来迁移，应另做可回滚的数据迁移 ADR。
+- **品牌图形是 interim**：只要当前原创资产权利链清楚且展示可接受，是否更换最终视觉是品牌决定，不自动构成开源许可 blocker。
+
+**停止条件：** 在第 1–4 项未完成前，不应把仓库描述为“所有合规门禁已完成”；目标平台 release 还需满足第 5 项，商业/融资尽调还需满足第 6 项。
 
 ---
 
@@ -392,8 +373,8 @@ shebang 之后插入，并加了 `place` 约束与行内说明。
 | 层                              | 内容                               | 权利状态                                                                                            |
 | ------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------- |
 | 上游（ZCode/Z.AI 及其贡献者）   | Apache-2.0 导入的全部代码          | **已核验**：Apache-2.0 授权随分发持续有效（LICENSE 原文保留）；上游不提供 Lumi 的合同承诺           |
-| 社区贡献（未来）                | 按 DCO + Apache-2.0 提交的公共代码 | 机制已就绪（CONTRIBUTING.md/CI）；**尚无已接收的 DCO 贡献**；贡献者保留版权                         |
-| Fork 工程（本分支已完成的工作） | 品牌/遥测替换/打包/合规脚本等      | 作者是 `hong@cloudjetkpi.com`（5 个提交，见 git 历史）；**尚未核实**该作者的雇佣/委托关系与成果归属 |
+| 社区/项目贡献                  | 按 DCO + Apache-2.0 接受的新公共代码 | DCO 门禁已就绪；历史中存在已签署与未签署提交，未签署历史仅以 exact-SHA legacy exception 记录，不补签、不推导版权归属 |
+| Fork 工程（本分支已完成的工作） | 品牌/遥测替换/打包/合规脚本等      | 截至 legacy cutoff 有 19 个非 merge fork 提交：Git 记录中 14 个作者为 `j <hong@cloudjetkpi.com>`、5 个为 `Stream Entry <978862+streamentry@users.noreply.github.com>`；其中 14 个无 DCO。**Git 作者字段不等于 Cloudjet 权利链证据** |
 | 品牌资产                        | `brand/` 折叠 L 过渡标记           | 项目自产；**未注册商标**，无排他权利声明（TRADEMARKS.md）                                           |
 | 商业层（未建）                  | 托管/企业功能                      | **不存在**；必须独立私有仓库 + 独立权利链，本仓库无任何代码被划走                                   |
 
@@ -401,13 +382,13 @@ shebang 之后插入，并加了 `place` 约束与行内说明。
 
 | #   | 事项                                                             | 现状                                             | 需要的证据/行动                                                                                   |
 | --- | ---------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| O1  | fork 工程作者（`hong@cloudjetkpi.com`）的雇佣/委托与成果归属     | **未核实**；README/COMPLIANCE 均未做公司归属声明 | 书面雇佣/委托协议或版权转让；确认无前雇主权利残留；在此之前不添加任何 RunLumi/CLOUDJET 的版权声明 |
-| O2  | RunLumi / Lumi / CLOUDJET SOLUTIONS PTE. LTD. 与本项目的法律关系 | 未在仓库中声明（本清单不构成声明）               | 由所有者出具书面确认：谁有权以实体名义商用、签约、注册商标                                        |
+| O1  | Fork 工程与品牌资产的 Cloudjet 权利链 | **公开仓库无法核实**；项目 steward/author metadata 不是 assignment | 私下保存适用的 founder/employee IP 条款、contractor assignment 与品牌资产权利证据；确认无冲突的前雇主/第三方权利 |
+| O2  | RunLumi / Lumi / CLOUDJET SOLUTIONS PTE. LTD. 与本项目的法律关系 | README/RIGHTS 已声明 Cloudjet 是项目 steward，但不据此推导所有版权 | 私下保存董事/公司授权、域名/品牌控制与签约授权证据；融资/客户尽调时提供官方公司资料和实际权利文件 |
 | O3  | 商标注册                                                         | 未注册、未申请                                   | 若需品牌保护，由权利人在目标辖区申请；文档不制造权利                                              |
 | O4  | 创始人/员工/承包商协议存档                                       | 不在仓库（也不应在公开仓库）                     | 签署并存档于私人法务存档；公开仓库只记录"已存档"状态                                              |
 | O5  | 未来商业模块的权利链                                             | 未开始                                           | 独立私有仓库 + 独立提交者协议（不得沿用本仓库 DCO 流程作商业再许可依据）                          |
 | O6  | 客户数据/生成输出的权利                                          | 无合同                                           | 由未来服务条款处理；本仓库不承诺排他所有权                                                        |
-| O7  | DCO 首批贡献                                                     | 尚无                                             | 首个外部 DCO 贡献落地后，在本文档记录其 PR 与签名核验结果                                         |
+| O7  | DCO 历史与未来贡献                                               | **14 个 legacy unsigned commit** 精确冻结于 `docs/licensing/dco-legacy-exceptions.json` | 不重写/伪造历史签名；所有 cutoff 之后新提交必须由真实作者签署，规则不得向后移动 cutoff |
 
 ### 10.3 与既成文档的衔接
 

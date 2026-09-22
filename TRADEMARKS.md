@@ -2,9 +2,12 @@
 
 # Trademarks and brand use
 
-This page separates **software-license permissions** from **brand permissions**.
-The Apache-2.0 license on this repository covers the software; it does not grant
-rights to the name "Lumi Agents", the Lumi logo, or other brand assets.
+This page separates **copyright-license permissions** from **trademark permissions**.
+Where Lumi source code, documentation, or artwork files are distributed under
+Apache-2.0, that copyright license applies to those covered files. Apache-2.0
+section 6 does **not**, however, grant trademark permission to use the "Lumi
+Agents" name, the folded-L mark, or other source identifiers in a way that implies
+origin, sponsorship, certification, or endorsement.
 
 **Scope disclaimer.** Nothing here claims trademark registration, exclusive rights,
 or any enforcement outcome. The Lumi name and folded-L mark are used in this
@@ -36,27 +39,24 @@ truthful origin ("fork of ZCode"), not to suggest sponsorship.
   Agents", "a fork of Lumi Agents", "works with Lumi Agents files").
 - **Nominative use**: refer to the product by name in articles, reviews,
   tutorials, benchmark tables, issue reports and comparison pages.
-- **Independent forks**: you may fork and redistribute the code under Apache-2.0.
-  Rename your build (do not call it "Lumi Agents"), state clearly that it is a
-  community fork and not affiliated with this project, and replace the logo if
-  your distribution could be confused with an official Lumi build.
+- **Independent forks**: you may exercise the copyright permissions granted by
+  Apache-2.0 for covered code and artwork. For trademark safety, use a distinct
+  product identity when a modified distribution could otherwise be confused with
+  an official Lumi Agents build, and describe the fork relationship truthfully.
 - **Unmodified redistribution**: redistributing the community edition verbatim
   (e.g. a mirror or a package repository) with clear attribution to this
   repository and no suggestion you produce it.
 
-## What is not permitted (as far as this project's intent goes)
+## Uses Cloudjet does not authorize as trademark uses
 
-- Distributing a modified or repackaged build under the "Lumi Agents" name or
-  with the Lumi logo in a way that suggests it is an official or endorsed
-  release.
-- Using the name or logo in a top-level product, domain, or company name that
-  implies origin, sponsorship or affiliation.
-- Using Lumi brand assets in metadata, stores or advertising in a way that
-  implies certification or partnership.
+Subject to applicable trademark and unfair-competition law, Cloudjet does not
+authorize uses of the Lumi Agents name or folded-L mark that falsely imply an
+official release, sponsorship, certification, partnership, or affiliation.
 
-Note the boundary: an Apache-licensed fork that respects the above is fully
-licensed. Brand concerns never revoke code licenses; they only address confusion
-about origin.
+This trademark position does **not** retract copyright permissions already
+granted under Apache-2.0 for covered artwork files. Copyright permission to copy
+or modify a file and trademark permission to use a mark as a product/source
+identifier are different rights.
 
 ## Third-party marks
 
