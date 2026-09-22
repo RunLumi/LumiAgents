@@ -18,8 +18,9 @@ everyone else receive the Apache grant for the contribution as part of the
 distribution.
 You do **not** assign copyright and there is no CLA to sign. If you are not the
 sole author of your contribution, or your employer may have rights in it, you must
-have their authorization before submitting — that is what the DCO's "(d)" line is
-for.
+have their authorization before submitting. DCO clauses (a)–(c) cover the
+right-to-submit basis; clause (d) separately records the public and persistent
+nature of the contribution record.
 
 ## Sign-off (DCO) — required for every commit
 
@@ -78,6 +79,26 @@ are grandfathered only so CI can evaluate current history without falsifying old
 trailers. Those entries are **not** DCO certifications, copyright assignments, or
 proof that Cloudjet owns the work. The exception set is frozen at an immutable
 cutoff commit; new commits must carry genuine author sign-off.
+
+### Retrospective attestation for an accidentally merged unsigned commit
+
+Do **not** expand the frozen legacy-exception cutoff and do not rewrite public
+`main` history merely to add a trailer. If a post-enforcement commit was already
+merged without DCO, the repository accepts a narrowly scoped retrospective
+attestation only when all of these are true:
+
+1. `docs/licensing/dco-attestations.json` names the **exact target SHA**, original
+   author email and subject, plus the canonical DCO 1.1 attestation statement.
+2. The commit that first introduces that target SHA into the attestation file is
+   a **later non-merge commit by the same normalized author email**.
+3. That introducing commit carries the attestor's genuine `Signed-off-by`.
+4. CI verifies that the attestation commit descends from the target commit and
+   that no other author can certify it.
+
+This is a provenance remediation for one exact contribution, not a copyright
+assignment, not a blanket exception, and not permission for maintainers or tools
+to sign on another person's behalf. Until the original author signs the
+attestation-introducing commit, the DCO gate must remain red.
 
 ### Merge mode: preserve sign-offs
 

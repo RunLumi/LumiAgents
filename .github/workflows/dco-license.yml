@@ -2,8 +2,9 @@
 name: DCO and licensing docs
 
 # Lightweight, least-privilege checks for pull requests:
-#   1. Every commit in the PR range carries a valid DCO 1.1 sign-off
-#      (author identity; no exceptions beyond the recorded import base).
+#   1. New PR commits carry valid author DCO 1.1 sign-off. Historical pre-cutoff
+#      exact-SHA exceptions are frozen; an already-merged post-cutoff unsigned
+#      commit is accepted only through verified same-author retrospective attestation.
 #   2. The licensing/contribution documents required by ADR 0001 exist
 #      and contain their required anchors (perpetual grant, boundary).
 #   3. Existing repo gates still run: license material check + Lumi
@@ -65,7 +66,8 @@ jobs:
         run: |
           for f in LICENSE LICENSING.md RIGHTS.md CONTRIBUTING.md TRADEMARKS.md \
                    docs/licensing/COMPLIANCE.md docs/licensing/MODIFICATIONS.md \
-                   docs/licensing/dco-legacy-exceptions.json; do
+                   docs/licensing/dco-legacy-exceptions.json \
+                   docs/licensing/dco-attestations.json; do
             test -f "$f" || { echo "::error::missing required document: $f"; exit 1; }
           done
 
@@ -85,6 +87,8 @@ jobs:
             { echo "::error::RIGHTS.md lost Cloudjet stewardship"; exit 1; }
           grep -q "Copyright 2026 Z.AI Co., Ltd" RIGHTS.md || \
             { echo "::error::RIGHTS.md lost upstream copyright boundary"; exit 1; }
+          grep -q "fa48dd3ec9e4cda8363b7bd1e2f819c23afe7493" docs/licensing/dco-attestations.json || \
+            { echo "::error::retrospective DCO attestation target disappeared"; exit 1; }
           # Normalize formatting without weakening the copyright/trademark distinction.
           node -e 'const text = require("node:fs").readFileSync("TRADEMARKS.md", "utf8").replace(/\s+/g, " "); if (!text.includes("does **not**") || !text.includes("grant trademark permission") || !text.includes("does **not** retract copyright permissions")) process.exit(1)' || \
             { echo "::error::TRADEMARKS.md lost the copyright/trademark separation"; exit 1; }

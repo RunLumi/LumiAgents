@@ -13,6 +13,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import {
+  DCO_ATTESTATION_STATEMENT,
   KNOWN_IMPORT_BASES,
   LEGACY_DCO_CUTOFF,
   evaluateDco,
@@ -88,6 +89,21 @@ test("DCO：历史例外固定在不可移动 cutoff，且不是新提交通配�
   assert.ok(hashes.size > 0);
 });
 
+test("DCO：post-cutoff remediation 只能针对 fa48 exact SHA，且声明不可漂移", () => {
+  const doc = JSON.parse(read("docs/licensing/dco-attestations.json"));
+  assert.equal(doc.schemaVersion, 1);
+  assert.equal(doc.canonicalStatement, DCO_ATTESTATION_STATEMENT);
+  assert.equal(doc.attestations.length, 1);
+  assert.deepEqual(doc.attestations[0], {
+    targetSha: "fa48dd3ec9e4cda8363b7bd1e2f819c23afe7493",
+    targetAuthorEmail: "978862+streamentry@users.noreply.github.com",
+    targetSubject: "fix: close licensing attribution and release-governance gaps",
+    statement: DCO_ATTESTATION_STATEMENT,
+  });
+  assert.match(doc.policy, /same normalized email/);
+  assert.match(doc.policy, /not a copyright assignment/);
+});
+
 test("DCO：豁免集合精确豁免（历史提交不误报，新提交不豁免）", () => {
   const exempt = new Set(["base0", "base1"]);
   const failures = evaluateDco({
@@ -120,6 +136,8 @@ test("CONTRIBUTING.md：DCO 1.1 官方原文存在且未被改写", () => {
   assert.match(doc, /\(d\) I understand and agree/);
   assert.match(doc, /not a copyright assignment/);
   assert.match(doc, /AI-assisted/);
+  assert.match(doc, /Retrospective attestation for an accidentally merged unsigned commit/);
+  assert.match(doc, /same normalized author email/);
 });
 
 test("TRADEMARKS.md：许可与品牌分离、无注册/排他声明", () => {
