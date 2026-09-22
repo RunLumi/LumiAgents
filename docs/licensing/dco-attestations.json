@@ -8,12 +8,6 @@
       "targetAuthorEmail": "978862+streamentry@users.noreply.github.com",
       "targetSubject": "fix: close licensing attribution and release-governance gaps",
       "statement": "I certify under Developer Certificate of Origin 1.1 that I had the right to submit the contribution contained in the exact target commit under this project's license."
-    },
-    {
-      "targetSha": "f3e3e1d4c36c1d4e8a230c36a74b9c6d1a8c0d69",
-      "targetAuthorEmail": "hong@cloudjetkpi.com",
-      "targetSubject": "add Mac App Store release pipeline",
-      "statement": "I certify under Developer Certificate of Origin 1.1 that I had the right to submit the contribution contained in the exact target commit under this project's license."
     }
   ]
 }
