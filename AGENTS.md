@@ -52,6 +52,9 @@
 - 保留兼容性标识：`@zcode/*`、`ZCODE_*`、`zcode://`、`zcode` CLI、`ZCode` 数据目录名。
 - 自动更新与产品遥测默认关闭（`packages/shared/src/lumiDistribution.ts`）；不得改回上游默认值。
 - 品牌图形来自 `brand/`，由 `pnpm lumi:brand-assets` 生成，不手工替换打包图标。
+- 许可/贡献政策（Apache-2.0 + DCO + 开放/商业边界）见 `LICENSING.md`、`CONTRIBUTING.md`、
+  `TRADEMARKS.md` 与 `docs/specs/lumi-agents/adr/0001-licensing-and-contribution-model.md`；
+  改动这些政策文件需要文档化评审，不得静默放宽。PR 提交需带 DCO 签名（`git commit -s`）。
 
 ## 实现与验证
 

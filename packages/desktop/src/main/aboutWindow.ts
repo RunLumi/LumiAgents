@@ -2,14 +2,17 @@
 interface CustomAboutDialogHtmlInput {
   applicationName: string;
   appVersion: string;
-  copyright: string;
+  /** Fork developer/maintainer identity; not a copyright ownership claim. */
+  maintainerCredit?: string;
+  /** Retained for callers that explicitly supply a copyright notice. */
+  copyright?: string;
   optimizationLine: string;
   versionLabel: string;
   okButtonLabel: string;
   /**
    * 新增：离线许可入口文案。为空则不渲染该按钮。
-   * 原因：Apache-2.0 §4(a)/§4(d) 要求接收者可访问许可与 NOTICE 材料，
-   * 仅把文件放进安装包不构成“可访问”。
+   * 原因：让用户容易找到随包提供的许可与 NOTICE 材料。
+   * 这是可发现性设计；Apache-2.0 §4 并未指定必须使用 About 按钮。
    */
   licensesButtonLabel?: string;
 }
@@ -204,7 +207,8 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
           </h1>
           <div class="meta">
             ${input.optimizationLine ? `<div>${escapeHtml(input.optimizationLine)}</div>` : ""}
-            <div>${escapeHtml(input.copyright)}</div>
+            ${input.maintainerCredit ? `<div>${escapeHtml(input.maintainerCredit)}</div>` : ""}
+            ${input.copyright ? `<div>${escapeHtml(input.copyright)}</div>` : ""}
           </div>
         </div>
         <div class="spacer"></div>
@@ -220,7 +224,8 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
         window.open("zcode-about://licenses");
       });
       window.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" || event.key === "Enter") {
+        // 修改原因：Enter 由聚焦按钮原生处理，否则打开致谢时也会关闭父窗口。
+        if (event.key === "Escape") {
           closeWindow();
         }
       });

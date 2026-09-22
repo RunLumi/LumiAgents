@@ -3,17 +3,24 @@
 # 相关功能说明与第三方组件声明
 
 <!--
-  Lumi 的改动：在文件开头新增 Lumi 分支说明，并保留上游原文（原「一、二、三、四」
-  降为「二、三、四、五」），上游声明正文一字未改。修改声明见上方引用行。
+  Lumi 的改动：在文件开头新增不编号的 Lumi 分支说明；从“本声明适用于……”开始的
+  上游 NOTICE 正文逐字保留，不改编号。修改声明见上方引用行。
 -->
 
-## 一、Lumi Agents 分支说明
+## Lumi Agents 分支说明
 
 本仓库是 [ZCode](https://github.com/zai-org/ZCode) 的独立维护分支，产品名为 **Lumi Agents**。
+本分支由 **CLOUDJET SOLUTIONS PTE. LTD.**（Singapore UEN **201708398E**）开发和维护。
 
-- **版权与许可**：第一方代码仍依根 [LICENSE](LICENSE) 采用 Apache-2.0，版权属上游权利人
-  （LICENSE 附录中的 “Copyright 2026 Z.AI Co., Ltd”）。本分支不转移、不替代上游著作权归属，
-  也不代表上游为 Lumi Agents 背书。
+- **项目维护主体**：CLOUDJET SOLUTIONS PTE. LTD. 负责 Lumi Agents 分支的维护、发布、品牌与路线图，
+  并作为 Cloudjet 自有 Lumi 新增/修改内容的项目 steward。维护与分发身份本身不产生对上游代码的著作权转移。
+- **版权与许可**：根 [LICENSE](LICENSE) 的 Apache-2.0 适用于其覆盖的继承 ZCode 代码与
+  Cloudjet/Lumi 第一方内容；第三方组件、vendored material、运行时与资产继续受各自适用许可与
+  声明约束。继承自 ZCode 的材料保留 Z.AI Co., Ltd 及其他上游贡献者的版权与归属；Cloudjet
+  只对其实际拥有（例如依法归属或经有效书面转让取得）的 Lumi 新增/修改内容主张相应权利；
+  独立贡献者的版权仍归各自权利人，除非另有有效转让。根 `LICENSE` 中的
+  “Copyright 2026 Z.AI Co., Ltd” 因此保留，不替换为 Cloudjet。权利边界详见
+  [RIGHTS.md](RIGHTS.md)。
 - **分支关系**：Lumi Agents 不是 ZCode 或 Z.AI 的官方发行版；Lumi 没有 ZCode 的账户、订阅、
   关怀或支持义务，也不承诺提供上游官方产品的全部功能与活动政策。
 - **以下声明的适用范围**：从第二节开始的内容（功能与权限风险、上传接口与对外请求、本地数据与凭据、

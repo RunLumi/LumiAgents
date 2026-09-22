@@ -221,6 +221,118 @@ export const EXPECTATIONS = [
     mustInclude: [/lumiTelemetrySendCustom/],
     mustExclude: [/from "@arms\//],
   },
+  // ── 许可/贡献政策（ADR 0001）：政策文件与其关键承诺不得被悄悄删除 ──
+  {
+    file: "LICENSING.md",
+    description: "许可页保留永久授权、竞争边界与 open/commercial 划分",
+    mustInclude: [
+      /perpetual and irrevocable/,
+      /Competitors may lawfully build/,
+      /proposed, not shipped/,
+      /separate private repositories/,
+    ],
+  },
+  {
+    file: "CONTRIBUTING.md",
+    description: "贡献指南保留 DCO 1.1 官方原文与不代签声明",
+    mustInclude: [
+      /Developer Certificate of Origin/,
+      /Version 1\.1/,
+      /not a copyright assignment/,
+      /AI-assisted/,
+    ],
+  },
+  {
+    file: "TRADEMARKS.md",
+    description: "商标页区分 Apache artwork copyright permission 与 trademark permission",
+    mustInclude: [
+      /copyright-license permissions/,
+      /grant trademark permission/,
+      /does \*\*not\*\* retract copyright permissions/,
+      /Nothing here claims trademark registration/,
+      /independent fork/,
+    ],
+    mustExclude: [/is a registered trademark/],
+  },
+  {
+    file: "RIGHTS.md",
+    description: "权利图保持 Cloudjet stewardship 与上游/贡献者权利分离",
+    mustInclude: [
+      /CLOUDJET SOLUTIONS PTE\. LTD\./,
+      /Inherited ZCode material/,
+      /Repository authorship, maintenance, package metadata/,
+      /Copyright 2026 Z\.AI Co\., Ltd/,
+    ],
+  },
+  {
+    file: "packages/desktop/electron-builder.config.js",
+    description: "最终安装包元数据指向 Cloudjet/Lumi，同时保留上游版权事实",
+    mustInclude: [
+      /homepage: "https:\/\/agents\.runlumi\.app"/,
+      /name: "CLOUDJET SOLUTIONS PTE\. LTD\."/,
+      /maintainer: "CLOUDJET SOLUTIONS PTE\. LTD\./,
+      /ZCode portions © 2026 Z\.AI Co\., Ltd/,
+      /background: null/,
+      /backgroundColor: "#f4f0e8"/,
+    ],
+    mustExclude: [
+      /homepage: "https:\/\/zcode\.z\.ai"/,
+      /dev@zcode\.z\.ai/,
+      /dmg_background\.png/,
+    ],
+  },
+  {
+    file: ".env.example",
+    description: "示例环境不默认启用 ZCode 产品基础设施",
+    mustInclude: [
+      /^ZCODE_BASE_URL=$/m,
+      /^ZAI_OAUTH_ORIGIN=$/m,
+      /^ZAI_OAUTH_CLIENT_ID=$/m,
+      /^ZCODE_CDN_BASE_URL=$/m,
+      /^ZCODE_CONVERSATION_SHARE_WEB_URL=$/m,
+      /^ZCODE_REMOTE_ASSET_CDN_BASE_URL=$/m,
+    ],
+  },
+  {
+    file: "docs/licensing/dco-legacy-exceptions.json",
+    description: "DCO 历史例外是固定 cutoff 的精确清单",
+    mustInclude: [
+      /b0d31a1e3ae29c2afcb08d8eb04db34d5fdbc42d/,
+      /legacy-no-dco/,
+      /not a retroactive DCO certification or copyright assignment/,
+    ],
+  },
+  {
+    file: "docs/licensing/dco-attestations.json",
+    description: "post-enforcement DCO remediation is exact-SHA and same-author only",
+    mustInclude: [
+      /fa48dd3ec9e4cda8363b7bd1e2f819c23afe7493/,
+      /same normalized email/,
+      /retrospective DCO 1\.1 provenance certification/,
+      /not a copyright assignment/,
+    ],
+  },
+  {
+    file: "scripts/check-dco.mjs",
+    description: "DCO 检查器存在且导入基线例外收口在上游基点",
+    mustInclude: [
+      /Signed-off-by:/,
+      /872ad960de7ec172591f7e1952f7849229f94521/,
+      /evaluateDco/,
+      /readRetrospectiveDcoAttestations/,
+      /DCO_ATTESTATION_STATEMENT/,
+    ],
+  },
+  {
+    file: ".github/workflows/dco-license.yml",
+    description: "CI 存在 DCO/许可门禁且为最小权限",
+    mustInclude: [
+      /permissions:/,
+      /contents: read/,
+      /check-dco\.mjs/,
+      /licenses\.mjs check --strict/,
+    ],
+  },
   // ── 法务材料可访问 ──
   {
     file: "packages/desktop/src/main/licensesWindow.ts",

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { access, readdir } from "node:fs/promises";
+import { access, chmod, readdir, stat } from "node:fs/promises";
 import { constants } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 import { spawn, spawnSync } from "node:child_process";
@@ -30,6 +30,16 @@ async function requireFile(name, filePath) {
   }
 }
 
+async function runWithReadableProvisioningProfile(profilePath, operation) {
+  const originalMode = (await stat(profilePath)).mode & 0o777;
+  await chmod(profilePath, originalMode | 0o444);
+  try {
+    await operation();
+  } finally {
+    await chmod(profilePath, originalMode);
+  }
+}
+
 function run(command, args, options = {}) {
   return new Promise((resolvePromise, reject) => {
     const child = spawn(command, args, {
@@ -53,16 +63,36 @@ function resolvePath(value) {
 }
 
 function resolveKeychainIdentity(identityName) {
-  const result = spawnSync("security", ["find-identity", "-v", "-p", "codesigning"], {
+  const requestedIdentity = identityName.trim();
+  const keychain = process.env.CSC_KEYCHAIN?.trim();
+  const args = ["find-identity", "-v"];
+  if (keychain) args.push(keychain);
+  const result = spawnSync("security", args, {
     encoding: "utf8",
   });
-  if (result.status !== 0) return identityName;
+  if (result.status !== 0) {
+    if (process.env.MAS_APP_CERTIFICATE || process.env.MAS_INSTALLER_CERTIFICATE) {
+      return requestedIdentity;
+    }
+    throw new Error(
+      `cannot inspect ${keychain || "the login keychain"} for MAS identity ${requestedIdentity}`,
+    );
+  }
   const matches = result.stdout
     .split("\n")
     .map((line) => line.match(/^\s*\d+\)\s+([A-F0-9]{40})\s+"([^"]+)"/))
-    .filter((match) => match?.[2] === identityName)
+    .filter((match) => match?.[2] === requestedIdentity || match?.[1] === requestedIdentity)
     .filter(Boolean);
-  return matches.at(-1)?.[1] ?? identityName;
+  const match = matches.at(-1);
+  if (!match) {
+    if (process.env.MAS_APP_CERTIFICATE || process.env.MAS_INSTALLER_CERTIFICATE) {
+      return requestedIdentity;
+    }
+    throw new Error(
+      `MAS identity is not present in ${keychain || "the login keychain"}: ${requestedIdentity}`,
+    );
+  }
+  return match[1];
 }
 
 async function resolvePkg() {
@@ -127,8 +157,6 @@ async function main() {
     ZCODE_ENV: "production",
     ZCODE_MAC_TARGET: "mas",
     ZCODE_ENABLE_MAC_SIGN: "1",
-    CSC_NAME: appIdentitySpecifier,
-    CSC_INSTALLER_NAME: installerIdentitySpecifier,
     MAS_APP_SIGNING_IDENTITY: appIdentitySpecifier,
     MAS_INSTALLER_IDENTITY: installerIdentitySpecifier,
     MAS_PROVISIONING_PROFILE: provisioningProfile,
@@ -150,25 +178,37 @@ async function main() {
     APPLE_API_ISSUER: issuer,
   };
 
+  // electron-builder uses the same `identity` qualifier for the MAS app and
+  // installer lookup. Passing the app certificate hash through CSC_NAME makes
+  // the later installer lookup search for that same hash and fail, even when
+  // both valid certificates are present in the login keychain. Keep the
+  // operator-selected identities as validated metadata, but let the two
+  // certificate-type searches auto-discover independently.
+  delete env.CSC_NAME;
+  delete env.CSC_INSTALLER_NAME;
+  env.CSC_IDENTITY_AUTO_DISCOVERY = "true";
+
   if (!options.skipBuild) {
     await run("pnpm", ["--filter", "@zcode/desktop", "prepare:runtime-assets"], { env });
     await run("pnpm", ["--filter", "@zcode/desktop", "build:no-runtime-assets"], { env });
   }
 
-  await run(
-    "pnpm",
-    [
-      "--filter",
-      "@zcode/desktop",
-      "exec",
-      "electron-builder",
-      "--config",
-      "electron-builder.config.js",
-      "--mac",
-      "mas",
-      "--arm64",
-    ],
-    { env },
+  await runWithReadableProvisioningProfile(provisioningProfile, () =>
+    run(
+      "pnpm",
+      [
+        "--filter",
+        "@zcode/desktop",
+        "exec",
+        "electron-builder",
+        "--config",
+        "electron-builder.config.js",
+        "--mac",
+        "mas",
+        "--arm64",
+      ],
+      { env },
+    ),
   );
 
   const pkg = await resolvePkg();

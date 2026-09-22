@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "policy": "An entry is effective only when the commit that first introduces its targetSha into this file is a later non-merge commit authored by the same normalized email as the target commit and carries that author's valid Signed-off-by. The signed introducing commit is a retrospective DCO 1.1 provenance certification for the exact target SHA; it is not a copyright assignment, not a blanket historical exception, and cannot certify another author's commit.",
+  "canonicalStatement": "I certify under Developer Certificate of Origin 1.1 that I had the right to submit the contribution contained in the exact target commit under this project's license.",
+  "attestations": [
+    {
+      "targetSha": "fa48dd3ec9e4cda8363b7bd1e2f819c23afe7493",
+      "targetAuthorEmail": "978862+streamentry@users.noreply.github.com",
+      "targetSubject": "fix: close licensing attribution and release-governance gaps",
+      "statement": "I certify under Developer Certificate of Origin 1.1 that I had the right to submit the contribution contained in the exact target commit under this project's license."
+    }
+  ]
+}

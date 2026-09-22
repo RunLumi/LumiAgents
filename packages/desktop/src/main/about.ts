@@ -68,7 +68,7 @@ const ABOUT_MESSAGES: Record<
     versionLabel: string;
     okButtonLabel: string;
     optimizedForAppleSilicon: string;
-    copyright: (year: number) => string;
+    maintainerCredit: string;
     /** 离线许可入口文案；见 packages/desktop/src/main/licensesWindow.ts。 */
     licensesButtonLabel: string;
   }
@@ -78,20 +78,20 @@ const ABOUT_MESSAGES: Record<
     versionLabel: "版本",
     okButtonLabel: "确定",
     optimizedForAppleSilicon: "已针对 Apple Silicon 优化。",
-    licensesButtonLabel: "开源许可",
-    // 版权属上游权利人（LICENSE 的 “Copyright 2026 Z.AI Co., Ltd”）；
-    // 这里只陈述分支关系，不新增或转移著作权声明。
-    copyright: (year) => `版权所有 © ${year} Z.AI Co., Ltd — Lumi Agents 为独立维护分支。`,
+    licensesButtonLabel: "致谢与开源许可",
+    // 修改原因：产品维护主体与上游著作权是不同概念，不能混在同一句版权声明里。
+    // 上游声明“Copyright 2026 Z.AI Co., Ltd”保留于 LICENSE 和离线致谢窗口。
+    maintainerCredit: "由 CLOUDJET SOLUTIONS PTE. LTD. 开发和维护。",
   },
   "en-US": {
     aboutTitle: "About Lumi Agents",
     versionLabel: "version",
     okButtonLabel: "OK",
     optimizedForAppleSilicon: "Optimized for Apple Silicon.",
-    licensesButtonLabel: "Licenses",
-    // Upstream holds the copyright (LICENSE: “Copyright 2026 Z.AI Co., Ltd”).
-    // This line states the fork relationship only; it adds no new ownership claim.
-    copyright: (year) => `Copyright © ${year} Z.AI Co., Ltd — Lumi Agents independent fork.`,
+    licensesButtonLabel: "Credits and Licenses",
+    // Maintenance credit is not a claim of copyright ownership.
+    // Upstream notice retained in LICENSE and Credits: Copyright 2026 Z.AI Co., Ltd.
+    maintainerCredit: "Developed and maintained by CLOUDJET SOLUTIONS PTE. LTD.",
   },
 };
 
@@ -202,13 +202,6 @@ export function formatAboutDetail(snapshot: AboutSnapshot): string {
   ].join("\n");
 }
 
-function formatAboutCopyright(
-  year = new Date().getFullYear(),
-  locale: Locale = DEFAULT_LOCALE,
-): string {
-  return getAboutMessages(locale).copyright(year);
-}
-
 function formatAboutOptimizationLine(
   snapshot: Pick<AboutSnapshot, "osPlatform" | "osArch">,
   locale: Locale = DEFAULT_LOCALE,
@@ -277,7 +270,7 @@ export async function showAboutDialog(
       createCustomAboutDialogHtml({
         applicationName: ABOUT_APPLICATION_NAME,
         appVersion: snapshot.appVersion,
-        copyright: formatAboutCopyright(undefined, locale),
+        maintainerCredit: aboutMessages.maintainerCredit,
         optimizationLine: formatAboutOptimizationLine(snapshot, locale),
         versionLabel: aboutMessages.versionLabel,
         okButtonLabel: aboutMessages.okButtonLabel,
