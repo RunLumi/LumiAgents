@@ -9,6 +9,21 @@ export const repositoryRoot = resolve(import.meta.dirname, "..");
 export const noticesFileName = "THIRD-PARTY-NOTICES.md";
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
+/**
+ * Workspace package manifests participate in dependency-graph resolution, but
+ * their unrelated metadata (author/homepage/description) does not change the
+ * third-party notices. Dependency freshness is checked separately against the
+ * exact installed production package set in scripts/licenses.mjs.
+ */
+export function isWorkspacePackageManifestInput(file) {
+  return (
+    file === "package.json" ||
+    /^packages\/[^/]+\/package\.json$/u.test(file) ||
+    file === "apps/zcode-cli/package.json" ||
+    /^apps\/zcode-cli\/(?:packages|tools)\/[^/]+\/package\.json$/u.test(file)
+  );
+}
+
 export async function readThirdPartyNotices(root = repositoryRoot) {
   // 开发和构建只消费已有声明；输入新鲜度由显式 license 检查负责，避免修改 skill 就阻断构建。
   return readFile(resolve(root, noticesFileName));
@@ -21,6 +36,12 @@ export async function readVerifiedNotices(root = repositoryRoot, { requireComple
   if (hash(bytes) !== manifest.noticesSha256)
     throw new Error("Third-party notices changed; regenerate the inventory");
   for (const [file, expected] of Object.entries(manifest.inputs)) {
+    // Workspace package.json files contain both dependency edges and unrelated
+    // product metadata. Hashing the entire file makes author/homepage edits
+    // falsely stale the legal inventory. The exact production dependency set is
+    // validated separately by scripts/licenses.mjs; all other evidence inputs
+    // remain byte/content-hash protected here.
+    if (isWorkspacePackageManifestInput(file)) continue;
     // 工作区文本允许 Windows checkout 的 CRLF；原始许可和发行声明另用字节哈希校验。
     if (hash((await readFile(resolve(root, file), "utf8")).replaceAll("\r\n", "\n")) !== expected) {
       throw new Error(`Third-party input changed: ${file}. Run node scripts/licenses.mjs notices`);

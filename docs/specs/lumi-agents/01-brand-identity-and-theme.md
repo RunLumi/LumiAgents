@@ -140,7 +140,8 @@ Added in the second pass (see `docs/licensing/COMPLIANCE.md` for results):
   must be provisioned by release owners; no service is redirected by this change.
 - Geist / Geist Mono font assets are not bundled in this repository; the canonical stack
   is declared and falls back to system UI fonts until assets are added.
-- `packages/desktop/build/dmg_background(.@2x).png` is still upstream DMG artwork and is a
-  release blocker pending design/legal clearance.
-- `node scripts/licenses.mjs check --strict` still fails on 19 pre-existing upstream
-  third-party material gaps; a release must not treat the base check as complete.
+- The inherited ZCode DMG background files were subsequently removed; DMGs use a Lumi
+  solid background color and no custom upstream image.
+- The material-review inventory was subsequently reduced/reconciled to 15 evidence-based
+  human-review records with `reviewRequired=0`. The strict gate must still pass on the
+  actual PR/release environment; human legal sign-off remains separate from machine success.

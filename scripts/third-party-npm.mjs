@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFile, readdir, realpath } from "node:fs/promises";
@@ -5,13 +6,105 @@ import { join, relative } from "node:path";
 import { promisify } from "node:util";
 import { resolveSpawnRuntimeOptions } from "./spawn-command.mjs";
 
+function parseInlineYamlList(value) {
+  const match = /^\[([\s\S]*)\]$/u.exec(value.trim());
+  if (!match) return [];
+  return match[1]
+    .split(",")
+    .map((item) => item.trim().replace(/^['"]|['"]$/gu, ""))
+    .filter(Boolean);
+}
+
+export function parseSupportedArchitectures(text, current = {}) {
+  const result = { os: new Set(), cpu: new Set(), libc: new Set() };
+  let inSection = false;
+  let dimension = null;
+  for (const line of text.split(/\r?\n/u)) {
+    if (line === "supportedArchitectures:") {
+      inSection = true;
+      dimension = null;
+      continue;
+    }
+    if (!inSection) continue;
+    if (/^\S/u.test(line) && line.trim()) break;
+    const header = /^  (os|cpu|libc):\s*$/u.exec(line);
+    if (header) {
+      dimension = header[1];
+      continue;
+    }
+    const item = /^    -\s+(.+)\s*$/u.exec(line);
+    if (!item || !dimension) continue;
+    const value = item[1].replace(/^['"]|['"]$/gu, "");
+    if (value === "current") {
+      if (current[dimension]) result[dimension].add(current[dimension]);
+    } else {
+      result[dimension].add(value);
+    }
+  }
+  return result;
+}
+
+export function parseLockfilePlatformConstraints(text) {
+  const constraints = new Map();
+  let inPackages = false;
+  let currentKey = null;
+  for (const line of text.split(/\r?\n/u)) {
+    if (line === "packages:") {
+      inPackages = true;
+      continue;
+    }
+    if (!inPackages) continue;
+    if (/^snapshots:\s*$/u.test(line)) break;
+    const keyMatch = /^  (.+):\s*$/u.exec(line);
+    if (keyMatch) {
+      currentKey = keyMatch[1].trim().replace(/^['"]|['"]$/gu, "").replace(/\(.+\)$/u, "");
+      if (!constraints.has(currentKey)) constraints.set(currentKey, {});
+      continue;
+    }
+    const property = /^    (os|cpu|libc):\s*(\[[^\]]*\])\s*$/u.exec(line);
+    if (property && currentKey) {
+      constraints.get(currentKey)[property[1]] = parseInlineYamlList(property[2]);
+    }
+  }
+  return constraints;
+}
+
+function currentLibc() {
+  if (process.platform !== "linux") return undefined;
+  try {
+    return process.report?.getReport()?.header?.glibcVersionRuntime ? "glibc" : "musl";
+  } catch {
+    return undefined;
+  }
+}
+
+function dimensionCompatible(required, supported) {
+  if (!required?.length) return true;
+  const positives = required.filter((value) => !value.startsWith("!"));
+  const excluded = new Set(required.filter((value) => value.startsWith("!")).map((value) => value.slice(1)));
+  const candidates = [...supported].filter((value) => !excluded.has(value));
+  if (positives.length === 0) return candidates.length > 0;
+  return candidates.some((value) => positives.includes(value));
+}
+
+export function platformUnsupportedPackageKeys(required, constraints, supported) {
+  const unsupported = new Set();
+  for (const [key] of required) {
+    const rule = constraints.get(key);
+    if (!rule) continue;
+    if (
+      !dimensionCompatible(rule.os, supported.os) ||
+      !dimensionCompatible(rule.cpu, supported.cpu) ||
+      !dimensionCompatible(rule.libc, supported.libc)
+    ) {
+      unsupported.add(key);
+    }
+  }
+  return unsupported;
+}
+
 const exec = promisify(execFile);
 export const hashBytes = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const unsupportedCanvas = new Set([
-  "@napi-rs/canvas-android-arm64",
-  "@napi-rs/canvas-linux-arm-gnueabihf",
-  "@napi-rs/canvas-linux-riscv64-gnu",
-]);
 const noticeName =
   /(?:^|[._-])(?:licen[sc]es?|copying|notice|copyright|unlicense|third.party|ofl)(?:[._-]|$)/iu;
 
@@ -48,28 +141,52 @@ export async function readPackageNotices(directory) {
 function productionPackages(projects) {
   const own = new Set(projects.map((project) => project.name));
   const required = new Map();
-  function dependencies(deps) {
+
+  function record(name, version, optional) {
+    const key = `${name}@${version}`;
+    const previous = required.get(key);
+    // A package is optional only when every production path to it is optional.
+    // If any mandatory path reaches the same exact package, missing it must fail.
+    required.set(key, {
+      name,
+      version,
+      optional: previous ? previous.optional && optional : optional,
+    });
+  }
+
+  function dependencies(deps, edgeOptional = false, inheritedOptional = false) {
     for (const [alias, info] of Object.entries(deps ?? {})) {
       const name = info.name ?? alias;
+      const optional = inheritedOptional || edgeOptional;
       if (!own.has(name) && !name.startsWith("@zcode/") && !info.version.startsWith("link:")) {
-        required.set(`${name}@${info.version}`, { name, version: info.version });
+        record(name, info.version, optional);
       }
-      dependencies(info.dependencies);
-      dependencies(info.optionalDependencies);
+      // Dependencies below an optional parent are also optional because the
+      // entire parent subtree may legitimately be absent on this platform.
+      dependencies(info.dependencies, false, optional);
+      dependencies(info.optionalDependencies, true, optional);
     }
   }
+
   for (const project of projects) {
     dependencies(project.dependencies);
-    dependencies(project.optionalDependencies);
+    dependencies(project.optionalDependencies, true);
   }
   return required;
 }
 
-export function assertProductionGraphs(lockedProjects, installedProjects) {
+export function assertProductionGraphs(
+  lockedProjects,
+  installedProjects,
+  platformUnsupported = new Set(),
+) {
   const locked = productionPackages(lockedProjects);
   const installed = productionPackages(installedProjects);
+  for (const [key, item] of locked) {
+    if (platformUnsupported.has(key)) item.platformUnsupported = true;
+  }
   const missing = [...locked].filter(
-    ([key, item]) => !installed.has(key) && !unsupportedCanvas.has(item.name),
+    ([key, item]) => !installed.has(key) && !item.optional && !item.platformUnsupported,
   );
   const stale = [...installed.keys()].filter((key) => !locked.has(key));
   if (missing.length || stale.length) {
@@ -105,7 +222,23 @@ export async function readWorkspaceProductionGraph(root) {
       return JSON.parse(stdout);
     }),
   );
-  const required = assertProductionGraphs(locked, actual);
+  // pnpm ls can flatten optional native subtrees and lose the optional edge on
+  // platform-specific grandchildren. Use the repository's declared target matrix
+  // plus lockfile os/cpu/libc constraints to identify packages that cannot ship on
+  // any supported target. This is evidence-based and avoids package-name allowlists.
+  const [workspaceText, lockfileText] = await Promise.all([
+    readFile(join(root, "pnpm-workspace.yaml"), "utf8"),
+    readFile(join(root, "pnpm-lock.yaml"), "utf8"),
+  ]);
+  const supported = parseSupportedArchitectures(workspaceText, {
+    os: process.platform,
+    cpu: process.arch,
+    libc: currentLibc(),
+  });
+  const constraints = parseLockfilePlatformConstraints(lockfileText);
+  const lockedGraph = productionPackages(locked);
+  const unsupported = platformUnsupportedPackageKeys(lockedGraph, constraints, supported);
+  const required = assertProductionGraphs(locked, actual, unsupported);
   return { required, projects: actual };
 }
 
@@ -151,9 +284,13 @@ export async function scanInstalledPackages(root, projects) {
 
 export function missingProductionPackages(required, installed) {
   const missing = [...required].filter(([key]) => !installed.has(key)).map(([, item]) => item);
-  for (const item of missing) {
-    if (!unsupportedCanvas.has(item.name))
-      throw new Error(`Missing installed dependency: ${item.name}@${item.version}`);
+  const blocking = missing.filter((item) => !item.optional && !item.platformUnsupported);
+  if (blocking.length) {
+    throw new Error(
+      `Missing installed production dependencies: ${blocking
+        .map((item) => `${item.name}@${item.version}`)
+        .join(", ")}`,
+    );
   }
   return missing;
 }

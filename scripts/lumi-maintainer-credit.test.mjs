@@ -13,6 +13,9 @@ const legal = read("packages/desktop/src/main/licensesWindow.ts");
 const rights = read("RIGHTS.md");
 const rootPackage = JSON.parse(read("package.json"));
 const desktopPackage = JSON.parse(read("packages/desktop/package.json"));
+const desktopBuilder = read("packages/desktop/electron-builder.config.js");
+const envExample = read(".env.example");
+const trademarks = read("TRADEMARKS.md");
 const company = "CLOUDJET SOLUTIONS PTE. LTD.";
 const englishCredit = `Developed and maintained by ${company}`;
 const chineseCredit = `由 ${company} 开发和维护。`;
@@ -35,7 +38,7 @@ test("Cloudjet stewardship is explicit without claiming an upstream transfer", (
   assert.ok(rights.includes("not a transfer of copyright"));
   assert.ok(rights.includes("Inherited ZCode material"));
   assert.ok(rights.includes(inheritedCopyright));
-  assert.ok(rights.includes("only to the extent"));
+  assert.ok(rights.includes("Repository authorship, maintenance, package metadata"));
 });
 
 test("package metadata names Cloudjet while the public license remains Apache-2.0", () => {
@@ -43,6 +46,42 @@ test("package metadata names Cloudjet while the public license remains Apache-2.
   assert.equal(desktopPackage.author, company);
   assert.equal(rootPackage.license, "Apache-2.0");
   assert.equal(rootPackage.name, "zcode");
+});
+
+test("shipped desktop metadata points to Cloudjet/Lumi, not upstream product contacts", () => {
+  assert.ok(desktopBuilder.includes('homepage: "https://agents.runlumi.app"'));
+  assert.ok(desktopBuilder.includes('name: "CLOUDJET SOLUTIONS PTE. LTD."'));
+  assert.ok(
+    desktopBuilder.includes(
+      'maintainer: "CLOUDJET SOLUTIONS PTE. LTD. <hong@cloudjetkpi.com>"',
+    ),
+  );
+  assert.ok(desktopBuilder.includes("ZCode portions © 2026 Z.AI Co., Ltd"));
+  assert.doesNotMatch(desktopBuilder, /homepage:\s*"https:\/\/zcode\.z\.ai"/);
+  assert.doesNotMatch(desktopBuilder, /dev@zcode\.z\.ai/);
+  assert.doesNotMatch(desktopBuilder, /maintainer:\s*"ZCode/);
+});
+
+test("environment example does not silently opt Lumi into upstream product infrastructure", () => {
+  for (const key of [
+    "ZCODE_BASE_URL",
+    "ZAI_OAUTH_ORIGIN",
+    "ZAI_OAUTH_CLIENT_ID",
+    "ZCODE_CDN_BASE_URL",
+    "ZCODE_CONVERSATION_SHARE_WEB_URL",
+    "ZCODE_REMOTE_ASSET_CDN_BASE_URL",
+  ]) {
+    assert.match(envExample, new RegExp("^" + key + "=$", "m"));
+  }
+  assert.match(envExample, /^ZAI_BUSINESS_BASE_URL=https:\/\/api\.z\.ai$/m);
+});
+
+test("brand policy preserves Apache artwork copyright grants while reserving trademark questions", () => {
+  const normalized = trademarks.replace(/\s+/g, " ");
+  assert.ok(normalized.includes("copyright license applies to those covered files"));
+  assert.ok(normalized.includes("does **not**"));
+  assert.ok(normalized.includes("grant trademark permission"));
+  assert.ok(normalized.includes("does **not** retract copyright permissions"));
 });
 
 test("English and Chinese product copy identifies the same maintainer", () => {

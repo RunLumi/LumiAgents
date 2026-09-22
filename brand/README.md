@@ -49,3 +49,12 @@ Plane B（水平平面）: M120 176 L128 168 H232 V232 H64 Z  区域 x+y >= 296
   [`docs/licensing/MODIFICATIONS.md`](../docs/licensing/MODIFICATIONS.md) 第 3.2 节。
 - `packages/desktop/build/dmg_background*.png` **仍是上游 DMG 背景图**，未在本目录内；
   属于发布阻塞项，见 [`docs/licensing/COMPLIANCE.md`](../docs/licensing/COMPLIANCE.md) 第 9 节。
+
+
+## License and trademark boundary
+
+The original Lumi artwork source files in this directory are published as covered
+repository content under Apache-2.0 unless a file states otherwise. That copyright
+license does not grant trademark permission to present a modified distribution as
+an official Lumi Agents product or to imply Cloudjet sponsorship or endorsement.
+See [TRADEMARKS.md](../TRADEMARKS.md) and [RIGHTS.md](../RIGHTS.md).

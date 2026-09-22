@@ -17,10 +17,11 @@ expected to add, and what this licensing model does **not** do.
 
 - **CLOUDJET SOLUTIONS PTE. LTD.** (Singapore UEN **201708398E**) develops and
   maintains the Lumi Agents fork and is its project steward.
-- The code in this public repository is licensed under **Apache-2.0**. You may use
-  it commercially, modify it, and redistribute it (including selling forks), subject
-  to its terms: keep applicable notices and attribution, mark modified files, and
-  carry the Apache license text with your distribution.
+- Cloudjet first-party Lumi code and inherited ZCode code covered by the root
+  license are distributed under **Apache-2.0**. Third-party components, vendored
+  material, runtimes, and assets retain their own applicable licenses and notices.
+  For Apache-covered material, commercial use, modification, and redistribution
+  are permitted subject to the license terms.
 - **Businesses can use the community edition internally for free.** No paid license
   is needed to run Apache-licensed software.
 - Payment, in future Lumi offerings, buys **services and separately licensed
@@ -28,8 +29,10 @@ expected to add, and what this licensing model does **not** do.
   permission to exercise rights Apache already grants.
 - Contributing back is lightweight: sign your commits (`git commit -s`, DCO 1.1).
   You keep copyright; Apache-2.0 inbound/outbound for first-party public code.
-- "Lumi Agents" the name and brand are **not** granted by Apache. See
-  [TRADEMARKS.md](TRADEMARKS.md).
+- Apache-2.0 may grant copyright permissions in covered Lumi artwork files, but
+  section 6 does **not** grant trademark permission to use the Lumi Agents name or
+  folded-L mark as a source identifier implying official origin or endorsement.
+  See [TRADEMARKS.md](TRADEMARKS.md).
 
 ## Project stewardship and who owns what
 
@@ -62,16 +65,12 @@ that release.
 
 ## What is open (public community layer)
 
-Everything currently in this repository, including:
-
-- Desktop, web and CLI clients and the local agent runtime, as published today.
-- Provider interfaces, bring-your-your-key paths, extension protocols and SDK
-  surfaces where currently open.
-- Local permission controls, safety-relevant code, inspectable tool execution and
-  data-portability features.
-- Public examples, contribution tooling and documentation under their applicable
-  licenses (documentation pages in this repo are Apache-2.0 like the rest unless a
-  page states otherwise).
+The public source tree exposes the desktop, web and CLI clients, local agent
+runtime, provider interfaces, extension/SDK surfaces, local permission controls,
+examples, contribution tooling, and documentation. Cloudjet/Lumi first-party
+material and inherited ZCode material covered by the root license are Apache-2.0;
+third-party and vendored material stays under the license identified for that
+component or file.
 
 ## What a paid offering is expected to add (proposed, not shipped)
 
@@ -94,11 +93,12 @@ code legally separable — provenance and dependency review decide that, per
 
 ## Competitors
 
-Competitors may lawfully build, sell and support compliant forks of the public
-code. Apache-2.0 gives them the same rights it gives Lumi. Lumi's commercial
-strategy must compete on execution and service quality; it cannot — and does not
-attempt to — use a license to prohibit competition. Nothing in NOTICE, README or
-here may be read as imposing additional restrictions beyond Apache-2.0's terms.
+Competitors may lawfully build, sell and support compliant forks using the
+permissions available for the relevant material. Apache-2.0 gives everyone the
+same copyright/patent permissions for Apache-covered material; third-party
+components remain subject to their own terms. Lumi's commercial strategy must
+compete on execution and service quality, not by adding restrictions that
+contradict existing open-source grants.
 
 ## Copied material and mixed artifacts
 
@@ -112,17 +112,20 @@ never described as exclusively owned by any single party.
 ## FAQ
 
 **Can a business use Lumi Agents for free?**
-Yes. Run it internally, deploy it to your team, integrate it into your workflows.
-Apache-2.0 requires no payment, no registration and no permission.
+Apache-covered Lumi/ZCode material may be used without a paid Lumi license,
+including commercially, subject to Apache-2.0. Third-party components remain
+subject to their own applicable license terms.
 
 **Can someone sell a fork?**
-Yes. Apache-2.0 explicitly permits commercial redistribution and selling. A fork
-must keep the license and notices, state its changes, and must not use the Lumi
-name or brand to imply endorsement (see [TRADEMARKS.md](TRADEMARKS.md)).
+For Apache-covered material, yes: Apache-2.0 permits commercial redistribution
+and selling subject to its conditions. A complete distribution must also comply
+with the licenses of any included third-party components. Trademark permission is
+separate; see [TRADEMARKS.md](TRADEMARKS.md).
 
 **Must ordinary contributors assign copyright?**
 No. Contributions are made under the Developer Certificate of Origin plus the
-Apache-2.0 license; you keep copyright. DCO certifies where the code came from —
+Apache-2.0 license; the applicable copyright owner retains ownership unless a
+separate assignment applies. DCO certifies submission provenance/right-to-submit;
 it is not an assignment and not an exclusive license.
 
 **What does a paid Lumi product add?**
@@ -130,10 +133,11 @@ Hosted/managed services, enterprise administration, support and — where develo
 separately licensed proprietary modules. It never adds _permission_ to use the
 Apache-licensed code; you already have that.
 
-**Does Apache grant rights to the Lumi name?**
-No. Software licenses cover the software. The name, logo and brand materials are
-not licensed by Apache-2.0 and are not granted for third-party products; see
-[TRADEMARKS.md](TRADEMARKS.md) for the limited, truthful uses that are fine.
+**Does Apache grant trademark rights to the Lumi name or mark?**
+No. Apache-2.0 section 6 does not grant trademark rights. Separately, if a Lumi
+artwork file is itself distributed under Apache-2.0, the copyright permissions of
+that license can apply to the file. Using the artwork as a product/source mark
+remains a distinct trademark question; see [TRADEMARKS.md](TRADEMARKS.md).
 
 **What can't this licensing model protect?**
 It cannot create exclusive ownership of community code (everyone's Apache grants
@@ -145,9 +149,9 @@ documentation.
 
 ## Disclaimers
 
-This page describes repository policy. It is not legal advice. The software is
+This page describes repository policy. It is not legal advice. Apache-covered software is
 licensed "as is" under Apache-2.0's warranty and liability disclaimers (sections 7
-and 8), which apply to Lumi's distribution of inherited and community code alike.
+and 8). Third-party material remains governed by its own applicable terms.
 Upstream ZCode/Z.AI contributors do not provide Lumi's contractual commitments.
 Paid services, hosted offerings and enterprise software would require separately
 reviewed customer terms; none are offered by anything in this repository.

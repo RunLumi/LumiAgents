@@ -53,7 +53,7 @@ JSON 标准不允许注释，内联声明会破坏文件。替代机制：
 | 文件                                     | 修改内容                                                                                                                                               |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `package.json`                           | 新增 `lumi:drift` / `lumi:notice` 等维护命令                                                                                                           |
-| `packages/desktop/package.json`          | `productName`、`description`、`author` 改为 Lumi                                                                                                       |
+| `packages/desktop/package.json`          | `productName` / `description` 使用 Lumi Agents，`author` 明确为 CLOUDJET SOLUTIONS PTE. LTD.                                                         |
 | `third-party/npm-overrides.json`         | 逐包许可材料：新增 `materialReview` 复核记录；`keyv@4.5.4` 曾换成真实版本适用 LICENSE，2026-09-21 随 `@arms/rum-*` 遥测替换整体移除（连同 rrweb 家族） |
 | `third-party/copied-components.json`     | 复制来源（React Best Practices skill）新增 `materialReview`                                                                                            |
 | `third-party/embedded-components.json`   | Skia / QuickJS-NG 的未决标记改为带证据的 `materialReview`                                                                                              |
@@ -84,26 +84,19 @@ JSON 标准不允许注释，内联声明会破坏文件。替代机制：
 | -------------------------------------------------- | ----------------------------------------------------- |
 | `packages/ui/src/assets/Z.svg`                     | 删除（上游 ZCode 标识）；水印改用 Lumi 折叠 L 几何    |
 | `packages/ui/src/components/ui/ZCodeAboutLogo.tsx` | 删除（上游 ZCode 图形）；由 `LumiBrandMark.tsx` 取代  |
-| `packages/desktop/build/*`、`public/logo/icons/*`  | 被第 3.2 节的 Lumi 原创资产整体替换                   |
-| `packages/desktop/build/dmg_background*.png`       | **仍是上游图片，尚未替换** —— 见第 5 节，发布前需处理 |
+| `packages/desktop/build/icon*`、`packages/desktop/build/icons/*`、`public/logo/icons/*` | 被第 3.2 节的 Lumi 原创资产整体替换 |
+| `packages/desktop/build/dmg_background*.png`       | **已删除**；DMG 改用 electron-builder 的纯色 `backgroundColor`，不再分发上游背景图 |
 
 ## 5. 待处理 / 需法务复核
 
-以下项目不能由工程侧单方面判定，**在解决前视为发布阻塞项**：
+工程侧已移除两张继承的 ZCode DMG 背景图；它们不再是发布 blocker。仍需人工判断的事项：
 
-1. **`packages/desktop/build/dmg_background.png` / `dmg_background@2x.png`**
-   是上游 DMG 安装背景图，可能包含上游品牌元素，且尺寸与 DMG 窗口布局绑定（不可随意重绘）。
-   当前**未替换**。需要设计提供符合 DESIGN.md 的同尺寸替换图后才能移除该阻塞项。
-   处理方式参见 [COMPLIANCE.md](./COMPLIANCE.md) 的发布阻塞清单。
-   _This item is flagged for legal/design review; the engineering side cannot verify or clear it._
-2. **12 条第三方材料复核结论**（Skia、QuickJS-NG、`rust-standard-library`、`boolbase`、
-   `semaphore`、`ansi-to-react`、`is-node-process` 等；原 18 条，其中 `@arms/rum-*` 与
-   rrweb 家族已于 2026-09-21 随闭源遥测 SDK 整体移除）：权利人只声明了 SPDX 标识，
-   从未随包或随仓库提供版权/许可声明，证据不存在，因此记录为有据可查的结论并留存许可正文。
-   这类处置是否可以接受属于**法律判断**，逐条证据见 [COMPLIANCE.md](./COMPLIANCE.md) 第 5.1 节与
-   `third-party/inventory.json` 的 `materialReviews`。
-   _This item is flagged for legal review; the engineering side records evidence only._
-3. **已知无法内联声明的第三方资产**：：仓库内没有需要 Lumi 单方声明的第三方品牌资源；
+1. **15 条第三方材料复核结论**（包括 Skia、QuickJS-NG、`rust-standard-library`、
+   `boolbase`、`semaphore`、`ansi-to-react`、`is-node-process` 等）均在
+   `third-party/inventory.json` 中标记 `legalSignOff: true`。这些记录说明机器侧已经
+   留存证据与适用许可文本，但“残余不确定性是否可接受”仍属于**法律判断**。
+   _The engineering side records and validates evidence; it does not manufacture legal sign-off._
+2. **已知无法内联声明的第三方资产**：仓库内没有需要 Lumi 单方声明的第三方品牌资源；
    `third-party/` 下的材料属于第三方许可原文，不再叠加 Lumi 声明（叠加会篡改第三方文本）。
 
 ## 5.1 工作区内不属于 Lumi 声明的改动

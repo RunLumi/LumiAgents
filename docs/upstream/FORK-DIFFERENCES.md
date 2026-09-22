@@ -17,15 +17,13 @@ necessary validation/maintenance support. Nothing else is changed.
 
 ## Identity (packaged / runtime)
 
-| File                                                    | Change                                                                                                                                                                                                       | Reason                                                      |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- | --------------------------------------- | ------------------------------------------------- | ----------------------------------------------- | ---------------------- | --- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/desktop/scripts/desktop-product-identity.mjs` | production `appId → app.lumi.agents`, `productName → Lumi Agents`, `linuxExecutableName/linuxPackageName → lumi-agents`; preview → `app.lumi.agents.preview` / `Lumi Agents Preview` / `lumi-agents-preview` | Application/bundle identity                                 |                                         | `packages/desktop/package.json`                   | `productName → Lumi Agents`, description/author | Installer display name |     | `packages/desktop/electron-builder.config.js` | explicit `copyright: "Copyright © 2026 Lumi"`, `extraMetadata.author.name → Lumi`, and the macOS sign-without-identity guard now covers every flavor | Packaged `NSHumanReadableCopyright` and fail-closed signing; upstream attribution stays in LICENSE / NOTICE.md / THIRD-PARTY-NOTICES.md |
-| `packages/desktop/scripts/bundle.mjs`                   | runs notarize + signing gate after electron-builder when macOS signing is enabled                                                                                                                            | Signed-build verification                                   |
-| `scripts/notarize-macos-release.mjs`                    | **new** notarytool submit + staple stage (env credentials only)                                                                                                                                              | Notarization                                                |
-| `scripts/verify-macos-release-signing.mjs`              | **new** fail-closed gate for Developer ID / hardened runtime / entitlements / staple                                                                                                                         | Verification gate                                           |
-| `scripts/doctor-macos-release-app.sh`                   | default app path → `/Applications/Lumi Agents.app`                                                                                                                                                           | Branding                                                    |                                         | `docs/upstream/MACOS-SIGNING-AND-NOTARIZATION.md` | **new** runbook                                 | Maintenance            |
-| `.github/workflows/macos-release.yml`                   | **new** tag-triggered build/sign/notarize/gate/publish pipeline (uploads only after the gate)                                                                                                                | Release CI for the Lumi identity                            |
-| `packages/desktop/src/main/desktopRuntimeEnv.ts`        | `runtimeApplicationName → Lumi Agents [Dev                                                                                                                                                                   | Preview]`; **new** `runtimeUserDataDirName`pinned to`ZCode` | Display name vs. user-data preservation |
+| File | Lumi fork difference | Reason |
+| --- | --- | --- |
+| `packages/desktop/scripts/desktop-product-identity.mjs` | production `appId → app.lumi.agents`, `productName → Lumi Agents`, Linux executable/package → `lumi-agents`; Preview has its own Lumi identity | Application/bundle identity |
+| `packages/desktop/package.json` | product description/name use Lumi Agents; package author is `CLOUDJET SOLUTIONS PTE. LTD.` | Product/package metadata |
+| `packages/desktop/electron-builder.config.js` | homepage/author/maintainer point to Lumi/Cloudjet; human-readable copyright field distinguishes inherited ZCode © Z.AI from Cloudjet maintenance; DMG uses Lumi solid background and no inherited ZCode image | Shipped artifact identity + truthful attribution |
+| `packages/desktop/src/main/desktopRuntimeEnv.ts` | display name → Lumi Agents [Dev/Preview]; user-data directory deliberately remains `ZCode` | Branding without orphaning existing data |
+| release/signing scripts and workflows | Lumi artifact names, signing/notarization gates, release verification | Independent release pipeline |
 
 `ZCODE_PREVIEW_IDENTITY`, `ZCODE_ENV`, `ZCODE_DESKTOP_*` and every other
 environment variable keep their upstream names. The `zcode://` protocol scheme is
@@ -135,18 +133,19 @@ markers — they are protocol/contract identifiers, not branding.
 - **Official brand artwork.** `brand/*` is an **interim original mark** authored for this
   fork, not an approved final brand. Replace with the official folded-L set and re-run
   `pnpm lumi:brand-assets`.
-- **Upstream DMG background.** `packages/desktop/build/dmg_background(.@2x).png` is still
-  upstream promotional artwork; it is bound to the DMG window layout and is a **release
-  blocker** (see `docs/licensing/COMPLIANCE.md` §9).
+- **DMG background artwork.** Resolved in the 2026-09 compliance repair: the inherited
+  `dmg_background(.@2x).png` files are deleted and direct-download DMGs use Lumi's
+  warm-paper `backgroundColor` without a custom image.
 - **Geist / Geist Mono assets.** The canonical stacks are declared, but the fonts
   are not bundled, so hosts without Geist fall back to Noto/system fonts.
 - **External release configuration.** Signing identity, notarization, and the
   update feed for `app.lumi.agents` are owned by release engineering and are not
   redirected here. Auto-update stays **off** until they exist.
-- **Third-party material completeness.** `node scripts/licenses.mjs check --strict`
-  **passes**; the `@arms/rum-*` gaps were resolved by removing the component. Remaining
-  review determinations (e.g. Skia's undocumented build flags) still need legal sign-off
-  (`docs/licensing/COMPLIANCE.md` §9).
+- **Third-party material completeness.** The inventory currently has no unresolved
+  `reviewRequired` entries, but 15 evidence-based review determinations still require
+  human legal sign-off. The 2026-09 repair also fixes the strict scanner so absent
+  cross-platform optional native packages are not misclassified as mandatory; CI must
+  pass `node scripts/licenses.mjs check --strict` before release.
 - **Shared data directory / scheme.** Lumi keeps the upstream `ZCode` userData directory
   and `zcode://` registration (deliberate coexistence, no migration performed).
 - **Localized long-tail product-name strings** where the overlay's protected

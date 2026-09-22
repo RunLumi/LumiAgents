@@ -146,11 +146,23 @@ function trademarkGate(text) {
   return status;
 }
 
-test("the trademark gate accepts a line-wrapped declaration", () => {
-  assert.equal(trademarkGate("it does not grant\nrights to the name"), 0);
-  assert.equal(trademarkGate("it does not grant\r\n  rights to the name"), 0);
+test("the trademark gate accepts the corrected copyright/trademark declaration", () => {
+  assert.equal(
+    trademarkGate(
+      "Apache copyright applies to covered files; it does **not**\n" +
+        "grant trademark permission. This policy does **not** retract copyright permissions.",
+    ),
+    0,
+  );
+  assert.equal(
+    trademarkGate(
+      "it does **not**\r\n grant trademark permission; and does **not** retract copyright permissions",
+    ),
+    0,
+  );
 });
 
-test("the trademark gate still rejects a missing declaration", () => {
-  assert.equal(trademarkGate("it grants rights to the name"), 1);
+test("the trademark gate still rejects a missing copyright/trademark boundary", () => {
+  assert.equal(trademarkGate("it does **not** grant trademark permission"), 1);
+  assert.equal(trademarkGate("it does **not** retract copyright permissions"), 1);
 });

@@ -94,29 +94,25 @@ Git blob hashes. The original Apache license and legal materials are not edited.
 The CI test step now includes both regression suites; inspect its result on the
 new PR head rather than assuming a rerun is green.
 
-## Remaining merge and release blockers
+## Current follow-up state
 
-The reviewed run also exposed two independent blockers:
+The original maintainer-credit and keyboard/legal-material access fixes are merged.
+A later 2026-09 compliance audit found broader repository issues outside the
+original scope and addresses them in the dedicated compliance repair:
 
-- **DCO:** its two implementation commits lack author certification. Any review
-  follow-up commit also needs genuine human certification before merge. No tool
-  creates sign-offs on an author's behalf, and the DCO gate is not disabled.
-- **Strict material gate:** it stops at missing installed dependency
-  `@napi-rs/canvas-linux-arm64-musl@0.1.100`. The unchanged workspace configuration
-  lists `current` and `glibc`, while the license scanner expects that musl package.
-  Reconcile the distribution matrix, installed graph and generated inventory in
-  a complete dependency environment. Do not skip the component or replace the
-  strict check with a weaker one merely to make CI green.
+- package metadata must identify Cloudjet/Lumi rather than ZCode product contacts;
+- the trademark policy must distinguish copyright permission in Apache-covered
+  artwork from trademark permission;
+- the strict dependency scanner must treat absent cross-platform optional native
+  packages as optional rather than silently allowlisting package names;
+- historical unsigned commits are frozen as exact legacy exceptions rather than
+  retroactively signed; all new commits still require genuine DCO;
+- inherited ZCode DMG background assets are removed rather than carried forward;
+- branch protection remains a repository-admin setting and must require the DCO,
+  licensing-docs, and license-gates jobs before future merges.
 
-The trademark failure was a separate false positive caused by a newline in
-`TRADEMARKS.md`; the declaration itself was present. Its corrected predicate has
-positive wrapped-text and negative missing-text tests.
-
-**Not verified locally:** full repository typecheck, lint, formatting,
-architecture, drift, third-party gates or platform packaging. The local
-environment lacks the complete checkout and dependency installation. In the
-reviewed CI run, modification-notice and drift steps were skipped after the
-material gate failed. These are unverified, not passes. Separately documented
-ownership and commercial-release blockers remain open.
+The authoritative current status is
+[`docs/licensing/COMPLIANCE.md`](../../licensing/COMPLIANCE.md), not the
+historical CI results recorded earlier in this spec.
 
 Authoritative license: https://www.apache.org/licenses/LICENSE-2.0 (sections 4 and 6).

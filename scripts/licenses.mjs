@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /* eslint-disable max-lines -- 三方 license 盘点/声明/门禁一体脚本，数据表与校验逻辑集中维护。 */
 // 三方 license 盘点/声明/门禁 一体脚本
 //
@@ -56,6 +57,27 @@ for (const [key, { pkg }] of scanned) {
     isProd: required.has(key),
   });
 }
+
+function assertNoticeInventoryProductionSet(manifest, installedPackages) {
+  const inventorySet = new Set(
+    (manifest.packages ?? []).map((item) => `${item.name}@${item.version}`),
+  );
+  const currentSet = new Set(
+    [...installedPackages.values()]
+      .filter((item) => item.isProd)
+      .map((item) => `${item.name}@${item.version}`),
+  );
+  const missing = [...currentSet].filter((key) => !inventorySet.has(key)).sort();
+  const stale = [...inventorySet].filter((key) => !currentSet.has(key)).sort();
+  if (missing.length || stale.length) {
+    throw new Error(
+      "Third-party production package set changed. Run node scripts/licenses.mjs notices." +
+        `\nMissing from inventory: ${missing.join(", ")}` +
+        `\nStale in inventory: ${stale.join(", ")}`,
+    );
+  }
+}
+
 // ---------- 分类 ----------
 const GREEN =
   /^(MIT|MIT-0|ISC|BSD-2-Clause|BSD-3-Clause|BSD-4-Clause|0BSD|Unlicense|Apache-2\.0|Zlib|WTFPL|Artistic-2\.0|BlueOak-1\.0\.0|CC0-1\.0|CC-BY-4\.0|CC-BY-3\.0|BSD|Python-2\.0)$/i;
@@ -94,6 +116,13 @@ function weakAllowReason(r) {
 }
 
 if (command === "check") {
+  const inventory = JSON.parse(
+    await readFile(path.join(ROOT, "third-party/inventory.json"), "utf8"),
+  );
+  // Metadata-only edits to workspace package.json files must not invalidate
+  // notices, but a real production dependency change must fail closed.
+  assertNoticeInventoryProductionSet(inventory, installed);
+
   const bad = [];
   for (const r of installed.values()) {
     if (r.bucket === "green") continue;
@@ -108,9 +137,7 @@ if (command === "check") {
     process.exit(1);
   }
   await readVerifiedNotices(ROOT, { requireComplete: process.argv.includes("--strict") });
-  const reviewRequired =
-    JSON.parse(await readFile(path.join(ROOT, "third-party/inventory.json"), "utf8"))
-      .reviewRequired ?? [];
+  const reviewRequired = inventory.reviewRequired ?? [];
   if (reviewRequired.length)
     console.warn(
       `待补齐/核验材料 ${reviewRequired.length} 项；发布前运行 node scripts/licenses.mjs check --strict，不得将基础检查通过视为合规完成。`,
