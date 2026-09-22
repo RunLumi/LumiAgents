@@ -82,7 +82,10 @@ const nativeSearchReleasePlan = resolveNativeSearchReleasePlan({
 });
 const rawMacSigningIdentity = process.env.APPLE_SIGNING_IDENTITY || process.env.CSC_NAME;
 const macSigningIdentity =
-  rawMacSigningIdentity?.replace(/^Developer ID Application:\s*/, "") ?? null;
+  rawMacSigningIdentity?.replace(
+    /^(?:Developer ID Application|3rd Party Mac Developer Application|Apple Distribution):\s*/,
+    "",
+  ) ?? null;
 const shouldEnableMacSigning =
   process.env.ZCODE_ENABLE_MAC_SIGN === "1" && Boolean(macSigningIdentity);
 const workspaceRoot = resolve(import.meta.dirname, "../..");
@@ -275,8 +278,12 @@ async function runTimedAsync(label, fn) {
   }
 }
 
-function resolveAppAsarPath(context) {
-  if (context.electronPlatformName === "darwin") {
+export function isMacElectronPlatformName(platformName) {
+  return platformName === "darwin" || platformName === "mas";
+}
+
+export function resolveAppAsarPath(context) {
+  if (isMacElectronPlatformName(context.electronPlatformName)) {
     const appName = `${context.packager?.appInfo?.productFilename ?? "ZCode"}.app`;
     return resolve(context.appOutDir, appName, "Contents", "Resources", "app.asar");
   }
@@ -284,8 +291,8 @@ function resolveAppAsarPath(context) {
   return resolve(context.appOutDir, "resources", "app.asar");
 }
 
-function resolvePackagedResourcesDir(context) {
-  if (context.electronPlatformName === "darwin") {
+export function resolvePackagedResourcesDir(context) {
+  if (isMacElectronPlatformName(context.electronPlatformName)) {
     const appName = `${context.packager?.appInfo?.productFilename ?? "ZCode"}.app`;
     return resolve(context.appOutDir, appName, "Contents", "Resources");
   }
@@ -536,10 +543,9 @@ export default {
   afterExtract: async (context) => {
     // 修复：macOS 重命名阶段会删除归档顶层许可证，必须在 afterExtract 保留目标平台原文。
     const framework = context.packager.info.framework;
-    const resources =
-      context.electronPlatformName === "darwin"
-        ? resolve(context.appOutDir, framework.distMacOsAppName, "Contents", "Resources")
-        : resolve(context.appOutDir, "resources");
+    const resources = isMacElectronPlatformName(context.electronPlatformName)
+      ? resolve(context.appOutDir, framework.distMacOsAppName, "Contents", "Resources")
+      : resolve(context.appOutDir, "resources");
     await stageElectronNotices(context.appOutDir, resources, framework.version);
   },
   afterPack: async (context) => {
@@ -683,7 +689,8 @@ export default {
     // z-code 之前只有本地未签名打包配置，CI 即使注入了证书变量，
     // electron-builder 也不会自动切到 hardened runtime / entitlement 这套发布参数。
     // 这里显式收拢到环境开关，保证本地开发不被签名配置绑死，CI 发布时再按需打开。
-    identity: shouldEnableMacSigning ? macSigningIdentity : null,
+    identity:
+      shouldEnableMacSigning && !shouldBuildMacAppStorePkg ? macSigningIdentity : undefined,
     // macOS 产物采用“build 阶段签名 + 独立公证阶段”的两段式流水线。
     // 如果这里不显式关闭 electron-builder 内置 notarize，它会在 build 阶段读取 Apple 凭据后直接尝试公证，
     // 并强制要求 APPLE_APP_SPECIFIC_PASSWORD，导致 build 还没产出 DMG 就提前失败。
@@ -705,7 +712,8 @@ export default {
   },
   mas: {
     identity: process.env.MAS_INSTALLER_IDENTITY || process.env.CSC_INSTALLER_NAME || null,
-    cscInstallerLink: process.env.MAS_INSTALLER_CERTIFICATE || null,
+    cscInstallerLink:
+      process.env.MAS_INSTALLER_CERTIFICATE || process.env.CSC_INSTALLER_LINK || null,
     cscInstallerKeyPassword: process.env.MAS_INSTALLER_CERTIFICATE_PASSWORD || null,
     provisioningProfile:
       process.env.MAS_PROVISIONING_PROFILE || process.env.PROVISIONING_PROFILE || null,

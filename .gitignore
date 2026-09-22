@@ -69,3 +69,8 @@ packages/desktop/.e2e-artifacts/
 packages/desktop/.e2e-cache/
 packages/desktop/.e2e-network-capture/
 .zcode-runtime/
+*.p8
+*.provisionprofile
+*.cer
+screenshots/*
+lumi-release-backup/
