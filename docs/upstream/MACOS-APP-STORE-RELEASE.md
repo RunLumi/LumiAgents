@@ -57,7 +57,7 @@ installer certificates are selected independently.
 
 ## Current release evidence
 
-As of 2026-09-21:
+As of 2026-09-22:
 
 - App Store Connect API key: `3XJ664VDDN` with App Manager access; issuer ID is
   configured in the ignored `.env`.
@@ -68,12 +68,28 @@ As of 2026-09-21:
   Distribution identities. Certificate backups are `mac_app.cer` and
   `mac_installer.cer`; private keys must remain in the login keychain and in
   an encrypted/offline backup.
-- A signed `.pkg` was built and verified in an isolated release worktree at
-  `packages/desktop/dist/mas-arm64/Lumi Agents-3.14.0-mac-arm64.pkg`.
-- Transporter accepted the package on 2026-09-21.
+- A launch-fixed signed `.pkg` was built and verified in an isolated release
+  worktree at `packages/desktop/dist/mas-arm64/Lumi Agents-3.14.0-mac-arm64.pkg`.
+- Transporter accepted build `3.14.1` on 2026-09-22.
 - App Store Connect API readback: build ID
-  `3abfb481-f3e9-42da-ac37-019ddee1ddb9`, version `3.14.0`, processing state
-  `VALID`, audience `APP_STORE_ELIGIBLE`, expiration 2026-12-20.
+  `a7295efc-3620-41ad-b84d-a848a69f8563`, build number `3.14.1`, processing
+  state `VALID`, audience `APP_STORE_ELIGIBLE`. The editable App Store version
+  record remains `3.14.0`; the build number was advanced independently to
+  replace the launch-broken upload.
+- App Review submission ID `9d2e5dab-384d-4ccc-9d49-21842fd21fa2` is
+  `WAITING_FOR_REVIEW`.
+- Four macOS screenshots were uploaded to the `APP_DESKTOP` display set after
+  resizing the supplied images to `2560x1600`. The originals remain in
+  `screenshots/`; generated store copies are in `screenshots/app-store/`.
+- Store metadata is complete: free price, `DEVELOPER_TOOLS` category, no
+  third-party content, privacy policy
+  `https://runlumi.app/store/en/privacy/`, and App Privacy published as
+  `Data Not Collected` based on the current local-first, telemetry-disabled
+  product behavior.
+- Age-rating declarations enable messaging/chat and unrestricted web access,
+  declare no mature-content categories, and use the `18+` override requested
+  for this release. Review contact is Hong Le at `apple@runlumi.app`; no
+  sign-in or demo credentials are required.
 
 The failed attempts and corrective actions are recorded in
 `docs/upstream/MACOS-APP-STORE-POSTMORTEM.md`.

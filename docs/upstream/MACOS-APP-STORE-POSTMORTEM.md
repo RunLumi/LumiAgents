@@ -1,6 +1,6 @@
 # macOS App Store / TestFlight release postmortem
 
-Date: 2026-09-21
+Date: 2026-09-22
 
 ## Outcome
 
@@ -9,6 +9,8 @@ submitted to App Review with the launch-fix package.
 
 - App: `Lumi Agents` (`6814426786`)
 - Bundle ID: `app.lumi.agents`
+- App Store version: `3.14.0`
+- Build number: `3.14.1`
 - Build ID: `a7295efc-3620-41ad-b84d-a848a69f8563`
 - Processing state: `VALID`
 - Audience: `APP_STORE_ELIGIBLE`
