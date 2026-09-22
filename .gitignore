@@ -72,3 +72,5 @@ packages/desktop/.e2e-network-capture/
 *.p8
 *.provisionprofile
 *.cer
+screenshots/*
+lumi-release-backup/
