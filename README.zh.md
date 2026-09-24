@@ -6,7 +6,7 @@
   <img src="public/logo/icons/1024x1024.png" alt="Lumi Agents" width="128" height="128" />
 </div>
 <p align="center">
-  简体中文 | <a href="README.en.md">English</a>
+  简体中文 | <a href="README.md">English</a>
 </p>
 
 > **Lumi Agents 是 ZCode 的独立维护分支（fork）。**
@@ -25,6 +25,10 @@
 > 本分支保留了大量上游内部标识以维持兼容：`@zcode/*` 包名、`ZCODE_*` 环境变量、`zcode://` 协议、`zcode` 命令行，以及上游数据目录名。这些是**刻意保留**的，不是品牌遗漏；详见 [COMPLIANCE.md](docs/licensing/COMPLIANCE.md)。
 
 Lumi Agents 是 AI 编程工作台，提供桌面应用、浏览器界面和终端 Agent。本仓库包含客户端、后端服务、共享 UI，以及 Agent CLI 与运行时源码。
+
+## 上游更新
+
+- 2026-09-23：已纳入 ZCode v3.14.3（`29628c9`）的更新，并保留 Lumi 品牌与分发规则。
 
 > 以下章节继承自上游 ZCode 文档，仍描述上游命令与路径名（如 `zcode` 命令行、`~/.zcode`），本分支保持这些名称不变。
 

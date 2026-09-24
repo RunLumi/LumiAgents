@@ -26,6 +26,10 @@
 
 Lumi Agents is an AI coding workspace with desktop, browser, and terminal interfaces. This repository contains the clients, backend services, shared UI, and Agent CLI and runtime source code.
 
+## Upstream updates
+
+- 2026-09-23: Integrated ZCode v3.14.3 changes from upstream commit `29628c9`, while preserving Lumi branding and distribution policy.
+
 > The sections below are inherited from the upstream ZCode documentation and still describe upstream command and path names (such as the `zcode` CLI and `~/.zcode`). This fork keeps those names unchanged.
 
 | Interface                    | Purpose                                                                                   | Development command            |

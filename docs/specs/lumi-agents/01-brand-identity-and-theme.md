@@ -145,3 +145,14 @@ Added in the second pass (see `docs/licensing/COMPLIANCE.md` for results):
 - The material-review inventory was subsequently reduced/reconciled to 15 evidence-based
   human-review records with `reviewRequired=0`. The strict gate must still pass on the
   actual PR/release environment; human legal sign-off remains separate from machine success.
+
+## 7. Upstream v3.14.3 integration
+
+The 2026-09-24 sync integrates upstream commit `29628c9`. Upstream documentation now
+uses `README.md` for Chinese and `README.en.md` for English. Lumi keeps its existing
+`README.md` English and `README.zh.md` Chinese entry points. Both must retain the
+Lumi product name, fork attribution, compliance links, and reciprocal language links.
+The drift and file-notice lists must name those actual files. Upstream workflow and
+bot UI strings continue through the single `applyLumiBranding` display seam; internal
+`ZCode` identifiers and protocol terms remain unchanged. Regenerate third-party
+notices from the merged production graph before strict license verification.
