@@ -16,6 +16,7 @@ import { generateThirdPartyNotices } from "./generate-third-party-notices.mjs";
 import { readVerifiedNotices } from "./third-party-notices.mjs";
 import { readFile } from "node:fs/promises";
 import {
+  assertNoticeInventoryProductionSet,
   readWorkspaceProductionGraph,
   scanInstalledPackages,
   missingProductionPackages,
@@ -56,26 +57,6 @@ for (const [key, { pkg }] of scanned) {
     license: normLicense(pkg.license ?? pkg.licenses ?? MANUAL_LICENSE[pkg.name]),
     isProd: required.has(key),
   });
-}
-
-function assertNoticeInventoryProductionSet(manifest, installedPackages) {
-  const inventorySet = new Set(
-    (manifest.packages ?? []).map((item) => `${item.name}@${item.version}`),
-  );
-  const currentSet = new Set(
-    [...installedPackages.values()]
-      .filter((item) => item.isProd)
-      .map((item) => `${item.name}@${item.version}`),
-  );
-  const missing = [...currentSet].filter((key) => !inventorySet.has(key)).sort();
-  const stale = [...inventorySet].filter((key) => !currentSet.has(key)).sort();
-  if (missing.length || stale.length) {
-    throw new Error(
-      "Third-party production package set changed. Run node scripts/licenses.mjs notices." +
-        `\nMissing from inventory: ${missing.join(", ")}` +
-        `\nStale in inventory: ${stale.join(", ")}`,
-    );
-  }
 }
 
 // ---------- 分类 ----------
@@ -121,7 +102,7 @@ if (command === "check") {
   );
   // Metadata-only edits to workspace package.json files must not invalidate
   // notices, but a real production dependency change must fail closed.
-  assertNoticeInventoryProductionSet(inventory, installed);
+  assertNoticeInventoryProductionSet(inventory, required, scanned);
 
   const bad = [];
   for (const r of installed.values()) {

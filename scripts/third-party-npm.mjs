@@ -57,7 +57,10 @@ export function parseLockfilePlatformConstraints(text) {
     if (/^snapshots:\s*$/u.test(line)) break;
     const keyMatch = /^  (.+):\s*$/u.exec(line);
     if (keyMatch) {
-      currentKey = keyMatch[1].trim().replace(/^['"]|['"]$/gu, "").replace(/\(.+\)$/u, "");
+      currentKey = keyMatch[1]
+        .trim()
+        .replace(/^['"]|['"]$/gu, "")
+        .replace(/\(.+\)$/u, "");
       if (!constraints.has(currentKey)) constraints.set(currentKey, {});
       continue;
     }
@@ -81,7 +84,9 @@ function currentLibc() {
 function dimensionCompatible(required, supported) {
   if (!required?.length) return true;
   const positives = required.filter((value) => !value.startsWith("!"));
-  const excluded = new Set(required.filter((value) => value.startsWith("!")).map((value) => value.slice(1)));
+  const excluded = new Set(
+    required.filter((value) => value.startsWith("!")).map((value) => value.slice(1)),
+  );
   const candidates = [...supported].filter((value) => !excluded.has(value));
   if (positives.length === 0) return candidates.length > 0;
   return candidates.some((value) => positives.includes(value));
@@ -293,6 +298,30 @@ export function missingProductionPackages(required, installed) {
     );
   }
   return missing;
+}
+
+export function assertNoticeInventoryProductionSet(manifest, required, installed) {
+  const inventorySet = new Set(
+    (manifest.packages ?? []).map((item) => `${item.name}@${item.version}`),
+  );
+  const installedSet = new Set([...installed.keys()].filter((key) => required.has(key)));
+  const missing = [...installedSet].filter((key) => !inventorySet.has(key)).sort();
+  // 跨平台声明是生产并集：macOS 上安装的 musl 包在 glibc CI 中可缺席，
+  // 但清单不能遗漏当前实际安装的包，也不能混入锁文件以外的包。
+  const stale = [...inventorySet]
+    .filter((key) => {
+      if (installedSet.has(key)) return false;
+      const item = required.get(key);
+      return !item || (!item.optional && !item.platformUnsupported);
+    })
+    .sort();
+  if (missing.length || stale.length) {
+    throw new Error(
+      "Third-party production package set changed. Run node scripts/licenses.mjs notices." +
+        `\nMissing from inventory: ${missing.join(", ")}` +
+        `\nStale in inventory: ${stale.join(", ")}`,
+    );
+  }
 }
 
 export async function collectNpmNotices(root, overrides) {

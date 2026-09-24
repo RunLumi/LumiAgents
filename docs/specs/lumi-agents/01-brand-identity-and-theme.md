@@ -156,3 +156,6 @@ The drift and file-notice lists must name those actual files. Upstream workflow 
 bot UI strings continue through the single `applyLumiBranding` display seam; internal
 `ZCode` identifiers and protocol terms remain unchanged. Regenerate third-party
 notices from the merged production graph before strict license verification.
+The strict inventory check requires every installed production package to be declared,
+while allowing a declared lockfile package to be absent when its dependency is optional
+or its platform constraints exclude the current runner. Unknown packages still fail.
