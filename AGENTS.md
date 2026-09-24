@@ -40,7 +40,8 @@
 - `CONTEXT.md`：插件商店领域词汇；修改相关 UI 前阅读。
 - `DESIGN.md`：UI 设计规范；修改 UI 前阅读。
 - `docs/licensing/COMPLIANCE.md`、`docs/licensing/MODIFICATIONS.md`：许可、归属、§4(b) 修改声明与发布阻塞项；改品牌、打包标识、更新源或遥测默认值前必读。
-- `docs/upstream/FORK-DIFFERENCES.md`、`docs/upstream/UPSTREAM-SYNC.md`：与上游 ZCode 的差异清单与同步 runbook。
+- 上游同步、合并冲突或版本升级前，先阅读 [docs/upstream-maintaining.md](docs/upstream-maintaining.md)：固定 upstream SHA、隔离合并、保留 Lumi 品牌和运行时契约、验证许可与 DCO，并检查合并后的 main。
+- `docs/upstream/FORK-DIFFERENCES.md`：与上游 ZCode 的差异清单；新增差异时同步记录。
 
 ## Lumi 分支约束
 
@@ -49,7 +50,7 @@
 - 保留上游归属与 `LICENSE` 原文；不把上游账号/隐私声明改写成 Lumi 的政策。
 - 修改上游文件后必须带 `Modified for Lumi Agents` 声明：`node scripts/lumi-modified-files.mjs apply`，
   无法内联声明的格式登记进 `NOTICE_EXCEPTIONS` 并在 `docs/licensing/MODIFICATIONS.md` 说明。
-- 保留兼容性标识：`@zcode/*`、`ZCODE_*`、`zcode://`、`zcode` CLI、`ZCode` 数据目录名。
+- 上游合并时保留内部兼容性契约，避免全局替换 `@zcode/*`、协议字段和 schema。`zcode://`、CLI 与共享数据路径的 Lumi 隔离需单独制定迁移 spec 并验证双应用共存；参见 [共存与身份迁移](docs/upstream-maintaining.md#coexistence-compatibility-is-not-permanent-shared-identity)，不能在冲突解决中直接重命名。
 - 自动更新与产品遥测默认关闭（`packages/shared/src/lumiDistribution.ts`）；不得改回上游默认值。
 - 品牌图形来自 `brand/`，由 `pnpm lumi:brand-assets` 生成，不手工替换打包图标。
 - 许可/贡献政策（Apache-2.0 + DCO + 开放/商业边界）见 `LICENSING.md`、`CONTRIBUTING.md`、
