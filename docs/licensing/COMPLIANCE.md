@@ -9,18 +9,18 @@
 
 ## 1. 结论摘要
 
-| 项目 | 当前状态 |
-| --- | --- |
-| 项目维护主体 | **CLOUDJET SOLUTIONS PTE. LTD.**（Singapore UEN **201708398E**）负责 Lumi Agents 分支维护、发布、品牌与路线图；维护身份本身不转移上游版权 |
-| Apache 覆盖内容 | 根 `LICENSE` 与上游字节一致，保留 `Copyright 2026 Z.AI Co., Ltd`；Cloudjet/Lumi 第一方内容只在实际拥有权利的范围内主张版权 |
-| 第三方内容 | 继续按各自许可分发；`third-party/inventory.json` 当前有 **15** 条人工材料复核记录、`reviewRequired=0`，15 条均仍标记 `legalSignOff: true` |
-| NOTICE | Lumi addendum 与上游 NOTICE 正文分离；上游正文保持逐字一致 |
-| 打包元数据 | homepage/author/maintainer 已指向 Lumi/Cloudjet，同时保留 ZCode 上游版权事实，不再把 Z.AI/ZCode 产品联系方式伪装成 Lumi 联系方式 |
-| DMG 上游背景图 | 两张继承 ZCode 背景图已删除；DMG 使用无图片的 Lumi warm-paper 纯色背景 |
-| DCO | legacy cutoff 前 **14** 个 unsigned non-merge commit 以 exact-SHA 冻结为历史例外；PR #20 的 post-enforcement commit `fa48dd3ec9e4cda8363b7bd1e2f819c23afe7493` 被误合入且仍未认证，当前以 same-author retrospective attestation 流程修复，**未签署前 DCO 必须保持红灯** |
-| CI strict license gate | PR #20 final head run **#69** 与合并后的 main push run **#73** 均通过 `licensing-docs` 和完整 `license-gates`：依赖安装、policy tests、`check --strict`、§4(b) notices、branding/licensing drift 全绿；main 当前唯一 compliance workflow failure 是 DCO |
-| 分支保护 | 当前 GitHub `main` 未启用 required status checks；工作流存在但不能阻止管理员/直接 merge。需按 `docs/governance/GITHUB-RULESET.md` 在 GitHub 设置中启用 |
-| 发布就绪 | **尚未自动判定为就绪**：至少需要 CI 全绿、第三方复核的人工法务判断、目标平台签名/公证（如适用），以及商业权利链的私下书面证据 |
+| 项目                   | 当前状态                                                                                                                                                                                                                                                                |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 项目维护主体           | **CLOUDJET SOLUTIONS PTE. LTD.**（Singapore UEN **201708398E**）负责 Lumi Agents 分支维护、发布、品牌与路线图；维护身份本身不转移上游版权                                                                                                                               |
+| Apache 覆盖内容        | 根 `LICENSE` 与上游字节一致，保留 `Copyright 2026 Z.AI Co., Ltd`；Cloudjet/Lumi 第一方内容只在实际拥有权利的范围内主张版权                                                                                                                                              |
+| 第三方内容             | 继续按各自许可分发；`third-party/inventory.json` 当前有 **15** 条人工材料复核记录、`reviewRequired=0`，15 条均仍标记 `legalSignOff: true`                                                                                                                               |
+| NOTICE                 | Lumi addendum 与上游 NOTICE 正文分离；上游正文保持逐字一致                                                                                                                                                                                                              |
+| 打包元数据             | homepage/author/maintainer 已指向 Lumi/Cloudjet，同时保留 ZCode 上游版权事实，不再把 Z.AI/ZCode 产品联系方式伪装成 Lumi 联系方式                                                                                                                                        |
+| DMG 上游背景图         | 两张继承 ZCode 背景图已删除；DMG 使用无图片的 Lumi warm-paper 纯色背景                                                                                                                                                                                                  |
+| DCO                    | legacy cutoff 前 **14** 个 unsigned non-merge commit 以 exact-SHA 冻结为历史例外；PR #20 的 post-enforcement commit `fa48dd3ec9e4cda8363b7bd1e2f819c23afe7493` 被误合入且仍未认证，当前以 same-author retrospective attestation 流程修复，**未签署前 DCO 必须保持红灯** |
+| CI strict license gate | PR #20 final head run **#69** 与合并后的 main push run **#73** 均通过 `licensing-docs` 和完整 `license-gates`：依赖安装、policy tests、`check --strict`、§4(b) notices、branding/licensing drift 全绿；main 当前唯一 compliance workflow failure 是 DCO                 |
+| 分支保护               | 当前 GitHub `main` 未启用 required status checks；工作流存在但不能阻止管理员/直接 merge。需按 `docs/governance/GITHUB-RULESET.md` 在 GitHub 设置中启用                                                                                                                  |
+| 发布就绪               | **尚未自动判定为就绪**：至少需要 CI 全绿、第三方复核的人工法务判断、目标平台签名/公证（如适用），以及商业权利链的私下书面证据                                                                                                                                           |
 
 ### 关于「保留 Apache-2.0」的边界
 
@@ -198,12 +198,12 @@ Lumi 没有自有的模型网关或更新后端，因此相关入口在默认配
 
 ### 6.2 必须保留：法律与第三方事实
 
-| 位置                                               | 原因                                                       |
-| -------------------------------------------------- | ---------------------------------------------------------- |
-| `LICENSE` 的 `Copyright 2026 Z.AI Co., Ltd`        | 上游著作权归属，§4(c) 要求保留                             |
-| `NOTICE.md` 从“本声明适用于……”开始的 inherited body | 上游 NOTICE 正文，§4(d) 要求提供；这些**不是** Lumi 的政策 |
-| `THIRD-PARTY-NOTICES.md` 与 `third-party/*`        | 第三方原始版权与许可文本                                   |
-| Provider / Model 名称、`logo-zai.svg` 等供应商标识 | 真实第三方身份，不能改写成 Lumi                            |
+| 位置                                                  | 原因                                                       |
+| ----------------------------------------------------- | ---------------------------------------------------------- |
+| `LICENSE` 的 `Copyright 2026 Z.AI Co., Ltd`           | 上游著作权归属，§4(c) 要求保留                             |
+| `NOTICE.md` 从“本声明适用于……”开始的 inherited body   | 上游 NOTICE 正文，§4(d) 要求提供；这些**不是** Lumi 的政策 |
+| `THIRD-PARTY-NOTICES.md` 与 `third-party/*`           | 第三方原始版权与许可文本                                   |
+| Provider / Model 名称、`logo-zai.svg` 等供应商标识    | 真实第三方身份，不能改写成 Lumi                            |
 | 已移除依赖在历史/迁移文档中的名称（如 `@arms/rum-*`） | 仅作为历史事实保留；它们已不在当前生产依赖图中             |
 
 ### 6.3 刻意保留（可改但选择不改，以最小化上游差异）
@@ -343,9 +343,9 @@ PR #20 被 merge 为 main commit
 `docs/licensing/dco-attestations.json` 提供 exact-target remediation：
 
 1. target SHA / author email / subject 必须与 Git 实际提交一致；
-2. 首次引入该 target SHA 的 commit 必须晚于 target、是 non-merge、由同一 normalized author 提交；
-3. introducing commit 必须带该作者自己的有效 `Signed-off-by`；
-4. checker 会验证 ancestry、author identity 与完整 DCO trailer；
+2. 后续同一 normalized author 的 non-merge descendant commit 必须包含 `DCO-Attests: <exact target SHA>`；
+3. 该 commit 必须带作者自己的有效 `Signed-off-by`；首次引入 JSON 的 unsigned commit 不算认证；
+4. checker 会验证 ancestry、author identity、target metadata 与完整 DCO trailer；
 5. 在该 commit 被原作者真实签署前，CI **必须失败**。
 
 这份 attestation 只是 DCO 1.1 provenance certification，不是 copyright assignment。
@@ -357,13 +357,13 @@ PR #20 被 merge 为 main commit
 以下只保留真实的人类/治理 blocker；机器侧许可门禁已在 PR #20 run #69 与 main run #73
 重复通过。
 
-| # | 阻塞项 | 当前事实 | 完成条件 | 所有者 |
-| --- | --- | --- | --- | --- |
-| 1 | Post-enforcement DCO 人证 | `fa48dd3ec9e4cda8363b7bd1e2f819c23afe7493` 已误合入 main 且无 `Signed-off-by`；DCO push gate 正确保持失败 | 原作者审核本次 remediation 后，对**引入 exact-SHA attestation 的单一 commit**执行真实 `git commit --amend -s`（或等价签署）再 push；CI 验证 same-author/ancestry/exact-SHA 后才接受 `fa48…` | 原提交作者 |
-| 2 | GitHub merge governance | `main` 当前仍显示 `protected: false`；因此红色 DCO 曾能被 merge | 按 `docs/governance/GITHUB-RULESET.md` 启用 PR + required `dco` / `licensing-docs` / `license-gates` + block force-push/delete，并验证普通 maintainer 无法 merge failing PR | Repo admin |
-| 3 | 第三方材料的人工法律判断 | 当前 **15** 条 `materialReviews` 均有工程证据且 `reviewRequired=0`，但仍标记 `legalSignOff: true` | 对 15 条 evidence/residual uncertainty 作真实法律判断并把签署证据存于私有法务档案；不把机器 green 当法律意见 | 法务/所有者 |
-| 4 | 商业权利链 | README/package author/steward 字段不是版权转让证据 | 私下保存 founder/employee/contractor/brand work 的适用雇佣/IP 条款、assignment 与公司授权；融资/客户尽调以这些文件为准 | Cloudjet/法务 |
-| 5 | 目标 release 的平台信任 | Source compliance green 不等于某个 installer 已签名/公证并可安全发布 | 对具体 macOS/Windows/Linux release 执行相应 signing/notarization/installer smoke verification；只对实际验证过的 artifact 作发布声明 | 发布工程 |
+| #   | 阻塞项                    | 当前事实                                                                                                  | 完成条件                                                                                                                                                                                    | 所有者        |
+| --- | ------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| 1   | Post-enforcement DCO 人证 | `fa48dd3ec9e4cda8363b7bd1e2f819c23afe7493` 已误合入 main 且无 `Signed-off-by`；DCO push gate 正确保持失败 | 原作者审核本次 remediation 后，对**引入 exact-SHA attestation 的单一 commit**执行真实 `git commit --amend -s`（或等价签署）再 push；CI 验证 same-author/ancestry/exact-SHA 后才接受 `fa48…` | 原提交作者    |
+| 2   | GitHub merge governance   | `main` 当前仍显示 `protected: false`；因此红色 DCO 曾能被 merge                                           | 按 `docs/governance/GITHUB-RULESET.md` 启用 PR + required `dco` / `licensing-docs` / `license-gates` + block force-push/delete，并验证普通 maintainer 无法 merge failing PR                 | Repo admin    |
+| 3   | 第三方材料的人工法律判断  | 当前 **15** 条 `materialReviews` 均有工程证据且 `reviewRequired=0`，但仍标记 `legalSignOff: true`         | 对 15 条 evidence/residual uncertainty 作真实法律判断并把签署证据存于私有法务档案；不把机器 green 当法律意见                                                                                | 法务/所有者   |
+| 4   | 商业权利链                | README/package author/steward 字段不是版权转让证据                                                        | 私下保存 founder/employee/contractor/brand work 的适用雇佣/IP 条款、assignment 与公司授权；融资/客户尽调以这些文件为准                                                                      | Cloudjet/法务 |
+| 5   | 目标 release 的平台信任   | Source compliance green 不等于某个 installer 已签名/公证并可安全发布                                      | 对具体 macOS/Windows/Linux release 执行相应 signing/notarization/installer smoke verification；只对实际验证过的 artifact 作发布声明                                                         | 发布工程      |
 
 ### 已解决或非 blocker
 
@@ -388,25 +388,25 @@ PR #20 被 merge 为 main commit
 
 ### 10.1 权利分层现状
 
-| 层                              | 内容                               | 权利状态                                                                                            |
-| ------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------- |
-| 上游（ZCode/Z.AI 及其贡献者）   | Apache-2.0 导入的全部代码          | **已核验**：Apache-2.0 授权随分发持续有效（LICENSE 原文保留）；上游不提供 Lumi 的合同承诺           |
-| 社区/项目贡献                  | 按 DCO + Apache-2.0 接受的新公共代码 | DCO 门禁已就绪；pre-cutoff unsigned history 仅以 frozen exact-SHA legacy exceptions 记录；post-cutoff `fa48…` 必须由同一作者作 signed retrospective attestation，不扩大 legacy cutoff |
-| Fork 工程（本分支已完成的工作） | 品牌/遥测替换/打包/合规脚本等      | 截至 legacy cutoff 有 19 个非 merge fork 提交：Git 记录中 14 个作者为 `j <hong@cloudjetkpi.com>`、5 个为 `Stream Entry <978862+streamentry@users.noreply.github.com>`；其中 14 个无 DCO。**Git 作者字段不等于 Cloudjet 权利链证据** |
-| 品牌资产                        | `brand/` 折叠 L 过渡标记           | 项目自产；**未注册商标**，无排他权利声明（TRADEMARKS.md）                                           |
-| 商业层（未建）                  | 托管/企业功能                      | **不存在**；必须独立私有仓库 + 独立权利链，本仓库无任何代码被划走                                   |
+| 层                              | 内容                                 | 权利状态                                                                                                                                                                                                                            |
+| ------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 上游（ZCode/Z.AI 及其贡献者）   | Apache-2.0 导入的全部代码            | **已核验**：Apache-2.0 授权随分发持续有效（LICENSE 原文保留）；上游不提供 Lumi 的合同承诺                                                                                                                                           |
+| 社区/项目贡献                   | 按 DCO + Apache-2.0 接受的新公共代码 | DCO 门禁已就绪；pre-cutoff unsigned history 仅以 frozen exact-SHA legacy exceptions 记录；post-cutoff `fa48…` 必须由同一作者作 signed retrospective attestation，不扩大 legacy cutoff                                               |
+| Fork 工程（本分支已完成的工作） | 品牌/遥测替换/打包/合规脚本等        | 截至 legacy cutoff 有 19 个非 merge fork 提交：Git 记录中 14 个作者为 `j <hong@cloudjetkpi.com>`、5 个为 `Stream Entry <978862+streamentry@users.noreply.github.com>`；其中 14 个无 DCO。**Git 作者字段不等于 Cloudjet 权利链证据** |
+| 品牌资产                        | `brand/` 折叠 L 过渡标记             | 项目自产；**未注册商标**，无排他权利声明（TRADEMARKS.md）                                                                                                                                                                           |
+| 商业层（未建）                  | 托管/企业功能                        | **不存在**；必须独立私有仓库 + 独立权利链，本仓库无任何代码被划走                                                                                                                                                                   |
 
 ### 10.2 未决项（所有者/法务行动清单）
 
-| #   | 事项                                                             | 现状                                             | 需要的证据/行动                                                                                   |
-| --- | ---------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| O1  | Fork 工程与品牌资产的 Cloudjet 权利链 | **公开仓库无法核实**；项目 steward/author metadata 不是 assignment | 私下保存适用的 founder/employee IP 条款、contractor assignment 与品牌资产权利证据；确认无冲突的前雇主/第三方权利 |
-| O2  | RunLumi / Lumi / CLOUDJET SOLUTIONS PTE. LTD. 与本项目的法律关系 | README/RIGHTS 已声明 Cloudjet 是项目 steward，但不据此推导所有版权 | 私下保存董事/公司授权、域名/品牌控制与签约授权证据；融资/客户尽调时提供官方公司资料和实际权利文件 |
-| O3  | 商标注册                                                         | 未注册、未申请                                   | 若需品牌保护，由权利人在目标辖区申请；文档不制造权利                                              |
-| O4  | 创始人/员工/承包商协议存档                                       | 不在仓库（也不应在公开仓库）                     | 签署并存档于私人法务存档；公开仓库只记录"已存档"状态                                              |
-| O5  | 未来商业模块的权利链                                             | 未开始                                           | 独立私有仓库 + 独立提交者协议（不得沿用本仓库 DCO 流程作商业再许可依据）                          |
-| O6  | 客户数据/生成输出的权利                                          | 无合同                                           | 由未来服务条款处理；本仓库不承诺排他所有权                                                        |
-| O7  | DCO 历史与未来贡献 | **14 个 legacy unsigned commit** 精确冻结于 `docs/licensing/dco-legacy-exceptions.json`；post-cutoff `fa48…` 另走 `dco-attestations.json` same-author remediation | 不后移 legacy cutoff、不伪造签名；完成 `fa48…` 的真实作者 attestation；之后所有新提交继续直接 DCO sign-off |
+| #   | 事项                                                             | 现状                                                                                                                                                              | 需要的证据/行动                                                                                                  |
+| --- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| O1  | Fork 工程与品牌资产的 Cloudjet 权利链                            | **公开仓库无法核实**；项目 steward/author metadata 不是 assignment                                                                                                | 私下保存适用的 founder/employee IP 条款、contractor assignment 与品牌资产权利证据；确认无冲突的前雇主/第三方权利 |
+| O2  | RunLumi / Lumi / CLOUDJET SOLUTIONS PTE. LTD. 与本项目的法律关系 | README/RIGHTS 已声明 Cloudjet 是项目 steward，但不据此推导所有版权                                                                                                | 私下保存董事/公司授权、域名/品牌控制与签约授权证据；融资/客户尽调时提供官方公司资料和实际权利文件                |
+| O3  | 商标注册                                                         | 未注册、未申请                                                                                                                                                    | 若需品牌保护，由权利人在目标辖区申请；文档不制造权利                                                             |
+| O4  | 创始人/员工/承包商协议存档                                       | 不在仓库（也不应在公开仓库）                                                                                                                                      | 签署并存档于私人法务存档；公开仓库只记录"已存档"状态                                                             |
+| O5  | 未来商业模块的权利链                                             | 未开始                                                                                                                                                            | 独立私有仓库 + 独立提交者协议（不得沿用本仓库 DCO 流程作商业再许可依据）                                         |
+| O6  | 客户数据/生成输出的权利                                          | 无合同                                                                                                                                                            | 由未来服务条款处理；本仓库不承诺排他所有权                                                                       |
+| O7  | DCO 历史与未来贡献                                               | **14 个 legacy unsigned commit** 精确冻结于 `docs/licensing/dco-legacy-exceptions.json`；post-cutoff `fa48…` 另走 `dco-attestations.json` same-author remediation | 不后移 legacy cutoff、不伪造签名；完成 `fa48…` 的真实作者 attestation；之后所有新提交继续直接 DCO sign-off       |
 
 ### 10.3 与既成文档的衔接
 

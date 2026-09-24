@@ -116,17 +116,17 @@ export const EXPECTATIONS = [
   },
   {
     file: "README.md",
-    description: "README 提供可发现的分支归属声明与合规入口",
-    mustInclude: [/独立维护分支/, /Apache-2\.0/, /docs\/licensing\/COMPLIANCE\.md/],
-  },
-  {
-    file: "README.en.md",
-    description: "英文 README 提供同等归属声明",
+    description: "英文 README 提供可发现的分支归属声明与合规入口",
     mustInclude: [
       /independently maintained fork/,
       /Apache-2\.0/,
       /docs\/licensing\/COMPLIANCE\.md/,
     ],
+  },
+  {
+    file: "README.zh.md",
+    description: "中文 README 提供同等归属声明",
+    mustInclude: [/独立维护分支/, /Apache-2\.0/, /docs\/licensing\/COMPLIANCE\.md/],
   },
   {
     file: "docs/licensing/COMPLIANCE.md",
@@ -275,11 +275,7 @@ export const EXPECTATIONS = [
       /background: null/,
       /backgroundColor: "#f4f0e8"/,
     ],
-    mustExclude: [
-      /homepage: "https:\/\/zcode\.z\.ai"/,
-      /dev@zcode\.z\.ai/,
-      /dmg_background\.png/,
-    ],
+    mustExclude: [/homepage: "https:\/\/zcode\.z\.ai"/, /dev@zcode\.z\.ai/, /dmg_background\.png/],
   },
   {
     file: ".env.example",

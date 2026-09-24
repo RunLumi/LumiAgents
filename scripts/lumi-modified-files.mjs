@@ -51,7 +51,7 @@ export const MODIFIED_FILES = [
   { path: "AGENTS.md", comment: "md" },
   { path: "NOTICE.md", comment: "md" },
   { path: "README.md", comment: "md" },
-  { path: "README.en.md", comment: "md" },
+  { path: "README.zh.md", comment: "md" },
   { path: ".env.example", comment: "hash" },
   // 生成物：声明由 scripts/generate-third-party-notices.mjs 的头部模板产出，
   // 保证每次重新生成都自带声明（不能靠事后手改生成物）。

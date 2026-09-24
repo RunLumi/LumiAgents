@@ -34,6 +34,17 @@ import { readFileSync } from "node:fs";
 const DCO_MARKER = "Signed-off-by:";
 /** 已记录的上游导入基线（Lumi 分叉点）。见 docs/licensing/COMPLIANCE.md §2。 */
 export const KNOWN_IMPORT_BASES = ["872ad960de7ec172591f7e1952f7849229f94521"];
+// Exact upstream release import from zai-org/ZCode PR #25, not a Lumi-authored contribution.
+export const VERIFIED_UPSTREAM_IMPORTS = new Map([
+  [
+    "29628c9acdb81b703bbd4080c207a0e7ce5e276e",
+    {
+      tree: "e7458be062f467b465abc91509adb0558e023605",
+      parent: KNOWN_IMPORT_BASES[0],
+      authorEmail: "weiqi.wu@aminer.cn",
+    },
+  ],
+]);
 // Historical fork commits merged before DCO became merge-blocking. This cutoff is
 // immutable policy state: entries may only be exact ancestors of this commit.
 // They are exceptions to the CI gate, NOT retroactive DCO certifications.
@@ -100,7 +111,9 @@ export function readLegacyDcoExceptions() {
     );
   }
   if (document.upstreamImportBase !== KNOWN_IMPORT_BASES[0]) {
-    throw new Error("[dco] legacy exception import base does not match the recorded upstream baseline");
+    throw new Error(
+      "[dco] legacy exception import base does not match the recorded upstream baseline",
+    );
   }
   const entries = Array.isArray(document.exceptions) ? document.exceptions : [];
   const hashes = new Set();
@@ -192,85 +205,87 @@ export function readRetrospectiveDcoAttestations() {
 
     const targetParents = git(["rev-list", "--parents", "-n", "1", targetSha]).trim().split(/\s+/u);
     if (targetParents.length !== 2) {
-      throw new Error(`[dco] retrospective attestation target must be a non-merge commit: ${targetSha}`);
+      throw new Error(
+        `[dco] retrospective attestation target must be a non-merge commit: ${targetSha}`,
+      );
+    }
+    let isHistorical = false;
+    try {
+      git(["merge-base", "--is-ancestor", targetSha, LEGACY_DCO_CUTOFF]);
+      isHistorical = true;
+    } catch {
+      // A contribution developed on an older side branch can still enter main
+      // after enforcement; the immutable cutoff's ancestry defines the boundary.
     }
     try {
-      git(["merge-base", "--is-ancestor", LEGACY_DCO_CUTOFF, targetSha]);
       git(["merge-base", "--is-ancestor", targetSha, "HEAD"]);
     } catch {
       throw new Error(
-        `[dco] retrospective attestation target must be post-cutoff and in current HEAD ancestry: ${targetSha}`,
+        `[dco] retrospective attestation target is not in current HEAD ancestry: ${targetSha}`,
       );
     }
+    if (isHistorical)
+      throw new Error(`[dco] historical target belongs to frozen cutoff ancestry: ${targetSha}`);
     if (
       evaluateDco({
         commits: [{ hash: targetSha, authorEmail: targetAuthorEmail, body: targetBody ?? "" }],
         exemptHashes: new Set(),
       }).length === 0
     ) {
-      throw new Error(`[dco] retrospective attestation target is already directly signed: ${targetSha}`);
+      throw new Error(
+        `[dco] retrospective attestation target is already directly signed: ${targetSha}`,
+      );
     }
     if (
       normalizeEmail(targetAuthorEmail) !== normalizeEmail(entry.targetAuthorEmail) ||
       targetSubject !== entry.targetSubject
     ) {
-      throw new Error(
-        `[dco] retrospective attestation target metadata mismatch for ${targetSha}`,
-      );
+      throw new Error(`[dco] retrospective attestation target metadata mismatch for ${targetSha}`);
     }
 
-    const introducing = git([
-      "log",
-      "--reverse",
-      "--format=%H",
-      `-S${targetSha}`,
-      "--",
-      "docs/licensing/dco-attestations.json",
-    ])
-      .trim()
-      .split("\n")
-      .filter(Boolean)[0];
-    if (!introducing) {
-      throw new Error(`[dco] no introducing commit found for retrospective attestation ${targetSha}`);
-    }
-
-    try {
-      git(["merge-base", "--is-ancestor", targetSha, introducing]);
-    } catch {
-      throw new Error(
-        `[dco] retrospective attestation ${introducing} does not descend from target ${targetSha}`,
-      );
-    }
-
-    const parentFields = git(["rev-list", "--parents", "-n", "1", introducing]).trim().split(/\s+/u);
-    if (parentFields.length !== 2) {
-      throw new Error(
-        `[dco] retrospective attestation must be introduced by a non-merge commit: ${introducing}`,
-      );
-    }
-
-    const [attestorEmail, attestorBody] = git(["show", "-s", "--format=%ae%x00%b", introducing])
-      .trimEnd()
-      .split("\u0000");
-    if (normalizeEmail(attestorEmail) !== normalizeEmail(targetAuthorEmail)) {
-      throw new Error(
-        `[dco] retrospective attestation author ${attestorEmail} does not match target author ${targetAuthorEmail}`,
-      );
-    }
-    const attestationFailures = evaluateDco({
-      commits: [{ hash: introducing, authorEmail: attestorEmail, body: attestorBody ?? "" }],
-      exemptHashes: new Set(),
+    const candidates = listCommits(`${targetSha}..HEAD`).filter((commit) =>
+      commit.body.split("\n").some((line) => line.trim() === `DCO-Attests: ${targetSha}`),
+    );
+    const valid = candidates.some((commit) => {
+      if (normalizeEmail(commit.authorEmail) !== normalizeEmail(targetAuthorEmail)) return false;
+      if (evaluateDco({ commits: [commit] }).length !== 0) return false;
+      try {
+        git(["merge-base", "--is-ancestor", targetSha, commit.hash]);
+        return true;
+      } catch {
+        return false;
+      }
     });
-    if (attestationFailures.length > 0) {
-      throw new Error(
-        `[dco] retrospective attestation commit ${introducing} lacks the target author's valid Signed-off-by`,
-      );
-    }
+    if (!valid)
+      throw new Error(`[dco] missing same-author signed exact-SHA attestation: ${targetSha}`);
 
     hashes.add(targetSha);
   }
 
   return { document, hashes };
+}
+
+export function verifiedUpstreamImportHashes() {
+  const hashes = new Set();
+  for (const [hash, expected] of VERIFIED_UPSTREAM_IMPORTS) {
+    const [tree, parents, authorEmail] = git(["show", "-s", "--format=%T%x00%P%x00%ae", hash])
+      .trimEnd()
+      .split("\u0000");
+    if (
+      tree !== expected.tree ||
+      parents !== expected.parent ||
+      authorEmail !== expected.authorEmail
+    ) {
+      throw new Error(`[dco] upstream import metadata mismatch: ${hash}`);
+    }
+    try {
+      git(["merge-base", "--is-ancestor", hash, "HEAD"]);
+    } catch {
+      throw new Error(`[dco] upstream import is not in HEAD ancestry: ${hash}`);
+    }
+    hashes.add(hash);
+  }
+  return hashes;
 }
 
 function listCommits(range) {
@@ -320,7 +335,8 @@ function main() {
   const { document: legacyDocument, hashes: legacyHashes } = readLegacyDcoExceptions();
   assertLegacyExceptionsAreHistorical(legacyDocument, legacyHashes);
   const { hashes: attestedHashes } = readRetrospectiveDcoAttestations();
-  const acceptedHashes = new Set([...legacyHashes, ...attestedHashes]);
+  const upstreamHashes = verifiedUpstreamImportHashes();
+  const acceptedHashes = new Set([...legacyHashes, ...attestedHashes, ...upstreamHashes]);
   const failures = evaluateDco({ commits, exemptHashes: acceptedHashes });
   if (failures.length > 0) {
     console.error(

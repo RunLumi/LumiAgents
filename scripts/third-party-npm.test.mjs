@@ -4,6 +4,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  assertNoticeInventoryProductionSet,
   assertProductionGraphs,
   missingProductionPackages,
   parseLockfilePlatformConstraints,
@@ -22,6 +23,34 @@ function project({ dependencies = {}, optionalDependencies = {} } = {}) {
 }
 
 const leaf = (name, version, extra = {}) => ({ name, version, ...extra });
+
+test("notice inventory accepts absent platform packages but rejects missing installed packages", () => {
+  const required = new Map([
+    ["app@1.0.0", { name: "app", version: "1.0.0", optional: false }],
+    ["musl@1.0.0", { name: "musl", version: "1.0.0", platformUnsupported: true }],
+  ]);
+  const installed = new Map([["app@1.0.0", {}]]);
+  const manifest = { packages: [leaf("app", "1.0.0"), leaf("musl", "1.0.0")] };
+  assert.doesNotThrow(() => assertNoticeInventoryProductionSet(manifest, required, installed));
+  assert.throws(
+    () =>
+      assertNoticeInventoryProductionSet(
+        { packages: [leaf("musl", "1.0.0")] },
+        required,
+        installed,
+      ),
+    /Missing from inventory: app@1.0.0/,
+  );
+  assert.throws(
+    () =>
+      assertNoticeInventoryProductionSet(
+        { packages: [...manifest.packages, leaf("unknown", "1.0.0")] },
+        required,
+        installed,
+      ),
+    /Stale in inventory: unknown@1.0.0/,
+  );
+});
 
 test("missing optional platform package does not fail the production graph", () => {
   const locked = [
@@ -110,7 +139,6 @@ test("missing mandatory package still fails the installed-material gate", () => 
   );
 });
 
-
 test("workspace package manifests are recognized without masking legal evidence files", () => {
   for (const path of [
     "package.json",
@@ -130,7 +158,6 @@ test("workspace package manifests are recognized without masking legal evidence 
     assert.equal(isWorkspacePackageManifestInput(path), false, path);
   }
 });
-
 
 test("platform constraints exclude only targets outside the declared build matrix", () => {
   const workspace = `supportedArchitectures:
