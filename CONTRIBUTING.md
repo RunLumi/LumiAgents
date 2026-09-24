@@ -89,16 +89,17 @@ attestation only when all of these are true:
 
 1. `docs/licensing/dco-attestations.json` names the **exact target SHA**, original
    author email and subject, plus the canonical DCO 1.1 attestation statement.
-2. The commit that first introduces that target SHA into the attestation file is
-   a **later non-merge commit by the same normalized author email**.
-3. That introducing commit carries the attestor's genuine `Signed-off-by`.
-4. CI verifies that the attestation commit descends from the target commit and
+2. A later non-merge descendant commit by the same normalized author contains
+   `DCO-Attests: <exact target SHA>` and the author's genuine `Signed-off-by`.
+3. CI verifies that the attestation commit descends from the target commit and
    that no other author can certify it.
 
 This is a provenance remediation for one exact contribution, not a copyright
 assignment, not a blanket exception, and not permission for maintainers or tools
-to sign on another person's behalf. Until the original author signs the
-attestation-introducing commit, the DCO gate must remain red.
+to sign on another person's behalf. Until the original author makes that signed
+exact-SHA certification, the DCO gate must remain red. Inherited upstream release
+commits are separately pinned by SHA, tree, parent, and author in the checker;
+this is not a DCO certification for their authors.
 
 ### Merge mode: preserve sign-offs
 
