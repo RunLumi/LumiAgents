@@ -209,14 +209,23 @@ export function readRetrospectiveDcoAttestations() {
         `[dco] retrospective attestation target must be a non-merge commit: ${targetSha}`,
       );
     }
+    let isHistorical = false;
     try {
-      git(["merge-base", "--is-ancestor", LEGACY_DCO_CUTOFF, targetSha]);
+      git(["merge-base", "--is-ancestor", targetSha, LEGACY_DCO_CUTOFF]);
+      isHistorical = true;
+    } catch {
+      // A contribution developed on an older side branch can still enter main
+      // after enforcement; the immutable cutoff's ancestry defines the boundary.
+    }
+    try {
       git(["merge-base", "--is-ancestor", targetSha, "HEAD"]);
     } catch {
       throw new Error(
-        `[dco] retrospective attestation target must be post-cutoff and in current HEAD ancestry: ${targetSha}`,
+        `[dco] retrospective attestation target is not in current HEAD ancestry: ${targetSha}`,
       );
     }
+    if (isHistorical)
+      throw new Error(`[dco] historical target belongs to frozen cutoff ancestry: ${targetSha}`);
     if (
       evaluateDco({
         commits: [{ hash: targetSha, authorEmail: targetAuthorEmail, body: targetBody ?? "" }],
