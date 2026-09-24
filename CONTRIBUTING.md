@@ -89,7 +89,7 @@ attestation only when all of these are true:
 
 1. `docs/licensing/dco-attestations.json` names the **exact target SHA**, original
    author email and subject, plus the canonical DCO 1.1 attestation statement.
-2. A later non-merge descendant commit by the same normalized author contains
+2. A later non-merge descendant commit by the same normalized author email contains
    `DCO-Attests: <exact target SHA>` and the author's genuine `Signed-off-by`.
 3. CI verifies that the attestation commit descends from the target commit and
    that no other author can certify it.

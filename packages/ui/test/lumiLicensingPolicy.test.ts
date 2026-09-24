@@ -16,6 +16,7 @@ import {
   DCO_ATTESTATION_STATEMENT,
   KNOWN_IMPORT_BASES,
   LEGACY_DCO_CUTOFF,
+  VERIFIED_UPSTREAM_IMPORTS,
   evaluateDco,
   extractSignOffEmails,
   normalizeEmail,
@@ -89,19 +90,31 @@ test("DCO：历史例外固定在不可移动 cutoff，且不是新提交通配�
   assert.ok(hashes.size > 0);
 });
 
-test("DCO：post-cutoff remediation 只能针对 fa48 exact SHA，且声明不可漂移", () => {
+test("DCO：retrospective remediation 仅针对审定的 exact SHAs，声明不可漂移", () => {
   const doc = JSON.parse(read("docs/licensing/dco-attestations.json"));
   assert.equal(doc.schemaVersion, 1);
   assert.equal(doc.canonicalStatement, DCO_ATTESTATION_STATEMENT);
-  assert.equal(doc.attestations.length, 1);
-  assert.deepEqual(doc.attestations[0], {
-    targetSha: "fa48dd3ec9e4cda8363b7bd1e2f819c23afe7493",
-    targetAuthorEmail: "978862+streamentry@users.noreply.github.com",
-    targetSubject: "fix: close licensing attribution and release-governance gaps",
-    statement: DCO_ATTESTATION_STATEMENT,
-  });
+  assert.deepEqual(
+    doc.attestations.map((entry) => entry.targetSha).sort(),
+    [
+      "fa48dd3ec9e4cda8363b7bd1e2f819c23afe7493",
+      "9840eec019b527fc37c9f1202a135f6d5cd9d617",
+      "df76e64fd2cd536d36c89313a4c0f2b774155f49",
+      "f9af8846d5662167d14651316706bb83bd2bad6a",
+      "f3e3e1d4c36c1d4e8a230c36a74b9c6d1a8c0d69",
+    ].sort(),
+  );
+  assert.ok(doc.attestations.every((entry) => entry.statement === DCO_ATTESTATION_STATEMENT));
   assert.match(doc.policy, /same normalized email/);
+  assert.match(doc.policy, /Signed-off-by and DCO-Attests/);
   assert.match(doc.policy, /not a copyright assignment/);
+});
+
+test("DCO：上游导入只接受精确 release commit", () => {
+  assert.deepEqual(
+    [...VERIFIED_UPSTREAM_IMPORTS.keys()],
+    ["29628c9acdb81b703bbd4080c207a0e7ce5e276e"],
+  );
 });
 
 test("DCO：豁免集合精确豁免（历史提交不误报，新提交不豁免）", () => {
