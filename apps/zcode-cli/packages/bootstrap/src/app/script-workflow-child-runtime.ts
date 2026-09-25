@@ -220,6 +220,13 @@ function createRuntimeDeps(
     resolveEffectiveModelSelection: deps.appOptions.resolveEffectiveModelSelection,
     // permissionBroker + providerRuntimeHeadersPort 都在这里面：父 runtime 派生，路由身份已改写成父会话。
     ...deps.runtime.createChildClientPorts(clientPortsContext),
+    ...(deps.appOptions.managedDecisionAdapter
+      ? { managedDecisionAdapter: deps.appOptions.managedDecisionAdapter }
+      : {}),
+    ...(deps.appOptions.managedDecisionPort
+      ? { managedDecisionPort: deps.appOptions.managedDecisionPort }
+      : {}),
+    ...(deps.appOptions.managedContext ? { managedContext: deps.appOptions.managedContext } : {}),
     permissionService: deps.permissionService,
     sessionStore: deps.sessionStore,
     skillPort:

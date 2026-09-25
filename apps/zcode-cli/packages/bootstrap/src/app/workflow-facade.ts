@@ -353,6 +353,13 @@ function createWorkflowChildRuntime(
           : { parentTurnId: options.childTraceContext.turnId }),
       }),
       permissionService: deps.permissionService,
+      ...(deps.appOptions.managedDecisionAdapter
+        ? { managedDecisionAdapter: deps.appOptions.managedDecisionAdapter }
+        : {}),
+      ...(deps.appOptions.managedDecisionPort
+        ? { managedDecisionPort: deps.appOptions.managedDecisionPort }
+        : {}),
+      ...(deps.appOptions.managedContext ? { managedContext: deps.appOptions.managedContext } : {}),
       appVersion: deps.appVersion,
       traceContext: options.childTraceContext,
     },

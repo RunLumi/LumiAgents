@@ -304,6 +304,11 @@ export * from "./openrouter-attribution.js";
 export * from "./workspaceSessionRestore.js";
 export * from "./skill-scan-policy.js";
 export * from "./browser-use/index.js";
+// P05-INT-04 managed browser/computer policy contract (p05-browser-computer-v1)
+// and its fail-closed enforcement / exact invocation binding helpers.
+export * from "./p05-browser-computer-policy.js";
+export * from "./managed-policy-authorization.js";
+export * from "./managed-policy-fingerprint.js";
 
 export * from "./coding-plan-reset.js";
 export {

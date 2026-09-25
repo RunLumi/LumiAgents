@@ -25,8 +25,19 @@ import {
   normalizeMcpToolResultForModel,
 } from "./image-normalization.js";
 import { toMcpToolName, toModelVisibleMcpNamePart } from "./name.js";
+import {
+  createMcpManagedToolIdentity,
+  type ManagedMcpRegistrationOptions,
+} from "./managed-mapping.js";
 
 export { toMcpToolName } from "./name.js";
+export {
+  createManagedMcpRegistration,
+  createMcpManagedRegistration,
+  createMcpManagedToolIdentity,
+  mapMcpToolToManagedIdentity,
+} from "./managed-mapping.js";
+export type { ManagedMcpRegistration, ManagedMcpRegistrationOptions } from "./managed-mapping.js";
 
 export {
   HOST_NODE_REPL_IMAGE_MAX_DIMENSION,
@@ -55,6 +66,12 @@ export interface RegisterMcpToolsOptions {
    * 不投影官方 CUA 规范名，也不挂载 provider 拼写别名。
    */
   officialCuaServerNames?: ReadonlySet<string>;
+  /** Trusted host projection for P05 MCP policy; never read from descriptor text. */
+  managed?: ManagedMcpRegistrationOptions;
+  /** Compatibility aliases for hosts that pass the source projection flat. */
+  source?: ManagedMcpRegistrationOptions["source"];
+  mcpSource?: ManagedMcpRegistrationOptions["source"];
+  mcpRegistrationId?: string;
 }
 
 export function registerMcpTools(
@@ -76,7 +93,21 @@ export function registerMcpTools(
     // denylist 会静默失效并放行。新旧名称任一命中 deny 即拒绝，任一命中 allow 即接受。
     if (allowed && !allowed.has(name) && !allowed.has(descriptorName)) continue;
     if (disallowed?.has(name) || disallowed?.has(descriptorName)) continue;
-    registry.register(createMcpToolEntry(name, descriptor, mcpPort, officialCuaAuthorityVerified));
+    const managedOptions: ManagedMcpRegistrationOptions = {
+      ...options.managed,
+      ...(options.source ? { source: options.source } : {}),
+      ...(options.mcpSource ? { source: options.mcpSource } : {}),
+      ...(options.mcpRegistrationId ? { registrationId: options.mcpRegistrationId } : {}),
+      ...(officialCuaAuthorityVerified &&
+      options.managed?.source === undefined &&
+      options.source === undefined &&
+      options.mcpSource === undefined
+        ? { source: "built_in" as const, catalogued: true }
+        : {}),
+    };
+    registry.register(
+      createMcpToolEntry(name, descriptor, mcpPort, officialCuaAuthorityVerified, managedOptions),
+    );
     registered.push(name);
   }
 
@@ -104,6 +135,7 @@ function createMcpToolEntry(
   descriptor: McpToolDescriptor,
   mcpPort: McpPort,
   officialCuaAuthorityVerified: boolean,
+  managedOptions: ManagedMcpRegistrationOptions,
 ): ToolEntry {
   const readOnly = descriptor.annotations?.readOnlyHint === true;
   const destructive = descriptor.annotations?.destructiveHint === true;
@@ -122,6 +154,7 @@ function createMcpToolEntry(
         : "medium";
   const needsApproval = true;
   const timeoutMs = descriptor.timeoutMs ?? MCP_TOOL_TIMEOUT_MS;
+  const managedIdentity = createMcpManagedToolIdentity(descriptor, managedOptions);
   const resultBudget = officialCuaAuthorityVerified
     ? {
         // 图片 block 的 base64 不计入模型文本预算，但树文本仍可能超过普通 MCP 的
@@ -148,6 +181,7 @@ function createMcpToolEntry(
         };
 
   return {
+    managedIdentity,
 
     // 因精确查找直接返回 Tool not found。只在不可伪造的官方 authority 门成立且内部
     // serverName 仍是官方 namespaced 名时挂单向别名；provider 继续只看规范名称。
@@ -173,6 +207,7 @@ function createMcpToolEntry(
       // 否则模型侧只看到 name + inputSchema，调用 MCP 工具时缺乏判断依据。
       description: descriptor.description,
       name,
+      managedIdentity,
       mcpPresentation: {
         serverName: descriptor.serverName,
         toolName: descriptor.toolName,

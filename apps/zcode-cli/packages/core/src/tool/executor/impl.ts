@@ -1,5 +1,6 @@
 import type { TraceContext, TurnId } from "@zcode/contracts";
 import { createDenyPermissionBroker } from "../../permission/broker.js";
+import { createLumiManagedToolDecisionPortAdapter } from "./managed-decision.js";
 import type { ToolSchedule } from "../scheduler.js";
 import type { ExecutableToolCall, ToolBatchEvent, ToolExecutionResult } from "../types.js";
 import { BackgroundTaskTracker } from "./background-tasks.js";
@@ -24,6 +25,13 @@ export class ToolExecutorImpl implements ToolExecutor {
       registry: options.registry,
       permissionService: options.permissionService,
       permissionBroker: options.permissionBroker ?? createDenyPermissionBroker(),
+      managedDecisionAdapter:
+        options.managedDecisionAdapter ??
+        (options.managedDecisionPort
+          ? createLumiManagedToolDecisionPortAdapter(options.managedDecisionPort)
+          : undefined),
+      managedDecisionPort: options.managedDecisionPort,
+      managedContext: options.managedContext,
       emitEvent: options.emitEvent,
       enqueueBackgroundTaskNotification: options.enqueueBackgroundTaskNotification,
       shouldEnqueueBackgroundTaskNotification: options.shouldEnqueueBackgroundTaskNotification,

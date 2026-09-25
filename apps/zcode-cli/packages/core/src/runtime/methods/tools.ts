@@ -84,6 +84,7 @@ export async function executeTools(
     offPeakTurn: options?.offPeakTurn,
     signal: options?.signal,
     traceContext,
+    ...(options?.managedContext ? { managedContext: options.managedContext } : {}),
     subagentModelOverride: options?.subagentModelOverride,
     model: options?.model,
   });

@@ -18,7 +18,34 @@ export { resolveProjectMemoryRoot } from "./memory/project-root.js";
 export { ToolScheduler, defaultToolScheduler, READ_ONLY_TOOLS } from "./tool/scheduler.js";
 export type { ToolSchedule, ToolScheduleItem, ToolDependency } from "./tool/scheduler.js";
 export { createToolRegistry, ToolRegistry, ToolRegistryImpl } from "./tool/registry.js";
-export { createToolExecutor, ToolExecutor, ToolExecutorImpl } from "./tool/executor.js";
+export { createToolExecutor, ToolExecutorImpl } from "./tool/executor.js";
+export type { ToolExecutor, ToolExecutorOptions } from "./tool/executor.js";
+export {
+  createHostManagedDecisionAdapter,
+  createLumiManagedToolDecisionAdapter,
+  createLumiManagedToolDecisionPortAdapter,
+  createManagedDecisionDeniedError,
+  createManagedToolDecisionAdapter,
+  enforceManagedToolDecision,
+  isManagedToolDecisionDeniedError,
+  resolveLumiManagedExecutionContext,
+} from "./tool/executor.js";
+export type {
+  LumiManagedExecutionContext,
+  LumiManagedExecutionMode,
+  LumiManagedPolicySnapshot,
+  LumiManagedToolDecision,
+  LumiManagedToolDecisionAdapter,
+  LumiManagedToolDecisionAdapterOptions,
+  LumiManagedToolDecisionPort,
+  LocalManagedToolDecisionPort,
+  LumiManagedToolDecisionRequest,
+  LumiManagedToolDecisionResponse,
+  ManagedToolDecisionAdapter,
+  ManagedToolDecisionPort,
+  ManagedToolGateInput,
+  ManagedToolGateResult,
+} from "./tool/executor.js";
 export { builtInTools, registerBuiltInTools } from "./tool/handlers/index.js";
 // dwf driver 的 submit profile 运行时守卫要把 typed 声明换回通用声明。
 export {
@@ -74,7 +101,25 @@ export type {
   ToolBatchResult,
   ExecutableToolCall,
   ToolBatchEvent,
+  ManagedToolIdentity,
+  ManagedToolRiskClass,
+  ManagedToolSource,
 } from "./tool/types.js";
+export {
+  canonicalizeManagedFingerprint,
+  createManagedArgumentsHash,
+  createManagedArgumentsSummary,
+  createManagedCapabilityId,
+  createManagedResourceId,
+  createManagedToolCallId,
+  createManagedToolFingerprint,
+  isManagedIdentityValid,
+  isPrivilegedManagedIdentity,
+  normalizeManagedCapabilityId,
+  normalizeManagedSource,
+  resolveManagedToolIdentity,
+  stableSerialize,
+} from "./tool/executor.js";
 
 // Hooks
 export * from "./hooks/index.js";

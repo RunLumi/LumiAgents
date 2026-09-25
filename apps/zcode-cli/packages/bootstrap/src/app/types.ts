@@ -3,6 +3,9 @@ import type { AiSdkModelAdapter } from "@zcode/adapters/model";
 import type {
   AgentRuntime,
   AgentRuntimeConfig,
+  LumiManagedExecutionContext,
+  LumiManagedToolDecisionAdapter,
+  LumiManagedToolDecisionPort,
   ExecuteTurnOptions,
   ExpertWorkflowCommandResult,
   ProviderRuntimeHeadersPort,
@@ -170,6 +173,10 @@ export interface ZCodeAppOptions {
   /** 由宿主提供 per-app lease；产出的端口归 app 所有。 */
   mcpPortFactory?: (input: { workingDirectory?: string }) => McpPort;
   permissionBroker?: PermissionBrokerPort;
+  /** Host/agent P05 tool decision broker; local mode is explicit and fail-closed. */
+  managedDecisionAdapter?: LumiManagedToolDecisionAdapter;
+  managedDecisionPort?: LumiManagedToolDecisionPort;
+  managedContext?: LumiManagedExecutionContext;
   eventSink?: SessionEventSink;
   env?: NodeJS.ProcessEnv;
   platform?: NodeJS.Platform | string;

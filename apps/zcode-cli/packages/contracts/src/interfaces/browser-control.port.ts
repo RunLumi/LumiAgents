@@ -382,6 +382,8 @@ export type BrowserErrorCode =
   | "duplicate_request_id"
   | "ref_not_found"
   | "navigation_blocked"
+  /** P05-INT-04: managed organization policy denied the action before execution. */
+  | "policy_denied"
   | "timeout"
   | "renderer_unreachable"
   | "cancelled"
@@ -516,6 +518,37 @@ export interface BrowserCommandResult {
   elapsedMs: number;
 }
 
+/** P05-INT-04 managed run correlation. Structurally mirrors @zcode/shared's ManagedPolicyContext. */
+export interface ManagedBrowserComputerPolicyContext {
+  readonly mode: "managed_organization";
+  readonly orgId: string;
+  readonly projectId: string;
+  readonly deviceId: string;
+  readonly agentSessionId: string;
+  readonly runId: string;
+  readonly toolCallId: string;
+  readonly toolId: string;
+  readonly toolFingerprint: string;
+  readonly capabilityIds: readonly string[];
+  readonly riskClass: ManagedBrowserComputerPolicyRiskClass;
+  readonly action: "browser" | "computer";
+  readonly argumentsSummary: string;
+  readonly expectedPolicyVersion?: number;
+  readonly expectedPolicyFingerprint?: string;
+}
+
+export type ManagedBrowserComputerPolicyRiskClass =
+  | "read_only"
+  | "filesystem_write"
+  | "process_execution"
+  | "network"
+  | "mcp"
+  | "browser"
+  | "computer"
+  | "credential_bearing"
+  | "external_side_effect"
+  | "destructive";
+
 export interface BrowserControlExecuteInput {
   /** 精确 runtime backend id；不能只传 iab/extension/cdp family。 */
   browserId: string;
@@ -523,6 +556,7 @@ export interface BrowserControlExecuteInput {
   sessionId: string;
   turnId?: string;
   command: BrowserCommand;
+  managed?: ManagedBrowserComputerPolicyContext;
   traceContext?: TraceContext;
   signal?: AbortSignal;
 }

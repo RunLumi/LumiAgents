@@ -767,6 +767,11 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
       isRemoteWorkspace: () =>
         isRemoteWorkspaceIdentity(runtimeConfig.memory?.workspaceIdentity ?? ""),
       permissionBroker: options.permissionBroker,
+      ...(options.managedDecisionAdapter
+        ? { managedDecisionAdapter: options.managedDecisionAdapter }
+        : {}),
+      ...(options.managedDecisionPort ? { managedDecisionPort: options.managedDecisionPort } : {}),
+      ...(options.managedContext ? { managedContext: options.managedContext } : {}),
       permissionService,
       workflowPort: scriptWorkflowFacade.workflowPort,
       dynamicWorkflowRunPort,

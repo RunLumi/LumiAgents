@@ -147,6 +147,9 @@ export const browserErrorCodeSchema = z.enum([
   "duplicate_request_id",
   "ref_not_found",
   "navigation_blocked",
+  // P05-INT-04：managed organization policy 在执行前拒绝了这次 browser 动作。
+  // 必须是稳定 code，不要把 policy 细节写进 message 让调用方解析。
+  "policy_denied",
   "timeout",
   "renderer_unreachable",
   "cancelled",

@@ -2292,6 +2292,319 @@ export const zcodePermissionRequestParamsSchema = z
   .strict();
 export type ZCodePermissionRequestParams = z.infer<typeof zcodePermissionRequestParamsSchema>;
 
+// ── P05 managed tool decision reverse protocol ───────────────────────────────
+// The runtime sends only bounded, redacted metadata. Device credentials,
+// provider secrets, prompts, and full tool arguments never belong in this
+// envelope. The flat traceId and required outer ZCode Protocol trace are both
+// checked so the existing TraceContext.traceId remains the observability identity.
+
+export const ZCODE_MANAGED_TOOL_DECISION_METHOD = "interaction/requestManagedToolDecision" as const;
+
+const zcodeManagedOpaqueIdSchema = (prefix: string) =>
+  z.string().regex(new RegExp(`^${prefix}_[0-9a-f]{32}$`));
+
+const zcodeManagedProtocolRequestIdSchema = z.union([
+  z.string().trim().min(1).max(128),
+  z.number().int(),
+]);
+
+const zcodeManagedProtocolTraceSchema = z
+  .object({
+    traceparent: z
+      .string()
+      .trim()
+      .min(1)
+      .max(256)
+      .regex(/^[\x21-\x7e]+$/)
+      .optional(),
+    traceId: z
+      .string()
+      .trim()
+      .min(1)
+      .max(256)
+      .regex(/^[\x21-\x7e]+$/),
+    parentId: z
+      .string()
+      .trim()
+      .min(1)
+      .max(256)
+      .regex(/^[\x21-\x7e]+$/)
+      .optional(),
+    spanId: z
+      .string()
+      .trim()
+      .min(1)
+      .max(256)
+      .regex(/^[\x21-\x7e]+$/)
+      .optional(),
+  })
+  .strict();
+
+const zcodeManagedVisibleIdSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(256)
+  .regex(/^[\x21-\x7e]+$/);
+
+const zcodeManagedExternalIdSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(256)
+  .regex(/^[\x21-\x7e]+$/);
+
+const zcodeManagedFingerprintSchema = z
+  .string()
+  .trim()
+  .min(4)
+  .max(128)
+  .regex(/^[A-Za-z0-9._:-]+$/);
+
+const zcodeManagedHashSchema = z.union([
+  z.string().regex(/^[0-9a-f]{64}$/),
+  z.string().regex(/^sha256:[0-9a-f]{64}$/),
+]);
+
+const zcodeManagedCapabilityIdSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(96)
+  .regex(/^(?:cap_[0-9a-f]{32}|[A-Za-z][A-Za-z0-9._:-]{0,95})$/);
+
+const zcodeManagedReasonCodeSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(96)
+  .regex(/^[a-z][a-z0-9_.-]*$/);
+
+const zcodeManagedPolicyStateSchema = z.enum([
+  "ok",
+  "missing",
+  "schema_unsupported",
+  "stale",
+  "unavailable",
+]);
+
+const zcodeManagedDecisionSchema = z.enum([
+  "allow",
+  "require_session_approval",
+  "require_per_use_approval",
+  "deny",
+]);
+
+const zcodeManagedApprovalModeSchema = z.enum(["session", "per_use"]);
+
+const zcodeManagedRiskClassSchema = z.enum([
+  "read_only",
+  "filesystem_write",
+  "process_execution",
+  "network",
+  "mcp",
+  "browser",
+  "computer",
+  "credential_bearing",
+  "external_side_effect",
+  "destructive",
+]);
+
+export const zcodeManagedRunContextSchema = z
+  .object({
+    organizationId: zcodeManagedOpaqueIdSchema("org"),
+    projectId: zcodeManagedOpaqueIdSchema("prj"),
+    deviceId: zcodeManagedOpaqueIdSchema("dvc"),
+    agentSessionId: zcodeManagedOpaqueIdSchema("rse"),
+    runId: zcodeManagedOpaqueIdSchema("run"),
+    agentDefinitionId: zcodeManagedOpaqueIdSchema("agd"),
+    agentDefinitionVersion: z.number().int().positive(),
+    // P04/P05 correlation ID; it is distinct from the JSON-RPC envelope id.
+    requestId: zcodeManagedOpaqueIdSchema("req"),
+    externalId: zcodeManagedExternalIdSchema.optional(),
+    executionMode: z.enum(["managed", "local_only"]),
+    policySnapshotId: zcodeManagedOpaqueIdSchema("pol").optional(),
+    policyVersion: z.number().int().nonnegative().optional(),
+  })
+  .strict();
+export type ZCodeManagedRunContext = z.infer<typeof zcodeManagedRunContextSchema>;
+
+export const zcodeManagedToolIdentitySchema = z
+  .object({
+    toolId: zcodeManagedOpaqueIdSchema("tool"),
+    name: z
+      .string()
+      .trim()
+      .min(1)
+      .max(160)
+      .regex(/^[\x21-\x7e]+$/),
+    fingerprint: zcodeManagedFingerprintSchema,
+    source: z.enum(["built_in", "plugin", "custom"]),
+    riskClass: zcodeManagedRiskClassSchema,
+    capabilityIds: z.array(zcodeManagedCapabilityIdSchema).max(128),
+    mcpRegistrationId: zcodeManagedOpaqueIdSchema("mcp").optional(),
+    catalogued: z.boolean().optional(),
+  })
+  .strict();
+export type ZCodeManagedToolIdentity = z.infer<typeof zcodeManagedToolIdentitySchema>;
+
+export const zcodeManagedToolDecisionRequestParamsSchema = z
+  .object({
+    context: zcodeManagedRunContextSchema,
+    // The flat traceId keeps the reverse request self-describing; the outer
+    // envelope carries the same value plus span/parent metadata.
+    traceId: zcodeManagedVisibleIdSchema,
+    // Existing local ZCode IDs are routing/debugging correlation only.
+    sessionId: zcodeManagedVisibleIdSchema,
+    taskId: zcodeManagedVisibleIdSchema.optional(),
+    toolCallId: zcodeManagedOpaqueIdSchema("tcl"),
+    localToolCallId: zcodeManagedVisibleIdSchema,
+    turnId: zcodeManagedVisibleIdSchema.optional(),
+    tool: zcodeManagedToolIdentitySchema,
+    argumentsSummary: z
+      .string()
+      .trim()
+      .min(1)
+      .max(512)
+      .regex(/^[\x20-\x7e]+$/),
+    argumentsHash: zcodeManagedHashSchema,
+  })
+  .strict()
+  .superRefine((params, context) => {
+    if (params.context.executionMode !== "managed") {
+      context.addIssue({
+        code: "custom",
+        path: ["context", "executionMode"],
+        message: "managed tool decisions require executionMode=managed",
+      });
+    }
+    if (
+      (params.context.policySnapshotId === undefined) !==
+      (params.context.policyVersion === undefined)
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["context"],
+        message: "policy snapshot and policy version must be supplied together",
+      });
+    }
+  });
+export type ZCodeManagedToolDecisionRequestParams = z.infer<
+  typeof zcodeManagedToolDecisionRequestParamsSchema
+>;
+
+const zcodeManagedNullableOpaqueIdSchema = (prefix: string) =>
+  zcodeManagedOpaqueIdSchema(prefix).nullable().optional();
+
+const zcodeManagedNullableStringSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(256)
+  .regex(/^[\x21-\x7e]+$/)
+  .nullable()
+  .optional();
+
+export const zcodeManagedToolDecisionResultSchema = z
+  .object({
+    decision: zcodeManagedDecisionSchema,
+    runId: zcodeManagedOpaqueIdSchema("run"),
+    toolCallId: zcodeManagedOpaqueIdSchema("tcl"),
+    toolId: zcodeManagedOpaqueIdSchema("tool"),
+    toolFingerprint: zcodeManagedFingerprintSchema,
+    riskClass: zcodeManagedRiskClassSchema,
+    approvalMode: zcodeManagedApprovalModeSchema.nullable().optional(),
+    approvalId: zcodeManagedNullableOpaqueIdSchema("apr"),
+    approvalExpiresAt: zcodeManagedNullableStringSchema,
+    reason: zcodeManagedReasonCodeSchema.nullable().optional(),
+    reasonCode: zcodeManagedReasonCodeSchema.nullable().optional(),
+    source: z.enum(["built_in", "plugin", "custom"]).nullable().optional(),
+    policyVersion: z.number().int().nonnegative(),
+    policyState: zcodeManagedPolicyStateSchema,
+    argumentsHash: zcodeManagedHashSchema.nullable().optional(),
+  })
+  .strict()
+  .superRefine((result, context) => {
+    if (result.decision === "require_session_approval") {
+      if (result.approvalMode !== "session") {
+        context.addIssue({
+          code: "custom",
+          path: ["approvalMode"],
+          message: "session approval requires approvalMode=session",
+        });
+      }
+      if (!result.approvalId) {
+        context.addIssue({
+          code: "custom",
+          path: ["approvalId"],
+          message: "approval decision requires approvalId",
+        });
+      }
+    }
+    if (result.decision === "require_per_use_approval") {
+      if (result.approvalMode !== "per_use") {
+        context.addIssue({
+          code: "custom",
+          path: ["approvalMode"],
+          message: "per-use approval requires approvalMode=per_use",
+        });
+      }
+      if (!result.approvalId) {
+        context.addIssue({
+          code: "custom",
+          path: ["approvalId"],
+          message: "approval decision requires approvalId",
+        });
+      }
+    }
+    if (
+      result.decision === "allow" &&
+      result.approvalMode !== null &&
+      result.approvalMode !== undefined &&
+      !result.approvalId
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["approvalId"],
+        message: "allow with approval metadata requires approvalId",
+      });
+    }
+    if (result.decision === "allow" && result.policyState !== "ok") {
+      context.addIssue({
+        code: "custom",
+        path: ["policyState"],
+        message: "non-current policy state cannot produce allow",
+      });
+    }
+  });
+export type ZCodeManagedToolDecisionResult = z.infer<typeof zcodeManagedToolDecisionResultSchema>;
+export const zcodeManagedToolDecisionResponseSchema = zcodeManagedToolDecisionResultSchema;
+export type ZCodeManagedToolDecisionResponse = ZCodeManagedToolDecisionResult;
+
+/**
+ * Strict JSON-RPC envelope for the managed tool decision reverse request.
+ * Unlike the generic protocol envelope, trace is mandatory for this method;
+ * a missing/stale execution context therefore fails before dispatch.
+ */
+export const zcodeManagedToolDecisionRequestSchema = z
+  .object({
+    id: zcodeManagedProtocolRequestIdSchema,
+    method: z.literal(ZCODE_MANAGED_TOOL_DECISION_METHOD),
+    params: zcodeManagedToolDecisionRequestParamsSchema,
+    trace: zcodeManagedProtocolTraceSchema,
+  })
+  .strict()
+  .superRefine((request, context) => {
+    if (request.params.traceId !== request.trace.traceId) {
+      context.addIssue({
+        code: "custom",
+        path: ["params", "traceId"],
+        message: "managed decision traceId must match the protocol trace",
+      });
+    }
+  });
+export type ZCodeManagedToolDecisionRequest = z.infer<typeof zcodeManagedToolDecisionRequestSchema>;
+
 /** Agent 请求 app 枚举当前 workspace/session 可达且已完成握手的 browser backend。 */
 export const zcodeBrowserListParamsSchema = z
   .object({
@@ -3658,6 +3971,9 @@ export const zcodeProtocolMethods = {
   // 资源管理器：CLI 回报其 MCP 子进程 pid 与插件归属（纯内存，无 I/O），采样在 Host 侧完成。
   processChildProcesses: "process/childProcesses",
   interactionRequestPermission: "interaction/requestPermission",
+  // Agent → host reverse request. The host owns the runtime device token and
+  // calls the P05 control-plane broker; the token never crosses this method.
+  interactionRequestManagedToolDecision: ZCODE_MANAGED_TOOL_DECISION_METHOD,
   interactionRequestUserInput: "interaction/requestUserInput",
   interactionRequestProviderRuntimeHeaders: "interaction/requestProviderRuntimeHeaders",
   interactionRequestOfficialMcpAuthHeaders: "interaction/requestOfficialMcpAuthHeaders",
@@ -3688,6 +4004,10 @@ export const zcodeProtocolSessionMethodContracts = {
   [zcodeProtocolMethods.interactionBrowserExecute]: {
     params: zcodeBrowserExecuteParamsSchema,
     result: zcodeBrowserExecuteResultSchema,
+  },
+  [zcodeProtocolMethods.interactionRequestManagedToolDecision]: {
+    params: zcodeManagedToolDecisionRequestParamsSchema,
+    result: zcodeManagedToolDecisionResultSchema,
   },
 } as const satisfies Partial<
   Record<ZCodeProtocolMethod, { params: z.ZodTypeAny; result: z.ZodTypeAny }>

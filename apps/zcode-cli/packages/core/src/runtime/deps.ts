@@ -268,6 +268,11 @@ export { PermissionService, defaultPermissionConfig } from "../permission/servic
 export { createDenyPermissionBroker } from "../permission/broker.js";
 export { createToolExecutor, createToolRegistry, registerBuiltInTools } from "../tool/index.js";
 export type {
+  LumiManagedExecutionContext,
+  LumiManagedToolDecisionAdapter,
+  LumiManagedToolDecisionPort,
+} from "../tool/executor/managed-decision.js";
+export type {
   ExecutableToolCall,
   ReadFileStateEntry,
   ReadFileStateMap,

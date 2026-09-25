@@ -61,6 +61,12 @@ import { validateInitialModelToolInput, validateInput, validateOutput } from "./
 import type { ExecutableToolCall } from "../types.js";
 import { resolveEmbeddedSearchBranchCapability } from "../../embedded-search/capability.js";
 import { resolveToolEntryModelContract } from "../model-contract.js";
+import {
+  createLumiManagedToolDecisionPortAdapter,
+  createManagedDecisionDeniedError,
+  enforceManagedToolDecision,
+  isManagedToolDecisionDeniedError,
+} from "./managed-decision.js";
 
 export async function executeToolCall(
   deps: ToolExecutorDeps,
@@ -440,8 +446,34 @@ async function executeToolCallImpl(
       turnId,
     };
 
+    const managedDecisionAdapter =
+      deps.managedDecisionAdapter ??
+      (deps.managedDecisionPort
+        ? createLumiManagedToolDecisionPortAdapter(deps.managedDecisionPort)
+        : undefined);
+    const guardedToolHandler = async (
+      handlerInput: unknown,
+      handlerContext: ToolExecutionContext,
+    ): Promise<unknown> => {
+      const managedGate = await enforceManagedToolDecision({
+        adapter: managedDecisionAdapter,
+        context: deps.managedContext ?? options?.managedContext,
+        entry,
+        toolCall: canonicalToolCall,
+        input: handlerInput,
+        traceContext,
+        sessionId: deps.sessionId,
+        turnId,
+        signal: handlerContext.abortSignal,
+      });
+      if (!managedGate.allowed) {
+        throw createManagedDecisionDeniedError(managedGate.reasonCode);
+      }
+      return entry.handler(handlerInput, handlerContext);
+    };
+
     const output = await executeWithTimeout(
-      entry.handler,
+      guardedToolHandler,
       executionInput,
       context,
       deadline,
@@ -621,7 +653,10 @@ async function executeToolCallImpl(
       },
     );
 
-    if (options?.signal?.aborted || result.error?.type === CoreErrorType.ToolCancelled) {
+    if (isManagedToolDecisionDeniedError(error)) {
+      telemetry?.setPermissionDecision("denied");
+      telemetry?.finishDenied("policy_denied");
+    } else if (options?.signal?.aborted || result.error?.type === CoreErrorType.ToolCancelled) {
       telemetry?.finishCancelled("abort_signal");
     } else {
       telemetry?.finishFailed(
