@@ -52,6 +52,9 @@ import type {
   PartId,
   PermissionBrokerPort,
   PermissionUpdate,
+  LumiManagedExecutionContext,
+  LumiManagedToolDecisionAdapter,
+  LumiManagedToolDecisionPort,
   QueryId,
   RewindScope,
   RewindStrategy,
@@ -321,6 +324,10 @@ export interface AgentRuntimeDeps {
   providerRuntimeHeadersPort?: ProviderRuntimeHeadersPort;
   permissionService?: PermissionService;
   permissionBroker?: PermissionBrokerPort;
+  /** Host/agent P05 decision broker; absent means unmanaged local execution. */
+  managedDecisionAdapter?: LumiManagedToolDecisionAdapter;
+  managedDecisionPort?: LumiManagedToolDecisionPort;
+  managedContext?: LumiManagedExecutionContext;
   toolScheduler?: ToolScheduler;
   toolRegistry?: ToolRegistry;
   toolExecutor?: ToolExecutor;
@@ -730,6 +737,8 @@ export interface ExecuteToolsOptions {
   offPeakTurn?: boolean;
   signal?: AbortSignal;
   traceContext?: TraceContext;
+  /** Per-execution P05 context; the runtime-level context remains authoritative. */
+  managedContext?: LumiManagedExecutionContext;
   /** 仅透传给当前 turn 同步等待的 Agent child。 */
   subagentModelOverride?: import("@zcode/contracts").SubagentRunOptions["modelOverride"];
   model?: Model;

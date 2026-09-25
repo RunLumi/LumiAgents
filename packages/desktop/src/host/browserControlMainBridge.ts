@@ -5,14 +5,21 @@ import type {
   BrowserClientMode,
   BrowserCommand,
   BrowserCommandResult,
+  BrowserComputerPolicyGate,
   BrowserRecordingArtifact,
+  ManagedPolicyContext,
 } from "@zcode/shared";
+import { authorizeBrowserCommand } from "./browserManagedPolicyGuard.js";
 
 /**
  * host↔main browser 执行桥。host 侧把一条命令经 parentPort 发给 main（WebContentsView+CDP 执行），
  * 按 requestId 关联回传结果。仿 createFullFeedbackLogArchiveViaMain 的 pending map 模式。
  *
  * 设计成可注入 postMessage + 无全局依赖，便于单测（假 parentPort）。
+ *
+ * P05-INT-04：这是桌面浏览器动作真正的执行边界。任何命令在进入 pending map 与
+ * postToMain 之前都必须先通过 managed organization policy 校验；host 是唯一同时
+ * 持有 device token / run 状态 / policy 缓存的进程，所以这里是权威校验点。
  */
 
 interface BrowserExecuteRequestMessage {
@@ -107,6 +114,11 @@ interface BrowserControlMainBridge {
     clientMode?: BrowserClientMode;
     sessionContext?: "live" | "cached";
     command: BrowserCommand;
+    /**
+     * P05-INT-04：managed run 关联。由 run owner 填充，不是 agent/模型可控字段；
+     * 缺失时 bridge 仍可按 local-personal 执行，但不会声称获得 managed 授权。
+     */
+    managed?: ManagedPolicyContext;
   }): Promise<BrowserCommandResult>;
   /** main 回传结果时由 host 消息分派调用。 */
   handleResult(message: BrowserExecuteResultMessage): Promise<void>;
@@ -116,6 +128,13 @@ interface BrowserControlMainBridge {
 export function createBrowserControlMainBridge(deps: {
   postToMain: (message: BrowserExecuteRequestMessage) => void;
   timeoutMs?: number;
+  /** P05-INT-04：host 拥有的 managed policy gate；由持有 device token 的层注入。 */
+  policyGate?: BrowserComputerPolicyGate;
+  /**
+   * P05-INT-04 fail-closed 开关。只跑 managed run 的 host 必须置 true：此时任何
+   * 无法解析 managed run context 的动作都拒绝，而不是退化成 local-personal。
+   */
+  requireManagedPolicy?: boolean;
   materializeRecording?(input: {
     artifact: BrowserRecordingArtifact;
     localPath: string;
@@ -184,6 +203,7 @@ export function createBrowserControlMainBridge(deps: {
       clientMode = "desktop-continuous",
       sessionContext = "live",
       command,
+      managed,
     }): Promise<BrowserCommandResult> {
       if (requestedBrowserId && requestedBrowserId !== browserId) {
         return {
@@ -222,6 +242,23 @@ export function createBrowserControlMainBridge(deps: {
           elapsedMs: 0,
         };
       }
+      // P05-INT-04：policy 判定必须早于 pending map、timer 与 postToMain。
+      // 放到 transport 之后会让被 deny/过期的动作先在 main 里跑起来，违反
+      // "policy version/expiry is checked before use" 与本 packet 的 stop condition。
+      const authorization = await authorizeBrowserCommand({
+        ...(deps.policyGate ? { policyGate: deps.policyGate } : {}),
+        ...(deps.requireManagedPolicy ? { requireManagedPolicy: true } : {}),
+        requestId,
+        sessionId,
+        turnId,
+        workspaceKey,
+        workspacePath,
+        workspaceIdentity,
+        remoteSessionId,
+        command,
+        managed,
+      });
+      if (!authorization.allowed) return authorization.result;
       const startedAt = Date.now();
       // 固定等待的 transport budget 为请求时长加 2 秒，覆盖等待本身和传输开销。
       // 否则 waitForTimeout(>=30s) 会在 timer 正常完成前被 host bridge 误判超时。

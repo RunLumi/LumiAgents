@@ -2,6 +2,7 @@ import type { AiSdkModelAdapter } from "@zcode/adapters/model";
 import type { Model } from "@zcode/contracts";
 import type { AgentRuntimeDeps } from "@zcode/core";
 import {
+  LUMI_MANAGED_PROVIDER_ID,
   type ModelSelection,
   type ModelSelectionValidation,
   type Provider,
@@ -76,8 +77,9 @@ export class ApiProviderModelRuntime {
       modelId: registryModel.modelId,
       providerConfig: provider.config,
       modelConfig: config,
-      ...(provider.config.access.type === "zhipu-account" &&
-      provider.config.access.mode === "off-peak"
+      ...(provider.providerId === LUMI_MANAGED_PROVIDER_ID ||
+      (provider.config.access.type === "zhipu-account" &&
+        provider.config.access.mode === "off-peak")
         ? {
             requestDependencies: {
               requestAuth: {

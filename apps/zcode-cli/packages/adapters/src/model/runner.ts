@@ -18,7 +18,11 @@ import type {
   ModelStreamEvent,
   ModelTextResult,
 } from "@zcode/contracts";
-import type { RegistryModelConfig, RegistryProviderConfig } from "@zcode/provider";
+import {
+  LUMI_MANAGED_PROVIDER_ID,
+  type RegistryModelConfig,
+  type RegistryProviderConfig,
+} from "@zcode/provider";
 import {
   AiSdkModelExecution,
   type AiSdkResolvedModel,
@@ -162,8 +166,9 @@ export class AiSdkModelAdapter {
       const selectedReasoningLevel = request.options.reasoningLevel;
       const requestAuthDependency = options.requestDependencies?.requestAuth;
       const requestAuthRequired =
-        options.providerConfig.access.type === "zhipu-account" &&
-        options.providerConfig.access.mode === "off-peak";
+        options.providerId === LUMI_MANAGED_PROVIDER_ID ||
+        (options.providerConfig.access.type === "zhipu-account" &&
+          options.providerConfig.access.mode === "off-peak");
       // 调用级 runtime header Port 只服务绑定完整 Account Access 的账号型 Model；
       // 普通 API-key Model 若也消费该 Port，会把静态鉴权误送到 Host 刷新并在请求前失败。
       // Off-Peak Model 始终使用创建时注入的执行作用域 Source，不依赖账号服务。

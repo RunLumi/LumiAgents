@@ -35,6 +35,11 @@ import type {
   WorkflowSubmitPort,
 } from "@zcode/contracts";
 import type { HookRunner } from "../../hooks/index.js";
+import type {
+  LumiManagedExecutionContext,
+  LumiManagedToolDecisionAdapter,
+  LumiManagedToolDecisionPort,
+} from "./managed-decision.js";
 import type { PermissionService } from "../../permission/service.js";
 import type { RuntimeTaskRegistry } from "../../runtime-task/registry.js";
 import type { ToolRegistry } from "../registry.js";
@@ -78,6 +83,12 @@ export interface ToolExecutorOptions {
   registry: ToolRegistry;
   permissionService: PermissionService;
   permissionBroker?: PermissionBrokerPort;
+  /** Host/agent P05 broker; absence preserves unmanaged local execution. */
+  managedDecisionAdapter?: LumiManagedToolDecisionAdapter;
+  /** Contract-shaped host port alias; adapted at the executor boundary. */
+  managedDecisionPort?: LumiManagedToolDecisionPort;
+  /** Optional per-executor managed context; the adapter remains the authority. */
+  managedContext?: LumiManagedExecutionContext;
   emitEvent: (event: SessionEvent) => Promise<void>;
   enqueueBackgroundTaskNotification?: EnqueueBackgroundTaskNotification;
   shouldEnqueueBackgroundTaskNotification?: ShouldEnqueueBackgroundTaskNotification;
@@ -166,6 +177,8 @@ export interface ToolExecutor {
 }
 
 export interface ToolExecuteOptions {
+  /** Per-call context for hosts that rotate managed run identity without rebuilding the executor. */
+  managedContext?: LumiManagedExecutionContext;
   automationTurn?: boolean;
   offPeakTurn?: boolean;
   signal?: AbortSignal;
@@ -184,6 +197,9 @@ export interface ToolExecutorDeps {
   registry: ToolRegistry;
   permissionService: PermissionService;
   permissionBroker: PermissionBrokerPort;
+  managedDecisionAdapter?: LumiManagedToolDecisionAdapter;
+  managedDecisionPort?: LumiManagedToolDecisionPort;
+  managedContext?: LumiManagedExecutionContext;
   emitEvent: (event: SessionEvent) => Promise<void>;
   enqueueBackgroundTaskNotification?: EnqueueBackgroundTaskNotification;
   shouldEnqueueBackgroundTaskNotification?: ShouldEnqueueBackgroundTaskNotification;

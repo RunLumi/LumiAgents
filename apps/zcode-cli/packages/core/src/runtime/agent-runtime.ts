@@ -136,6 +136,9 @@ export class AgentRuntime {
   private appVersion: string;
   private permissionService: PermissionService;
   private permissionBroker: PermissionBrokerPort;
+  private managedDecisionAdapter: AgentRuntimeDeps["managedDecisionAdapter"];
+  private managedDecisionPort: AgentRuntimeDeps["managedDecisionPort"];
+  private managedContext: AgentRuntimeDeps["managedContext"];
   private toolScheduler: ToolScheduler;
   private eventReducer: EventReducer;
   private eventStore: SessionEventStorePort;
@@ -247,6 +250,9 @@ export class AgentRuntime {
     this.permissionService =
       deps.permissionService ?? new PermissionService(defaultPermissionConfig);
     this.permissionBroker = deps.permissionBroker ?? createDenyPermissionBroker();
+    this.managedDecisionAdapter = deps.managedDecisionAdapter;
+    this.managedDecisionPort = deps.managedDecisionPort;
+    this.managedContext = deps.managedContext;
     this.toolScheduler =
       deps.toolScheduler ??
       new ToolScheduler({

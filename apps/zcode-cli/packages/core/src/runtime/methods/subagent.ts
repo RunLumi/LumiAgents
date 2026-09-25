@@ -316,6 +316,11 @@ export function createDefaultSubagentPort(
           permissionService: builtInExplore
             ? new PermissionService(defaultPermissionConfig)
             : this.permissionService,
+          ...(this.managedDecisionAdapter
+            ? { managedDecisionAdapter: this.managedDecisionAdapter }
+            : {}),
+          ...(this.managedDecisionPort ? { managedDecisionPort: this.managedDecisionPort } : {}),
+          ...(this.managedContext ? { managedContext: this.managedContext } : {}),
           toolScheduler: deps.toolScheduler ?? defaultScheduler,
           executionPort: deps.executionPort,
           fileSystemPort: deps.fileSystemPort,

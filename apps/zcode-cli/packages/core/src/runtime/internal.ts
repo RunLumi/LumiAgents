@@ -64,6 +64,9 @@ export interface AgentRuntimeInternal
   config: AgentRuntimeConfig;
   permissionService: PermissionService;
   permissionBroker: PermissionBrokerPort;
+  managedDecisionAdapter?: AgentRuntimeDeps["managedDecisionAdapter"];
+  managedDecisionPort?: AgentRuntimeDeps["managedDecisionPort"];
+  managedContext?: AgentRuntimeDeps["managedContext"];
   toolScheduler: ToolScheduler;
   eventReducer: EventReducer;
   eventStore: SessionEventStorePort;

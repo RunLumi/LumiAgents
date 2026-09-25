@@ -158,6 +158,11 @@ function createRuntimeToolExecutor(
     registry: runtime.registry,
     permissionService: runtime.permissionService,
     permissionBroker: runtime.permissionBroker,
+    ...(runtime.managedDecisionAdapter
+      ? { managedDecisionAdapter: runtime.managedDecisionAdapter }
+      : {}),
+    ...(runtime.managedDecisionPort ? { managedDecisionPort: runtime.managedDecisionPort } : {}),
+    ...(runtime.managedContext ? { managedContext: runtime.managedContext } : {}),
     emitEvent: async (event) => {
       await runtime.appendEvent(event, getCurrentTraceContext() ?? runtime.rootTraceContext);
     },

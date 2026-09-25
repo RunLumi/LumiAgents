@@ -36,6 +36,9 @@ import type {
   WorkflowPort,
   WorkflowEscalatePort,
   WorkflowSubmitPort,
+  ManagedToolIdentity as ContractManagedToolIdentity,
+  ManagedToolRiskClass as ContractManagedToolRiskClass,
+  ManagedToolSource as ContractManagedToolSource,
 } from "@zcode/contracts";
 import type {
   JsonSchema,
@@ -62,6 +65,26 @@ import type {
 import type { RuntimeTaskRegistry } from "../runtime-task/registry.js";
 
 // -----------------------------------------------
+// Managed tool identity
+// -----------------------------------------------
+
+/**
+ * P05 identity values are a core-local runtime contract. The control plane owns
+ * the authoritative catalog; this type is only the host-issued projection sent
+ * to the decision adapter. Do not add wire schemas here.
+ */
+export type ManagedToolSource = ContractManagedToolSource;
+export type ManagedToolRiskClass = ContractManagedToolRiskClass;
+
+/**
+ * Core keeps a structural alias of the shared P05 identity so host projections
+ * can cross the core boundary without a second wire vocabulary. The control
+ * plane remains authoritative for catalog membership; `catalogued: false`
+ * deliberately makes an unprojected privileged identity fail closed.
+ */
+export type ManagedToolIdentity = ContractManagedToolIdentity;
+
+// -----------------------------------------------
 // Tool Metadata
 // -----------------------------------------------
 
@@ -80,6 +103,8 @@ export interface ToolMetadata {
   riskLevel: RiskLevel;
   needsApproval: boolean;
   providerVisible?: boolean;
+  /** Trusted host projection for P05; never inferred from model-visible names. */
+  managedIdentity?: ManagedToolIdentity;
   /**
    * 声明该工具是“成功即终止 turn”的终态工具：一旦返回成功结果，executor 就在该结果上挂
    * turnControl 终止当前 turn。这是工具的内在能力声明（像 concurrentSafe/destructive），
@@ -277,6 +302,8 @@ export type ToolHandler<TInput = unknown, TOutput = unknown> = (
 
 export interface ToolEntry extends ToolContractDeclaration {
   aliases?: readonly string[];
+  /** Same trusted P05 projection as metadata.managedIdentity; kept on the entry for adapters. */
+  managedIdentity?: ManagedToolIdentity;
   /**
    * Host-issued atomicity policy for model content. Only an authority-verified
    * registration path may set this; executor code must never infer it from a
