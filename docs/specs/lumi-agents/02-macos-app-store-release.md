@@ -17,6 +17,10 @@ In scope:
 - Build a production `mas` target with electron-builder.
 - Require Mac App Store application and installer signing identities and an
   explicit provisioning profile before a package can be produced.
+- Include the Electron MAS App Group (`7MBXZKYSY4.app.lumi.agents`) and matching
+  `ElectronTeamID` in the signed app; the downloaded profile must authorize the
+  team-prefixed group value. The portal registration remains
+  `group.app.lumi.agents`.
 - Validate the resulting `.pkg` signature and optionally upload it with
   iTMSTransporter using App Store Connect JWT credentials.
 - Document recovery and credential handling without committing private key data.
@@ -82,6 +86,11 @@ qualifier.
 The `.env` file and `.p8` files are ignored by Git. CI must provide equivalent
 values through protected secrets/files.
 
+Certificate bundles are optional when the requested identities are already
+imported into the explicitly selected keychain. `MAS_USE_CERTIFICATE_BUNDLES=0`
+must select that direct-keychain mode without requiring placeholder `.p12`
+paths; the default mode continues to require both protected `.p12` bundles.
+
 ## 6. Acceptance scenarios
 
 1. `pnpm build:macos:mas` fails before building when any MAS signing prerequisite
@@ -109,9 +118,15 @@ values through protected secrets/files.
     current macOS release. Electron `41.0.3` is not an acceptable runtime for
     macOS 27 after the observed V8/JIT `EXC_BREAKPOINT` crash on
     `ThreadPoolSingleThreadForegroundBlocking0`; the replacement target is
-    Electron `44.3.0`.
+    Electron `44.4.3`.
 11. `MAS_MARKETING_VERSION` may keep the binary on the existing App Store
     version while `MAS_BUILD_VERSION` advances the replacement build number.
+12. Direct-keychain mode (`MAS_USE_CERTIFICATE_BUNDLES=0`) does not require
+    `.p12` files and still fails closed when either requested identity is
+    missing from the selected keychain.
+13. The MAS entitlements include `7MBXZKYSY4.app.lumi.agents`,
+    `ElectronTeamID` is `7MBXZKYSY4`, and the embedded provisioning profile
+    authorizes the team-prefixed group value before the package is submitted.
 
 ## 7. macOS 27 crash evidence and remediation decision
 
@@ -124,9 +139,12 @@ the same native failure on macOS `27.2 (26B5086k)` and Apple Silicon:
   activity in the same process;
 - Electron Framework version `41.0.3`.
 
-This is a runtime failure inside the MAS-sandboxed Electron/V8 stack, not an
-App Store metadata, profile, or App Group entitlement failure. The remediation
-owner is the Electron runtime version in `packages/desktop/package.json` and
-the matching `electronVersion` in `electron-builder.config.js`. The release
-gate must rebuild and launch-test the actual signed `.pkg` before submitting a
-replacement App Store build.
+This is a runtime failure inside the MAS-sandboxed Electron/V8 stack. Electron
+`44.3.0` and `44.4.3` were launch-tested locally and still reproduced the same
+`EXC_BREAKPOINT` family on macOS 27. The current profile also lacks the App
+Group required by Electron's MAS signing guidance, so the fix must regenerate
+the profile and sign the app with the matching group entitlement.
+The remediation owner is the Electron runtime version in
+`packages/desktop/package.json` and the matching `electronVersion` in
+`electron-builder.config.js`. The release gate must rebuild and launch-test the
+actual signed `.pkg` before submitting a replacement App Store build.
