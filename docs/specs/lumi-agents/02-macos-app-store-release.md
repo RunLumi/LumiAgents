@@ -1,6 +1,6 @@
 # Spec: Lumi Agents macOS App Store release
 
-Status: shipped; macOS 27 crash follow-up in progress
+Status: shipped; MAS signing metadata follow-up in progress
 Owner: desktop-release
 
 ## 1. Problem
@@ -127,6 +127,11 @@ paths; the default mode continues to require both protected `.p12` bundles.
 13. The MAS entitlements include `7MBXZKYSY4.app.lumi.agents`,
     `ElectronTeamID` is `7MBXZKYSY4`, and the embedded provisioning profile
     authorizes the team-prefixed group value before the package is submitted.
+14. The signed main app must include
+    `com.apple.application-identifier = 7MBXZKYSY4.app.lumi.agents`, matching
+    the application identifier in the embedded provisioning profile. A
+    profile-only application identifier is invalid for App Store Connect and
+    TestFlight delivery.
 
 ## 7. macOS 27 crash evidence and remediation decision
 
