@@ -317,6 +317,12 @@ export * from "./p06-automation-lease.js";
 export * from "./p06-automation-lease-guard.js";
 export * from "./p06-automation-recovery.js";
 export * from "./p06-off-peak-execution.js";
+// P08-INT-01 migration / adoption seam (p08-cg-v1). The stage ladder, the
+// ownership and credential-mode vocabularies, the client-side compatibility
+// evaluation, the closed telemetry key list, and the automation import preview —
+// whose candidate shape is a description of a local automation, never its body.
+export * from "./p08-migration-adoption.js";
+export * from "./p08-automation-import.js";
 
 export * from "./coding-plan-reset.js";
 export {

@@ -33,6 +33,9 @@ export * from "./interfaces/mcp.port.js";
 // P06-INT-01 leased-automation execution seam (p06-automation-lease-v1).
 export * from "./p06-automation-lease.js";
 
+// P08-INT-01 migration / adoption seam (p08-cg-v1).
+export * from "./p08-migration-adoption.js";
+
 export * from "./interfaces/runtime-input-presentation.js";
 
 // Events

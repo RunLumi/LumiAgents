@@ -4,7 +4,15 @@
 
 import type { ExecutionContext, TraceContext } from "../tracing/tracer.js";
 
-export type HttpClientMethod = "GET" | "HEAD" | "POST";
+// `PATCH` was added for the P08 adoption contract
+// (`PATCH /api/v1/orgs/{org_id}/adoption/bindings/{id}`, `p08-cg-v1`). It is
+// deliberately the only addition: advancing one adoption stage is a partial
+// update of a resource the client already holds a version for, which is what
+// `PATCH` means, and the contract gate froze it as PATCH rather than as a
+// POST-with-an-action so the compare-and-set on `version` stays visible in the
+// method. `DELETE` is still absent — nothing in the frozen contracts unbinds by
+// deletion; P08 rolls back to `local_unmanaged` instead.
+export type HttpClientMethod = "GET" | "HEAD" | "POST" | "PATCH";
 export type HttpClientRedirectPolicy = "manual" | "follow";
 export type HttpClientEgressPolicy = "public";
 
