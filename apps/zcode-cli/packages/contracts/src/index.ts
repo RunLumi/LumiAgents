@@ -30,6 +30,9 @@ export * from "./interfaces/automation.port.js";
 export * from "./interfaces/off-peak.port.js";
 export * from "./interfaces/mcp.port.js";
 
+// P06-INT-01 leased-automation execution seam (p06-automation-lease-v1).
+export * from "./p06-automation-lease.js";
+
 export * from "./interfaces/runtime-input-presentation.js";
 
 // Events

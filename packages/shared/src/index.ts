@@ -309,6 +309,14 @@ export * from "./browser-use/index.js";
 export * from "./p05-browser-computer-policy.js";
 export * from "./managed-policy-authorization.js";
 export * from "./managed-policy-fingerprint.js";
+// P06-INT-01 leased-automation execution seam (p06-automation-lease-v1,
+// Contract Gate p06-cg-v1 / P06-CR-001). Wire vocabulary, the host-side fence
+// guard, off-peak execution class, and the recovery classification that
+// replaces local running→queued requeueing.
+export * from "./p06-automation-lease.js";
+export * from "./p06-automation-lease-guard.js";
+export * from "./p06-automation-recovery.js";
+export * from "./p06-off-peak-execution.js";
 
 export * from "./coding-plan-reset.js";
 export {

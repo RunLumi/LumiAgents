@@ -37,11 +37,59 @@ export const LUMI_MANAGED_CORRELATION_HEADERS = Object.freeze({
 export type LumiManagedCorrelationHeader =
   (typeof LUMI_MANAGED_CORRELATION_HEADERS)[keyof typeof LUMI_MANAGED_CORRELATION_HEADERS];
 
-const OPAQUE_ID = /^(org|prj|dvc|rse|run|agd|req)_[0-9a-f]{32}$/;
+const OPAQUE_ID = /^(org|prj|dvc|rse|run|agd|req|aut|sch|occ|lse|usr|pol|wsb)_[0-9a-f]{32}$/;
 const VISIBLE_ASCII = /^[\x21-\x7e]+$/;
 const MAX_EXTERNAL_ID_LENGTH = 256;
 const MAX_SESSION_TOKEN_LENGTH = 4096;
 const STABLE_ALIAS = /^[a-z0-9][a-z0-9._-]{0,127}$/;
+
+/**
+ * Opaque-ID prefixes the Lumi control plane may mint.
+ *
+ * `org/prj/dvc/rse/run/agd/req` are the P05 managed-inference axes. The
+ * remaining prefixes are the P06 leased-automation axes
+ * (`p06-automation-lease-v1`) and are additive: accepting them cannot make a
+ * previously rejected P05 value valid, because the requested prefix must also
+ * match.
+ */
+export const LUMI_OPAQUE_ID_PREFIXES = [
+  "org",
+  "prj",
+  "dvc",
+  "rse",
+  "run",
+  "agd",
+  "req",
+  "aut",
+  "sch",
+  "occ",
+  "lse",
+  "usr",
+  "pol",
+  "wsb",
+] as const;
+
+export type LumiOpaqueIdPrefix = (typeof LUMI_OPAQUE_ID_PREFIXES)[number];
+
+/**
+ * Validate one opaque Lumi ID. The prefix is a wire namespace only and never an
+ * authorization signal; this function proves shape, nothing more.
+ */
+export function normalizeLumiOpaqueId(
+  value: string | undefined,
+  prefix: LumiOpaqueIdPrefix,
+): string {
+  const normalized = value?.trim() ?? "";
+  if (!isLumiOpaqueId(normalized, prefix)) {
+    throw new Error(`Lumi ${prefix} ID is invalid.`);
+  }
+  return normalized;
+}
+
+/** Non-throwing shape check for one opaque Lumi ID. */
+export function isLumiOpaqueId(value: unknown, prefix: LumiOpaqueIdPrefix): value is string {
+  return typeof value === "string" && OPAQUE_ID.test(value) && value.startsWith(`${prefix}_`);
+}
 
 /**
  * Static, non-secret managed provider facts.
@@ -337,12 +385,8 @@ function normalizeControlPlaneBaseUrl(value: string): string {
   return `${parsed.origin}${basePath}`;
 }
 
-function normalizeOpaqueId(value: string | undefined, prefix: string): string {
-  const normalized = value?.trim() ?? "";
-  if (!OPAQUE_ID.test(normalized) || !normalized.startsWith(`${prefix}_`)) {
-    throw new Error(`Lumi ${prefix} ID is invalid.`);
-  }
-  return normalized;
+function normalizeOpaqueId(value: string | undefined, prefix: LumiOpaqueIdPrefix): string {
+  return normalizeLumiOpaqueId(value, prefix);
 }
 
 function normalizeAgentDefinitionVersion(value: number): number {
