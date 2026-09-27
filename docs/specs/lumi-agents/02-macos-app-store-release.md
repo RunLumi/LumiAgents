@@ -110,6 +110,8 @@ values through protected secrets/files.
     macOS 27 after the observed V8/JIT `EXC_BREAKPOINT` crash on
     `ThreadPoolSingleThreadForegroundBlocking0`; the replacement target is
     Electron `44.3.0`.
+11. `MAS_MARKETING_VERSION` may keep the binary on the existing App Store
+    version while `MAS_BUILD_VERSION` advances the replacement build number.
 
 ## 7. macOS 27 crash evidence and remediation decision
 

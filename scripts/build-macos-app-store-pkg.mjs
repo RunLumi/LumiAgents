@@ -8,6 +8,7 @@ import { spawn, spawnSync } from "node:child_process";
 const workspaceRoot = resolve(import.meta.dirname, "..");
 const desktopRoot = join(workspaceRoot, "packages/desktop");
 const distRoot = join(desktopRoot, process.env.ZCODE_DESKTOP_DIST_DIR || "dist");
+const defaultReleaseSecretsRoot = join(workspaceRoot, ".release-secrets");
 
 function parseArgs(argv) {
   return {
@@ -62,7 +63,7 @@ function resolvePath(value) {
   return isAbsolute(value) ? value : resolve(workspaceRoot, value);
 }
 
-function resolveKeychainIdentity(identityName) {
+function resolveKeychainIdentity(identityName, certificatePath) {
   const requestedIdentity = identityName.trim();
   const keychain = process.env.CSC_KEYCHAIN?.trim();
   const args = ["find-identity", "-v"];
@@ -71,7 +72,7 @@ function resolveKeychainIdentity(identityName) {
     encoding: "utf8",
   });
   if (result.status !== 0) {
-    if (process.env.MAS_APP_CERTIFICATE || process.env.MAS_INSTALLER_CERTIFICATE) {
+    if (certificatePath) {
       return requestedIdentity;
     }
     throw new Error(
@@ -85,7 +86,7 @@ function resolveKeychainIdentity(identityName) {
     .filter(Boolean);
   const match = matches.at(-1);
   if (!match) {
-    if (process.env.MAS_APP_CERTIFICATE || process.env.MAS_INSTALLER_CERTIFICATE) {
+    if (certificatePath) {
       return requestedIdentity;
     }
     throw new Error(
@@ -123,6 +124,17 @@ async function main() {
   const apiKey = resolvePath(required("APPLE_API_KEY", process.env.APPLE_API_KEY));
   const apiKeyId = required("APPLE_API_KEY_ID", process.env.APPLE_API_KEY_ID);
   const issuer = required("APPLE_API_ISSUER", process.env.APPLE_API_ISSUER);
+  const releaseSecretsRoot = resolvePath(
+    process.env.MAS_RELEASE_SECRETS_DIR?.trim() || defaultReleaseSecretsRoot,
+  );
+  const appCertificate = resolvePath(
+    process.env.MAS_APP_CERTIFICATE?.trim() ||
+      join(releaseSecretsRoot, "mac-app-distribution.generated.p12"),
+  );
+  const installerCertificate = resolvePath(
+    process.env.MAS_INSTALLER_CERTIFICATE?.trim() ||
+      join(releaseSecretsRoot, "mac-installer-distribution.generated.p12"),
+  );
   const appIdentity = required(
     "MAS_APP_SIGNING_IDENTITY or CSC_NAME",
     process.env.MAS_APP_SIGNING_IDENTITY || process.env.CSC_NAME,
@@ -131,8 +143,11 @@ async function main() {
     "MAS_INSTALLER_IDENTITY or CSC_INSTALLER_NAME",
     process.env.MAS_INSTALLER_IDENTITY || process.env.CSC_INSTALLER_NAME,
   );
-  const appIdentitySpecifier = resolveKeychainIdentity(appIdentity);
-  const installerIdentitySpecifier = resolveKeychainIdentity(installerIdentity);
+  const appIdentitySpecifier = resolveKeychainIdentity(appIdentity, appCertificate);
+  const installerIdentitySpecifier = resolveKeychainIdentity(
+    installerIdentity,
+    installerCertificate,
+  );
   const provisioningProfile = resolvePath(
     required(
       "MAS_PROVISIONING_PROFILE or PROVISIONING_PROFILE",
@@ -140,6 +155,8 @@ async function main() {
     ),
   );
   await requireFile("APPLE_API_KEY", apiKey);
+  await requireFile("MAS_APP_CERTIFICATE", appCertificate);
+  await requireFile("MAS_INSTALLER_CERTIFICATE", installerCertificate);
   await requireFile("MAS_PROVISIONING_PROFILE", provisioningProfile);
   if (!/(Apple Distribution|3rd Party Mac Developer Application)/i.test(appIdentity)) {
     throw new Error(
@@ -159,19 +176,13 @@ async function main() {
     ZCODE_ENABLE_MAC_SIGN: "1",
     MAS_APP_SIGNING_IDENTITY: appIdentitySpecifier,
     MAS_INSTALLER_IDENTITY: installerIdentitySpecifier,
+    MAS_APP_CERTIFICATE: appCertificate,
+    MAS_INSTALLER_CERTIFICATE: installerCertificate,
     MAS_PROVISIONING_PROFILE: provisioningProfile,
-    ...(process.env.MAS_INSTALLER_CERTIFICATE
-      ? {
-          CSC_INSTALLER_LINK: process.env.MAS_INSTALLER_CERTIFICATE,
-          CSC_INSTALLER_KEY_PASSWORD: process.env.MAS_INSTALLER_CERTIFICATE_PASSWORD || "",
-        }
-      : {}),
-    ...(process.env.MAS_APP_CERTIFICATE
-      ? {
-          CSC_LINK: process.env.MAS_APP_CERTIFICATE,
-          CSC_KEY_PASSWORD: process.env.MAS_APP_CERTIFICATE_PASSWORD || "",
-        }
-      : {}),
+    CSC_INSTALLER_LINK: installerCertificate,
+    CSC_INSTALLER_KEY_PASSWORD: process.env.MAS_INSTALLER_CERTIFICATE_PASSWORD || "",
+    CSC_LINK: appCertificate,
+    CSC_KEY_PASSWORD: process.env.MAS_APP_CERTIFICATE_PASSWORD || "",
     PROVISIONING_PROFILE: provisioningProfile,
     APPLE_API_KEY: apiKey,
     APPLE_API_KEY_ID: apiKeyId,
