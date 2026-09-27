@@ -1,6 +1,6 @@
 # Spec: Lumi Agents macOS App Store release
 
-Status: shipped
+Status: shipped; macOS 27 crash follow-up in progress
 Owner: desktop-release
 
 ## 1. Problem
@@ -105,3 +105,26 @@ values through protected secrets/files.
 9. MAS entitlements remain a subset of the provisioning profile; no unused
    App Group entitlement is auto-generated, and `MAS_BUILD_VERSION` can advance
    the build number without creating a new App Store version.
+10. The MAS runtime must use the selected Electron stable line validated for the
+    current macOS release. Electron `41.0.3` is not an acceptable runtime for
+    macOS 27 after the observed V8/JIT `EXC_BREAKPOINT` crash on
+    `ThreadPoolSingleThreadForegroundBlocking0`; the replacement target is
+    Electron `44.3.0`.
+
+## 7. macOS 27 crash evidence and remediation decision
+
+The supplied crash logs for App Store version `3.14.0`, build `3.14.1`, show
+the same native failure on macOS `27.2 (26B5086k)` and Apple Silicon:
+
+- `EXC_BREAKPOINT (SIGTRAP)` / signal code 5;
+- faulting thread `ThreadPoolSingleThreadForegroundBlocking0`;
+- Electron Framework/V8 compile/JIT frames, with network-configuration worker
+  activity in the same process;
+- Electron Framework version `41.0.3`.
+
+This is a runtime failure inside the MAS-sandboxed Electron/V8 stack, not an
+App Store metadata, profile, or App Group entitlement failure. The remediation
+owner is the Electron runtime version in `packages/desktop/package.json` and
+the matching `electronVersion` in `electron-builder.config.js`. The release
+gate must rebuild and launch-test the actual signed `.pkg` before submitting a
+replacement App Store build.
