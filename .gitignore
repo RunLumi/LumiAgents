@@ -1,5 +1,10 @@
 node_modules/
 dist/
+# tsc 的声明输出目录（node-repl-host 与 browser-use-plugin 的 outDir）。
+# 纯构建产物：package.json 的 exports 指向 src/*.ts，没有任何消费方读取这里，
+# 而入库的副本会静默过期——P05 加入 BrowserComputerPolicyGate 之后，
+# 已入库的 cua-broker.d.ts 里该 API 的引用数是 0。
+dist-types/
 # zcode-server-cli 发行包 staging 输出，本地组装产物不入库。
 dist-release/
 # macOS CI 按架构隔离 electron-builder 输出目录，这些仍是构建产物。
