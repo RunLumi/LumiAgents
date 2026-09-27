@@ -76,6 +76,9 @@ packages/desktop/.e2e-network-capture/
 .zcode-runtime/
 *.p8
 *.provisionprofile
+*.p12
+*.key
+.release-secrets/
 *.cer
 screenshots/*
 lumi-release-backup/

@@ -501,10 +501,10 @@ export default {
   // 默认全量语言会产生大量 locale.pak 签名调用，显著拉长打包时长。
   // 这里仅保留当前产品必需语言，减少签名文件数并缩短 CI 总耗时。
   electronLanguages: ["en-US", "zh-CN"],
-  // pnpm workspace + semver range（如 ^41.0.3）下，electron-builder
+  // pnpm workspace + semver range（如 ^44.3.0）下，electron-builder
   // 有时无法从依赖树里稳定推导出 Electron 版本，导致 bundle 直接中断。
   // 显式写死当前桌面端使用的 Electron 版本，避免打包阶段再做不可靠的猜测。
-  electronVersion: "41.0.3",
+  electronVersion: "44.4.3",
   electronDownload: {
     // ELECTRON_MIRROR 是 @electron/get 的全局环境变量，会覆盖 dmg-builder 等
     // generic artifact 自己传入的 mirrorOptions，导致 builder 辅助包被错误拼到 Electron runtime 镜像目录。
@@ -712,6 +712,7 @@ export default {
     artifactName: buildDesktopArtifactName("mac", shouldBuildMacAppStorePkg ? "pkg" : "${ext}"),
     extendInfo: {
       NSAppleEventsUsageDescription: `${desktopProductIdentity.productName} needs Apple Events access to coordinate local automation workflows with user-approved desktop apps.`,
+      ElectronTeamID: process.env.MAS_TEAM_ID || "7MBXZKYSY4",
     },
     // 预签名脚本走的是原生 codesign，要求完整的 "Developer ID Application: ..." 身份串；
     // 但 electron-builder 的 mac.identity 在 26.x 下会拒绝带此前缀的名字。
@@ -742,6 +743,9 @@ export default {
         ],
   },
   mas: {
+    // Keep MAS app and installer certificate discovery independent. An inherited
+    // app identity qualifier makes the installer lookup search for the wrong hash.
+    identity: "",
     cscInstallerLink:
       process.env.MAS_INSTALLER_CERTIFICATE || process.env.CSC_INSTALLER_LINK || null,
     cscInstallerKeyPassword: process.env.MAS_INSTALLER_CERTIFICATE_PASSWORD || null,
@@ -749,9 +753,8 @@ export default {
       process.env.MAS_PROVISIONING_PROFILE || process.env.PROVISIONING_PROFILE || null,
     entitlements: "build/entitlements.mas.plist",
     entitlementsInherit: "build/entitlements.mas.inherit.plist",
-    // Do not synthesize application-groups for MAS. The registered profile
-    // does not grant an App Group and this app has no shared-container use;
-    // an extra group entitlement makes macOS reject the installed app at launch.
+    // The MAS profile must explicitly authorize the Electron-required App Group;
+    // the matching application entitlement is supplied by entitlements.mas.plist.
     preAutoEntitlements: false,
     bundleVersion: process.env.MAS_BUILD_VERSION || null,
     artifactName: buildDesktopArtifactName("mac", "pkg"),
