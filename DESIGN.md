@@ -2645,3 +2645,7 @@ The logo supplies institutional blue, geometric structure, and disciplined negat
 decorate it; build the whole product around what it says:
 
 > Structure. Clarity. Guidance. Trust.
+
+## Motion implementation amendment — 2026-10-03
+
+Public-share header controls receive 120–180ms color/opacity feedback. Transcript, evidence, import semantics, and layout remain stationary. Reduced motion disables transitions. Browser/runtime validation remains required; this entry does not certify deployment.

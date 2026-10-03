@@ -127,3 +127,12 @@
     --share-rail-max-width: 72rem;
   }
 }
+
+
+/* Modified for Lumi Agents: purposeful feedback on public-share controls. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-share-header-shell="true"] :is(button, a) {
+    transition: background-color 180ms ease, color 180ms ease, opacity 120ms ease;
+  }
+  [data-share-header-shell="true"] button:not(:disabled):active { opacity: .88; }
+}
