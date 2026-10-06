@@ -1,5 +1,10 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
-import type { LumiAccountProjection, LumiAccountResult, LumiSignInProjection } from "@zcode/shared";
+import type {
+  LumiDeviceStateProjection,
+  LumiAccountProjection,
+  LumiAccountResult,
+  LumiSignInProjection,
+} from "@zcode/shared";
 interface AccountOwner {
   beginSignIn(name: string): Promise<LumiSignInProjection>;
   completeSignIn(): Promise<void>;
@@ -7,6 +12,10 @@ interface AccountOwner {
   readAccount(): Promise<LumiAccountProjection>;
   restoreSession(): Promise<boolean>;
   signOut(): Promise<void>;
+  enrollDevice?(orgId: string): Promise<LumiDeviceStateProjection>;
+  readDevice?(orgId: string): Promise<LumiDeviceStateProjection>;
+  syncDevicePolicy?(orgId: string): Promise<unknown>;
+  refreshDevice?(orgId: string): Promise<LumiDeviceStateProjection>;
 }
 export async function dispatchLumiAccountCommand(options: {
   trusted: boolean;
@@ -14,6 +23,35 @@ export async function dispatchLumiAccountCommand(options: {
   getOwner(): AccountOwner;
 }): Promise<LumiAccountResult> {
   if (!options.trusted) return { ok: false, code: "lumi_sender_denied" };
+  if (options.command && typeof options.command === "object") {
+    const command = options.command as Record<string, unknown>;
+    if (
+      typeof command.orgId !== "string" ||
+      !/^org_[0-9a-f]{32}$/.test(command.orgId) ||
+      Object.keys(command).some((k) => !["action", "orgId", "confirm"].includes(k)) ||
+      !["enroll-device", "read-device", "sync-device", "refresh-device"].includes(
+        String(command.action),
+      ) ||
+      (command.action === "enroll-device" && command.confirm !== true)
+    )
+      return { ok: false, code: "lumi_command_invalid" };
+    try {
+      const owner = options.getOwner();
+      if (command.action === "enroll-device" && owner.enrollDevice)
+        return { ok: true, device: await owner.enrollDevice(command.orgId) };
+      if (command.action === "read-device" && owner.readDevice)
+        return { ok: true, device: await owner.readDevice(command.orgId) };
+      if (command.action === "refresh-device" && owner.refreshDevice)
+        return { ok: true, device: await owner.refreshDevice(command.orgId) };
+      if (command.action === "sync-device" && owner.syncDevicePolicy && owner.readDevice) {
+        await owner.syncDevicePolicy(command.orgId);
+        return { ok: true, device: await owner.readDevice(command.orgId) };
+      }
+      return { ok: false, code: "lumi_command_unsupported" };
+    } catch {
+      return { ok: false, code: "lumi_device_action_failed" };
+    }
+  }
   if (
     !["begin", "complete", "cancel", "read", "restore", "logout"].includes(
       String(options.command),

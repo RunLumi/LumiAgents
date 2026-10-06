@@ -1,6 +1,21 @@
 // Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /** 中文翻译 */
 const zhCN: Record<string, string> = {
+  "lumiDevice.title": "托管设备",
+  "lumiDevice.noOrg": "请先在控制台创建或加入组织，再注册此设备。",
+  "lumiDevice.org": "组织",
+  "lumiDevice.consent":
+    "注册将为此组织授予设备身份和策略控制。现有本地工作区仍未绑定。请确认所选组织无误。",
+  "lumiDevice.busy": "正在同步设备…",
+  "lumiDevice.error": "设备操作失败。请检查成员资格、设备状态和网络后重试。",
+  "lumiDevice.deviceId": "设备",
+  "lumiDevice.policyVersion": "策略版本",
+  "lumiDevice.expired": "设备令牌已过期，托管操作已暂停。请勿重新注册或丢弃设备密钥。",
+  "lumiDevice.resume": "继续设备注册",
+  "lumiDevice.enroll": "确认并注册此设备",
+  "lumiDevice.sync": "同步策略",
+  "lumiDevice.refresh": "刷新设备令牌",
+
   "lumiAccount.openBrowser": "打开批准页面",
   "lumiAccount.title": "Lumi 组织账户",
   "lumiAccount.scope": "可选的组织登录。供应商账户和本地工作区仍然独立。",

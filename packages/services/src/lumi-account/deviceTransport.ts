@@ -38,7 +38,20 @@ export class LumiDeviceHostTransport {
   readonly #origin: string;
   readonly #fetch: typeof fetch;
   #credential: LumiDeviceCredential | undefined;
-  constructor(origin: string, fetchImpl: typeof fetch = fetch) {
+  readonly #persistence:
+    | {
+        load(): Promise<LumiDeviceCredential | null>;
+        save(value: LumiDeviceCredential): Promise<void>;
+      }
+    | undefined;
+  constructor(
+    origin: string,
+    fetchImpl: typeof fetch = fetch,
+    persistence?: {
+      load(): Promise<LumiDeviceCredential | null>;
+      save(value: LumiDeviceCredential): Promise<void>;
+    },
+  ) {
     const url = new URL(origin);
     if (
       url.username ||
@@ -52,6 +65,21 @@ export class LumiDeviceHostTransport {
       throw new LumiAccountError("lumi_origin_invalid");
     this.#origin = url.origin;
     this.#fetch = fetchImpl;
+    this.#persistence = persistence;
+  }
+  async restore(): Promise<boolean> {
+    const value = await this.#persistence?.load();
+    if (!value) return false;
+    id(value.id, "dvc");
+    id(value.orgId, "org");
+    if (
+      !/^[0-9a-f]{64}$/.test(value.token) ||
+      !Number.isFinite(Date.parse(value.tokenExpiresAt)) ||
+      !Number.isSafeInteger(value.policyVersion)
+    )
+      throw new LumiAccountError("lumi_device_response_invalid");
+    this.#credential = value;
+    return true;
   }
   async #request(path: string, method: "GET" | "POST", body?: unknown, authenticated = false) {
     const headers: Record<string, string> = { Accept: "application/json" };
@@ -113,13 +141,15 @@ export class LumiDeviceHostTransport {
     )
       throw new LumiAccountError("lumi_device_response_invalid");
     const device = row.device as Record<string, unknown>;
-    this.#credential = {
+    const credential: LumiDeviceCredential = {
       id: id(device.id, "dvc"),
       orgId: id(device.org_id, "org"),
       token: row.device_token,
       tokenExpiresAt: instant(row.token_expires_at),
       policyVersion: row.policy_version as number,
     };
+    await this.#persistence?.save(credential);
+    this.#credential = credential;
     return this.projection();
   }
   projection(): LumiDeviceProjection {
@@ -166,12 +196,14 @@ export class LumiDeviceHostTransport {
       !this.#credential
     )
       throw new LumiAccountError("lumi_device_response_invalid");
-    this.#credential = {
+    const credential: LumiDeviceCredential = {
       ...this.#credential,
       token: result.device_token,
       tokenExpiresAt: instant(result.token_expires_at),
       policyVersion: result.policy_version as number,
     };
+    await this.#persistence?.save(credential);
+    this.#credential = credential;
     return this.projection();
   }
 }

@@ -56,3 +56,15 @@ not offer device enrollment or workspace adoption until their packets are wired.
 Beginning Lumi sign-in creates a code and returns its fixed-origin approval URL;
 opening the browser is a separate explicit UI action through existing platform
 openExternal. No authentication attempt silently opens the user's browser.
+
+## Device custody and confirmation
+Main device owner is keyed by origin/org/user, with closed OS-encrypted Ed25519
+private/public key/fingerprint record and private token. Persist pending identity
+before enrollment; persist token before publishing successful enrollment. User
+selects an active org/membership and confirms enrollment in UI. Signing in does
+not bind workspaces. Restore reuses its own pending/device identity; another
+account cannot load the previous user's key. Logout clears account owner cache,
+not provider credentials or device evidence. Policy sync and refresh use device
+auth, never human cookies. Expired token pauses managed operations without
+silently generating a new key; post-expiry recovery is a separately audited
+contract gap, not an anonymous-nonce or re-enrollment bypass.

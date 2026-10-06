@@ -345,6 +345,7 @@ export { redactFeedbackText } from "./feedbackPrivacy.js";
 
 export { LUMI_ACCOUNT_CHANNEL } from "./lumi-account.js";
 export type {
+  LumiDeviceStateProjection,
   LumiAccountCommand,
   LumiAccountResult,
   LumiAccountBridge,

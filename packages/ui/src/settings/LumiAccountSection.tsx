@@ -1,3 +1,4 @@
+import { LumiDeviceSection } from "./LumiDeviceSection.js";
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
 import { useEffect, useRef, useState } from "react";
 import type {
@@ -95,6 +96,7 @@ export function LumiAccountSection() {
             {account.user.displayName} · {account.user.email}
           </p>
           <p>{text("noBinding")}</p>
+          <LumiDeviceSection account={account} />
           <ul>
             {account.organizations.map((org) => (
               <li key={org.id}>

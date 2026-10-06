@@ -247,6 +247,8 @@ export class LumiAccountHostTransport {
         return {
           id: text(org.org_id, 128),
           displayName: text(org.display_name, 256),
+          slug: text(org.slug, 63),
+          state: text(org.state, 32),
           role: text(item.role, 32),
           status: text(item.status, 32),
         };

@@ -2821,3 +2821,4 @@ export type {
   LumiDeviceProjection,
   DeviceEnrollmentInput,
 } from "./lumi-account/deviceTransport.js";
+export type { LumiDeviceCredential } from "./lumi-account/deviceTransport.js";
