@@ -17,16 +17,41 @@ export interface LumiSignInProjection {
   expiresAt: string;
 }
 
+export interface LumiAccountProjection {
+  user: { id: string; email: string; displayName: string };
+  organizations: { id: string; displayName: string; role: string; status: string }[];
+}
+
+export interface LumiSessionEnvelope {
+  version: 1;
+  origin: string;
+  session: string;
+  csrf: string;
+  expiresAt: string;
+}
+/** Host-private port; never register load/save as renderer RPC methods. */
+export interface LumiSessionPersistence {
+  load(): Promise<LumiSessionEnvelope | null>;
+  save(record: LumiSessionEnvelope): Promise<void>;
+  clear(): Promise<void>;
+}
+
 /** Host-only fixed-route transport. Never register this object as renderer RPC. */
 export class LumiAccountHostTransport {
   readonly #origin: string;
   readonly #fetch: typeof fetch;
+  readonly #persistence: LumiSessionPersistence | undefined;
+  #writes: Promise<void> = Promise.resolve();
   #session: string | undefined;
   #csrf: string | undefined;
   #generation = 0;
   #pending: { code: string; verifier: string; expires: number } | undefined;
 
-  constructor(origin: string, fetchImpl: typeof fetch = fetch) {
+  constructor(
+    origin: string,
+    fetchImpl: typeof fetch = fetch,
+    persistence?: LumiSessionPersistence,
+  ) {
     const url = new URL(origin);
     const loopback = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
     if (
@@ -41,6 +66,7 @@ export class LumiAccountHostTransport {
     }
     this.#origin = url.origin;
     this.#fetch = fetchImpl;
+    this.#persistence = persistence;
   }
 
   async #request(path: string, method: "GET" | "POST", body?: unknown) {
@@ -104,9 +130,44 @@ export class LumiAccountHostTransport {
     };
   }
 
-  async completeSignIn(): Promise<void> {
-    const pending = this.#pending;
+  #serialize<T>(operation: () => Promise<T>): Promise<T> {
+    const task = this.#writes.then(operation);
+    this.#writes = task.then(
+      () => undefined,
+      () => undefined,
+    );
+    return task;
+  }
+
+  async restoreSession(): Promise<boolean> {
     const generation = this.#generation;
+    return this.#serialize(async () => {
+      const row = await this.#persistence?.load();
+      if (generation !== this.#generation) throw new LumiAccountError("lumi_flow_cancelled");
+      if (
+        !row ||
+        row.version !== 1 ||
+        row.origin !== this.#origin ||
+        !/^[0-9a-f]{64}$/.test(row.session) ||
+        !/^[0-9a-f]{64}$/.test(row.csrf) ||
+        !Number.isFinite(Date.parse(row.expiresAt)) ||
+        Date.parse(row.expiresAt) <= Date.now()
+      )
+        return false;
+      this.#session = row.session;
+      this.#csrf = row.csrf;
+      return true;
+    });
+  }
+
+  completeSignIn(): Promise<void> {
+    const generation = this.#generation;
+    return this.#serialize(() => this.#completeSignIn(generation));
+  }
+
+  async #completeSignIn(generation: number): Promise<void> {
+    const pending = this.#pending;
+    if (generation !== this.#generation) throw new LumiAccountError("lumi_flow_cancelled");
     if (!pending || pending.expires <= Date.now()) {
       this.cancelSignIn();
       throw new LumiAccountError("lumi_flow_expired");
@@ -129,13 +190,71 @@ export class LumiAccountHostTransport {
     }
     if (!cookies.has("lumi_session") || !cookies.has("lumi_csrf"))
       throw new LumiAccountError("lumi_cookie_missing");
+    const body = (await response.json()) as { session?: { expires_at?: unknown } };
+    if (generation !== this.#generation) throw new LumiAccountError("lumi_flow_cancelled");
+    if (this.#persistence) {
+      const expiresAt = body.session?.expires_at;
+      if (
+        typeof expiresAt !== "string" ||
+        !Number.isFinite(Date.parse(expiresAt)) ||
+        Date.parse(expiresAt) <= Date.now()
+      ) {
+        throw new LumiAccountError("lumi_response_invalid");
+      }
+      await this.#persistence.save({
+        version: 1,
+        origin: this.#origin,
+        session: cookies.get("lumi_session")!,
+        csrf: cookies.get("lumi_csrf")!,
+        expiresAt,
+      });
+      if (generation !== this.#generation) {
+        await this.#persistence.clear();
+        throw new LumiAccountError("lumi_flow_cancelled");
+      }
+    }
     this.#session = cookies.get("lumi_session");
     this.#csrf = cookies.get("lumi_csrf");
     this.cancelSignIn();
   }
 
-  async readAccount(): Promise<unknown> {
-    return (await this.#request("/api/v1/me", "GET")).json();
+  async readAccount(): Promise<LumiAccountProjection> {
+    const body = (await (await this.#request("/api/v1/me", "GET")).json()) as Record<
+      string,
+      unknown
+    >;
+    const text = (value: unknown, max: number): string => {
+      if (typeof value !== "string" || !value || value.length > max)
+        throw new LumiAccountError("lumi_response_invalid");
+      return value;
+    };
+    if (
+      !body.user ||
+      typeof body.user !== "object" ||
+      !Array.isArray(body.organizations) ||
+      body.organizations.length > 100
+    ) {
+      throw new LumiAccountError("lumi_response_invalid");
+    }
+    const user = body.user as Record<string, unknown>;
+    return {
+      user: {
+        id: text(user.id, 128),
+        email: text(user.email, 320),
+        displayName: text(user.display_name, 256),
+      },
+      organizations: body.organizations.map((item: Record<string, unknown>) => {
+        if (!item || typeof item.organization !== "object" || !item.organization)
+          throw new LumiAccountError("lumi_response_invalid");
+        const org = item.organization as Record<string, unknown>;
+        return {
+          id: text(org.org_id, 128),
+          displayName: text(org.display_name, 256),
+          role: text(item.role, 32),
+          status: text(item.status, 32),
+        };
+      }),
+    };
   }
 
   async signOut(): Promise<void> {
@@ -145,6 +264,12 @@ export class LumiAccountHostTransport {
     const logout = this.#session ? this.#request("/api/v1/auth/logout", "POST", {}) : undefined;
     this.#session = undefined;
     this.#csrf = undefined;
-    await logout;
+    await this.#serialize(async () => {
+      try {
+        await logout;
+      } finally {
+        await this.#persistence?.clear();
+      }
+    });
   }
 }

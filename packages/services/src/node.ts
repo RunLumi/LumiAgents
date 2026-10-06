@@ -2808,3 +2808,11 @@ export async function disposeServiceResourcesAndWait(services: ServiceCollection
     ?.disposeAndWait()
     .catch(() => {});
 }
+
+// Lumi human account transport belongs to trusted main/host, never renderer RPC.
+export { LumiAccountHostTransport, LumiAccountError } from "./lumi-account/hostTransport.js";
+export type {
+  LumiSessionPersistence,
+  LumiSessionEnvelope,
+  LumiSignInProjection,
+} from "./lumi-account/hostTransport.js";
