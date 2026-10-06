@@ -2816,3 +2816,8 @@ export type {
   LumiSessionEnvelope,
   LumiSignInProjection,
 } from "./lumi-account/hostTransport.js";
+export { LumiDeviceHostTransport } from "./lumi-account/deviceTransport.js";
+export type {
+  LumiDeviceProjection,
+  DeviceEnrollmentInput,
+} from "./lumi-account/deviceTransport.js";

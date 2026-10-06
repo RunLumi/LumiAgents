@@ -1,5 +1,5 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 export class LumiAccountError extends Error {
   constructor(
@@ -61,8 +61,13 @@ export class LumiAccountHostTransport {
     this.#persistence = persistence;
   }
 
-  async #request(path: string, method: "GET" | "POST", body?: unknown) {
-    const headers: Record<string, string> = { Accept: "application/json" };
+  async #request(
+    path: string,
+    method: "GET" | "POST",
+    body?: unknown,
+    extraHeaders: Record<string, string> = {},
+  ) {
+    const headers: Record<string, string> = { Accept: "application/json", ...extraHeaders };
     if (body !== undefined) headers["Content-Type"] = "application/json";
     if (this.#session && this.#csrf) {
       headers.Cookie = `lumi_session=${this.#session}; lumi_csrf=${this.#csrf}`;
@@ -247,6 +252,27 @@ export class LumiAccountHostTransport {
         };
       }),
     };
+  }
+
+  async approveDeviceEnrollment(
+    orgId: string,
+    enrollmentId: string,
+    key: string = randomUUID(),
+  ): Promise<void> {
+    if (
+      !/^org_[0-9a-f]{32}$/.test(orgId) ||
+      !/^enr_[0-9a-f]{32}$/.test(enrollmentId) ||
+      !key ||
+      key.length > 128
+    ) {
+      throw new LumiAccountError("lumi_enrollment_invalid");
+    }
+    await this.#request(
+      `/api/v1/orgs/${orgId}/devices/enrollments/${enrollmentId}/approve`,
+      "POST",
+      {},
+      { "Idempotency-Key": key },
+    );
   }
 
   async signOut(): Promise<void> {
