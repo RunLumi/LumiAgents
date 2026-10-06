@@ -53,3 +53,6 @@ General settings has an optional account panel with restore/loading, begin,
 browser code matching, explicit completion, cancel, error and logout states.
 English and Chinese locale entries follow the existing intl contract. It does
 not offer device enrollment or workspace adoption until their packets are wired.
+Beginning Lumi sign-in creates a code and returns its fixed-origin approval URL;
+opening the browser is a separate explicit UI action through existing platform
+openExternal. No authentication attempt silently opens the user's browser.

@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button.js";
 
 /** Separate optional organization account; provider login stays in its existing owner. */
 export function LumiAccountSection() {
-  const { lumiAccount } = usePlatform();
+  const platform = usePlatform();
+  const { lumiAccount } = platform;
   const { intl } = useZCodeIntl();
   const [account, setAccount] = useState<LumiAccountProjection>();
   const [signIn, setSignIn] = useState<LumiSignInProjection>();
@@ -111,6 +112,13 @@ export function LumiAccountSection() {
           <p className="font-mono text-lg tracking-widest">{signIn.userCode}</p>
           <p>{text("return")}</p>
           <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              disabled={busy}
+              onClick={() => void platform.openExternal(signIn.verificationUrl)}
+            >
+              {text("openBrowser")}
+            </Button>
             <Button disabled={busy} onClick={() => void request("complete")}>
               {text("complete")}
             </Button>

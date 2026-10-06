@@ -1,6 +1,7 @@
 // Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /** English translations */
 const enUS: Record<string, string> = {
+  "lumiAccount.openBrowser": "Open approval page",
   "lumiAccount.title": "Lumi organization account",
   "lumiAccount.scope":
     "Optional organization sign-in. Your provider account and local workspaces stay separate.",

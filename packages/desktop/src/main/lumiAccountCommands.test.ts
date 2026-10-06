@@ -8,11 +8,8 @@ test("foreign sender and arbitrary route cannot initialize account custody", asy
     calls++;
     throw new Error("should not initialize");
   };
-  const openExternal = async () => {
-    throw new Error("should not open");
-  };
   assert.deepEqual(
-    await dispatchLumiAccountCommand({ trusted: false, command: "begin", getOwner, openExternal }),
+    await dispatchLumiAccountCommand({ trusted: false, command: "begin", getOwner }),
     { ok: false, code: "lumi_sender_denied" },
   );
   assert.deepEqual(
@@ -20,7 +17,6 @@ test("foreign sender and arbitrary route cannot initialize account custody", asy
       trusted: true,
       command: "/api/secret",
       getOwner,
-      openExternal,
     }),
     { ok: false, code: "lumi_command_invalid" },
   );
@@ -29,19 +25,17 @@ test("foreign sender and arbitrary route cannot initialize account custody", asy
       trusted: true,
       command: { route: "read" },
       getOwner,
-      openExternal,
     }),
     { ok: false, code: "lumi_command_invalid" },
   );
   assert.equal(calls, 0);
 });
-test("trusted begin opens only the owner-generated verification URL", async () => {
+test("trusted begin returns only owner-generated approval projection", async () => {
   const signIn = {
     userCode: "1234ABCD",
     verificationUrl: "https://lumi.example/desktop?user_code=1234ABCD",
     expiresAt: "later",
   };
-  let opened = "";
   const owner = {
     beginSignIn: async () => signIn,
     completeSignIn: async () => {},
@@ -57,12 +51,9 @@ test("trusted begin opens only the owner-generated verification URL", async () =
     trusted: true,
     command: "begin",
     getOwner: () => owner,
-    openExternal: async (url) => {
-      opened = url;
-    },
   });
   assert.deepEqual(result, { ok: true, signIn });
-  assert.equal(opened, signIn.verificationUrl);
+  assert.equal(result.ok && result.signIn?.verificationUrl, signIn.verificationUrl);
 });
 test("raw upstream error never crosses IPC", async () => {
   const result = await dispatchLumiAccountCommand({
@@ -71,7 +62,6 @@ test("raw upstream error never crosses IPC", async () => {
     getOwner: () => {
       throw new Error("sensitive upstream body");
     },
-    openExternal: async () => {},
   });
   assert.deepEqual(result, { ok: false, code: "lumi_account_failed" });
 });

@@ -1,6 +1,7 @@
 // Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /** 中文翻译 */
 const zhCN: Record<string, string> = {
+  "lumiAccount.openBrowser": "打开批准页面",
   "lumiAccount.title": "Lumi 组织账户",
   "lumiAccount.scope": "可选的组织登录。供应商账户和本地工作区仍然独立。",
   "lumiAccount.busy": "正在连接…",

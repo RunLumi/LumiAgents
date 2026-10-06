@@ -12,7 +12,6 @@ export async function dispatchLumiAccountCommand(options: {
   trusted: boolean;
   command: unknown;
   getOwner(): AccountOwner;
-  openExternal(url: string): Promise<unknown>;
 }): Promise<LumiAccountResult> {
   if (!options.trusted) return { ok: false, code: "lumi_sender_denied" };
   if (
@@ -28,7 +27,6 @@ export async function dispatchLumiAccountCommand(options: {
     switch (options.command) {
       case "begin": {
         const signIn = await owner.beginSignIn("Lumi Agents Desktop");
-        await options.openExternal(signIn.verificationUrl);
         return { ok: true, signIn };
       }
       case "complete":
