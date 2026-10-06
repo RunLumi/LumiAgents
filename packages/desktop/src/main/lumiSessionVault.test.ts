@@ -9,7 +9,7 @@ import { createLumiSessionVault } from "./lumiSessionVault.js";
 const encryption = {
   isEncryptionAvailable: () => true,
   getSelectedStorageBackend: () => "gnome_libsecret",
-  encryptString: (s: string) => Buffer.from(s).map((b) => b ^ 42),
+  encryptString: (s: string) => Buffer.from(Buffer.from(s).map((b) => b ^ 42)),
   decryptString: (b: Buffer) =>
     Buffer.from(b)
       .map((x) => x ^ 42)
