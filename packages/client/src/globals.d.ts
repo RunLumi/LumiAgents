@@ -56,6 +56,7 @@ import type {
 declare global {
   interface Window {
     zcode: {
+      lumiAccount?: import("@zcode/shared").LumiAccountBridge;
       connectRemote(
         options: RemoteTarget,
         requestId?: string,

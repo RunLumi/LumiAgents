@@ -11,16 +11,8 @@ export class LumiAccountError extends Error {
   }
 }
 
-export interface LumiSignInProjection {
-  userCode: string;
-  verificationUrl: string;
-  expiresAt: string;
-}
-
-export interface LumiAccountProjection {
-  user: { id: string; email: string; displayName: string };
-  organizations: { id: string; displayName: string; role: string; status: string }[];
-}
+export type { LumiSignInProjection, LumiAccountProjection } from "@zcode/shared";
+import type { LumiSignInProjection, LumiAccountProjection } from "@zcode/shared";
 
 export interface LumiSessionEnvelope {
   version: 1;

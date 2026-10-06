@@ -342,3 +342,12 @@ export * from "./clientConfig.js";
 export * from "./pluginStoreOrdering.js";
 export * from "./session-debug.js";
 export { redactFeedbackText } from "./feedbackPrivacy.js";
+
+export { LUMI_ACCOUNT_CHANNEL } from "./lumi-account.js";
+export type {
+  LumiAccountCommand,
+  LumiAccountResult,
+  LumiAccountBridge,
+  LumiAccountProjection,
+  LumiSignInProjection,
+} from "./lumi-account.js";

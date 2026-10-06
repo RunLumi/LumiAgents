@@ -39,3 +39,17 @@ Origin separation prevents a staging account overwriting production; whole-file
 locking plus atomic private writes preserve concurrent state. Treat corrupt
 records as errors and preserve bytes. Tests inject cryptography, not a claim of
 OS keychain proof. Real keychain and authorized host-main wiring remain QA work.
+
+## Desktop integration entry point
+Main registers a fixed-action Lumi IPC after app.ready. Account owner is lazy so
+an unavailable secure store cannot prevent existing local/provider startup.
+Only managed app-window main frames at the exact packaged renderer path or
+configured development renderer URL are trusted. Arbitrary origins/routes/keys
+cannot be named by renderer commands; guests/subframes/foreign navigation are
+refused. Preload exposes safe actions through IPlatformService.lumiAccount;
+settings consumes it via usePlatform. Existing provider login remains in place.
+
+General settings has an optional account panel with restore/loading, begin,
+browser code matching, explicit completion, cancel, error and logout states.
+English and Chinese locale entries follow the existing intl contract. It does
+not offer device enrollment or workspace adoption until their packets are wired.

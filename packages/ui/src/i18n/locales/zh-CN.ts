@@ -1,6 +1,18 @@
 // Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /** 中文翻译 */
 const zhCN: Record<string, string> = {
+  "lumiAccount.title": "Lumi 组织账户",
+  "lumiAccount.scope": "可选的组织登录。供应商账户和本地工作区仍然独立。",
+  "lumiAccount.busy": "正在连接…",
+  "lumiAccount.error": "无法完成账户操作。如果尚未批准，请在浏览器中核对并批准代码后重试。",
+  "lumiAccount.noBinding": "登录不会自动注册设备，也不会将工作区绑定到组织。",
+  "lumiAccount.logout": "退出 Lumi 账户",
+  "lumiAccount.matchCode": "批准前，请在浏览器中核对以下代码：",
+  "lumiAccount.return": "批准后，返回此处完成登录。",
+  "lumiAccount.complete": "已批准，完成登录",
+  "lumiAccount.cancel": "取消",
+  "lumiAccount.begin": "登录 Lumi",
+
   "startPlan.recommendation.subagentDescription":
     "你的体验套餐中，{model} 仍有可用额度，是否将此子智能体的模型切换到体验套餐？",
   "startPlan.recommendation.preferenceSaveFailed": "未能保存“不再提示”，本次仍按你的选择继续。",

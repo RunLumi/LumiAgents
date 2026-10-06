@@ -1,3 +1,5 @@
+import { pathToFileURL } from "node:url";
+import { registerLumiAccountIpc } from "./lumiAccountIpc.js";
 // Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { createLocalTtftExporter } from "./localTtftExporter.js";
 /* eslint-disable max-lines */
@@ -2061,6 +2063,24 @@ app.whenReady().then(async () => {
     logger,
   });
 
+  registerLumiAccountIpc({
+    origin: process.env.LUMI_CONTROL_PLANE_ORIGIN ?? "https://agents-cp.runlumi.app",
+    isTrusted: (event) => {
+      const win = BrowserWindow.fromWebContents(event.sender);
+      if (!win || !windowHostProcessMap.has(win.id) || event.senderFrame !== event.sender.mainFrame)
+        return false;
+      const expected =
+        !app.isPackaged && process.env.ELECTRON_RENDERER_URL
+          ? new URL(process.env.ELECTRON_RENDERER_URL)
+          : pathToFileURL(join(import.meta.dirname, "../renderer/index.html"));
+      const actual = new URL(event.senderFrame.url);
+      return (
+        actual.origin === expected.origin &&
+        actual.protocol === expected.protocol &&
+        actual.pathname === expected.pathname
+      );
+    },
+  });
   registerPlatformIpcHandlers({
     fetchHelpConfig: readHelpConfig,
     logger,
