@@ -174,6 +174,31 @@ export class LumiDeviceHostTransport {
       true,
     );
   }
+
+  async adoptRecoveredToken(value: {
+    deviceToken: string;
+    expiresAt: string;
+    policyVersion: number;
+  }): Promise<LumiDeviceProjection> {
+    if (
+      !this.#credential ||
+      !/^[0-9a-f]{64}$/.test(value.deviceToken) ||
+      !Number.isFinite(Date.parse(value.expiresAt)) ||
+      Date.parse(value.expiresAt) <= Date.now() ||
+      !Number.isSafeInteger(value.policyVersion)
+    )
+      throw new LumiAccountError("lumi_device_response_invalid");
+    const next = {
+      ...this.#credential,
+      token: value.deviceToken,
+      tokenExpiresAt: value.expiresAt,
+      policyVersion: value.policyVersion,
+    };
+    await this.#persistence?.save(next);
+    this.#credential = next;
+    return this.projection();
+  }
+
   async refresh(
     appVersion: string,
     signNonce: (nonce: string) => Promise<string>,

@@ -17,6 +17,7 @@ const enUS: Record<string, string> = {
   "lumiDevice.enroll": "Confirm and enroll this device",
   "lumiDevice.sync": "Sync policy",
   "lumiDevice.refresh": "Refresh device token",
+  "lumiDevice.recover": "Approve recovery and renew this device",
 
   "lumiAccount.openBrowser": "Open approval page",
   "lumiAccount.title": "Lumi organization account",

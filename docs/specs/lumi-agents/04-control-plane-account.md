@@ -31,6 +31,7 @@ no token getters/serialization, stale-result rejection, provider-login isolation
 then real browser approval and Electron proof under DE2E-FE-01/QA-01.
 
 ## Persistent custody
+
 Electron main owns an origin-keyed vault outside credentials.json, encrypted by
 safeStorage after app ready. Reject unavailable encryption and Linux basic_text
 or unknown backends. No plaintext fallback and no generic renderer read/delete
@@ -41,6 +42,7 @@ records as errors and preserve bytes. Tests inject cryptography, not a claim of
 OS keychain proof. Real keychain and authorized host-main wiring remain QA work.
 
 ## Desktop integration entry point
+
 Main registers a fixed-action Lumi IPC after app.ready. Account owner is lazy so
 an unavailable secure store cannot prevent existing local/provider startup.
 Only managed app-window main frames at the exact packaged renderer path or
@@ -58,6 +60,7 @@ opening the browser is a separate explicit UI action through existing platform
 openExternal. No authentication attempt silently opens the user's browser.
 
 ## Device custody and confirmation
+
 Main device owner is keyed by origin/org/user, with closed OS-encrypted Ed25519
 private/public key/fingerprint record and private token. Persist pending identity
 before enrollment; persist token before publishing successful enrollment. User
@@ -65,6 +68,4 @@ selects an active org/membership and confirms enrollment in UI. Signing in does
 not bind workspaces. Restore reuses its own pending/device identity; another
 account cannot load the previous user's key. Logout clears account owner cache,
 not provider credentials or device evidence. Policy sync and refresh use device
-auth, never human cookies. Expired token pauses managed operations without
-silently generating a new key; post-expiry recovery is a separately audited
-contract gap, not an anonymous-nonce or re-enrollment bypass.
+auth, never human cookies. Expired tokens pause managed operations until the signed-in user explicitly starts recovery. Recovery uses a five-minute, one-time challenge issued with the Lumi human session and CSRF proof; only the original enrolled device key may sign the domain-separated challenge. The backend atomically consumes the challenge, rotates the token, and audits success. Anonymous nonce access, key regeneration, and silent re-enrollment never recover an expired device. See control-plane P03-CR-002 and DE2E-INT-02 runtime evidence.

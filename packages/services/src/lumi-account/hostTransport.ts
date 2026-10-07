@@ -277,6 +277,61 @@ export class LumiAccountHostTransport {
     );
   }
 
+  async createDeviceRecoveryChallenge(orgId: string, deviceId: string, key = randomUUID()) {
+    if (
+      !/^org_[0-9a-f]{32}$/.test(orgId) ||
+      !/^dvc_[0-9a-f]{32}$/.test(deviceId) ||
+      !key ||
+      key.length > 128
+    )
+      throw new LumiAccountError("lumi_device_invalid");
+    const path = "/api/v1/orgs/" + orgId + "/devices/" + deviceId + "/recovery-challenges";
+    const row = (await (
+      await this.#request(path, "POST", { device_id: deviceId }, { "Idempotency-Key": key })
+    ).json()) as Record<string, unknown>;
+    if (
+      typeof row.challenge !== "string" ||
+      !row.challenge ||
+      row.challenge.length > 256 ||
+      typeof row.expires_at !== "string" ||
+      !Number.isFinite(Date.parse(row.expires_at)) ||
+      Date.parse(row.expires_at) <= Date.now()
+    )
+      throw new LumiAccountError("lumi_response_invalid");
+    return { challenge: row.challenge, expiresAt: row.expires_at };
+  }
+
+  async recoverDeviceToken(
+    orgId: string,
+    deviceId: string,
+    input: { challenge: string; signature: string; appVersion: string },
+  ) {
+    if (!/^org_[0-9a-f]{32}$/.test(orgId) || !/^dvc_[0-9a-f]{32}$/.test(deviceId))
+      throw new LumiAccountError("lumi_device_invalid");
+    const path = "/api/v1/orgs/" + orgId + "/devices/" + deviceId + "/recover-token";
+    const row = (await (
+      await this.#request(path, "POST", {
+        challenge: input.challenge,
+        signature: input.signature,
+        app_version: input.appVersion,
+      })
+    ).json()) as Record<string, unknown>;
+    if (
+      typeof row.device_token !== "string" ||
+      !/^[0-9a-f]{64}$/.test(row.device_token) ||
+      typeof row.token_expires_at !== "string" ||
+      !Number.isFinite(Date.parse(row.token_expires_at)) ||
+      Date.parse(row.token_expires_at) <= Date.now() ||
+      !Number.isSafeInteger(row.policy_version)
+    )
+      throw new LumiAccountError("lumi_response_invalid");
+    return {
+      deviceToken: row.device_token,
+      expiresAt: row.token_expires_at,
+      policyVersion: row.policy_version as number,
+    };
+  }
+
   async signOut(): Promise<void> {
     this.cancelSignIn();
     // Capture the old session in the request before clearing it. A late logout

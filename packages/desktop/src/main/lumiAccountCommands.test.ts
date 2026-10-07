@@ -65,3 +65,33 @@ test("raw upstream error never crosses IPC", async () => {
   });
   assert.deepEqual(result, { ok: false, code: "lumi_account_failed" });
 });
+
+test("device recovery requires explicit confirmation and stays in the main owner", async () => {
+  const orgId = `org_${"a".repeat(32)}`;
+  let recoveries = 0;
+  const owner = {
+    recoverDevice: async (org: string) => {
+      assert.equal(org, orgId);
+      recoveries++;
+      return { status: "active" };
+    },
+  };
+  assert.deepEqual(
+    await dispatchLumiAccountCommand({
+      trusted: true,
+      command: { action: "recover-device", orgId },
+      getOwner: () => owner,
+    }),
+    { ok: false, code: "lumi_command_unsupported" },
+  );
+  assert.equal(recoveries, 0);
+  assert.deepEqual(
+    await dispatchLumiAccountCommand({
+      trusted: true,
+      command: { action: "recover-device", orgId, confirm: true },
+      getOwner: () => owner,
+    }),
+    { ok: true, device: { status: "active" } },
+  );
+  assert.equal(recoveries, 1);
+});

@@ -16,6 +16,7 @@ interface AccountOwner {
   readDevice?(orgId: string): Promise<LumiDeviceStateProjection>;
   syncDevicePolicy?(orgId: string): Promise<unknown>;
   refreshDevice?(orgId: string): Promise<LumiDeviceStateProjection>;
+  recoverDevice?(orgId: string): Promise<LumiDeviceStateProjection>;
 }
 export async function dispatchLumiAccountCommand(options: {
   trusted: boolean;
@@ -29,7 +30,7 @@ export async function dispatchLumiAccountCommand(options: {
       typeof command.orgId !== "string" ||
       !/^org_[0-9a-f]{32}$/.test(command.orgId) ||
       Object.keys(command).some((k) => !["action", "orgId", "confirm"].includes(k)) ||
-      !["enroll-device", "read-device", "sync-device", "refresh-device"].includes(
+      !["enroll-device", "read-device", "sync-device", "refresh-device", "recover-device"].includes(
         String(command.action),
       ) ||
       (command.action === "enroll-device" && command.confirm !== true)
@@ -43,6 +44,8 @@ export async function dispatchLumiAccountCommand(options: {
         return { ok: true, device: await owner.readDevice(command.orgId) };
       if (command.action === "refresh-device" && owner.refreshDevice)
         return { ok: true, device: await owner.refreshDevice(command.orgId) };
+      if (command.action === "recover-device" && owner.recoverDevice && command.confirm === true)
+        return { ok: true, device: await owner.recoverDevice(command.orgId) };
       if (command.action === "sync-device" && owner.syncDevicePolicy && owner.readDevice) {
         await owner.syncDevicePolicy(command.orgId);
         return { ok: true, device: await owner.readDevice(command.orgId) };

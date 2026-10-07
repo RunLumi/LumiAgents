@@ -56,5 +56,6 @@ export function createLumiAccountOwner(origin: string) {
     readDevice: async (orgId: string) => (await deviceFor(orgId)).read(),
     syncDevicePolicy: async (orgId: string) => (await deviceFor(orgId)).syncPolicy(),
     refreshDevice: async (orgId: string) => (await deviceFor(orgId)).refresh(),
+    recoverDevice: async (orgId: string) => (await deviceFor(orgId)).recover(),
   };
 }

@@ -125,6 +125,33 @@ export function createLumiDeviceOwner(options: {
         await device.acknowledge(policy.policy_version as number);
         return projection();
       }),
+
+    recover: () =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        const challenge = await options.account.createDeviceRecoveryChallenge(
+          options.orgId,
+          record.credential.id,
+          randomUUID(),
+        );
+        const message =
+          "lumi-device-token-recovery-v1\n" + record.credential.id + "\n" + challenge.challenge;
+        const signature = sign(
+          null,
+          Buffer.from(message),
+          createPrivateKey(record.privateKeyPem),
+        ).toString("hex");
+        const renewed = await options.account.recoverDeviceToken(
+          options.orgId,
+          record.credential.id,
+          { challenge: challenge.challenge, signature, appVersion: options.appVersion },
+        );
+        await device.adoptRecoveredToken(renewed);
+        const policy = await device.policy();
+        await device.acknowledge(policy.policy_version as number);
+        return projection();
+      }),
     syncPolicy: () =>
       serialized(async () => {
         await load();

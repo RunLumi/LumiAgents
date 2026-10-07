@@ -8,7 +8,7 @@ export type LumiAccountCommand =
   | "restore"
   | "logout"
   | {
-      action: "enroll-device" | "read-device" | "sync-device" | "refresh-device";
+      action: "enroll-device" | "read-device" | "sync-device" | "refresh-device" | "recover-device";
       orgId: string;
       confirm?: true;
     };

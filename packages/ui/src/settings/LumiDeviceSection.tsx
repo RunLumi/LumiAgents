@@ -44,13 +44,17 @@ export function LumiDeviceSection({ account }: { account: LumiAccountProjection 
     };
   }, [orgId, lumiAccount]);
   if (!lumiAccount) return null;
-  async function action(kind: "enroll-device" | "sync-device" | "refresh-device") {
+  async function action(
+    kind: "enroll-device" | "recover-device" | "sync-device" | "refresh-device",
+  ) {
     if (!orgId || !lumiAccount || busy) return;
     const current = ++seq.current;
     setBusy(true);
     setError(false);
     const command: LumiAccountCommand =
-      kind === "enroll-device" ? { action: kind, orgId, confirm: true } : { action: kind, orgId };
+      kind === "enroll-device" || kind === "recover-device"
+        ? { action: kind, orgId, confirm: true }
+        : { action: kind, orgId };
     try {
       const result = await lumiAccount.request(command);
       if (current !== seq.current) return;
@@ -96,7 +100,18 @@ export function LumiDeviceSection({ account }: { account: LumiAccountProjection 
               {text("policyVersion")}: {device.device.policyVersion}
             </p>
           ) : null}
-          {device?.status === "reauth_required" ? <p role="alert">{text("expired")}</p> : null}
+          {device?.status === "reauth_required" ? (
+            <div role="alert" className="space-y-2">
+              <p>{text("expired")}</p>
+              <Button
+                variant="outline"
+                disabled={busy}
+                onClick={() => void action("recover-device")}
+              >
+                {text("recover")}
+              </Button>
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-2">
             {!device?.device ? (
               <Button disabled={busy} onClick={() => void action("enroll-device")}>

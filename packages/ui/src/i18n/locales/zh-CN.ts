@@ -15,6 +15,7 @@ const zhCN: Record<string, string> = {
   "lumiDevice.enroll": "确认并注册此设备",
   "lumiDevice.sync": "同步策略",
   "lumiDevice.refresh": "刷新设备令牌",
+  "lumiDevice.recover": "确认恢复并续期此设备",
 
   "lumiAccount.openBrowser": "打开批准页面",
   "lumiAccount.title": "Lumi 组织账户",
