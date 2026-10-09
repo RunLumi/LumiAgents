@@ -1,6 +1,40 @@
 // Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /** English translations */
 const enUS: Record<string, string> = {
+  "lumiDevice.title": "Managed device",
+  "lumiDevice.noOrg": "Create or join an organization in the control plane to enroll this device.",
+  "lumiDevice.org": "Organization",
+  "lumiDevice.consent":
+    "Enrolling grants this organization device identity and policy control. Your existing local workspaces remain unbound. Confirm only for the organization you selected.",
+  "lumiDevice.busy": "Synchronizing device…",
+  "lumiDevice.error":
+    "Device action failed. Check membership, device status and network, then retry.",
+  "lumiDevice.deviceId": "Device",
+  "lumiDevice.policyVersion": "Policy version",
+  "lumiDevice.expired":
+    "This device token expired. Managed operations are paused; do not re-enroll or discard its key.",
+  "lumiDevice.resume": "Resume device enrollment",
+  "lumiDevice.enroll": "Confirm and enroll this device",
+  "lumiDevice.sync": "Sync policy",
+  "lumiDevice.refresh": "Refresh device token",
+  "lumiDevice.recover": "Approve recovery and renew this device",
+
+  "lumiAccount.openBrowser": "Open approval page",
+  "lumiAccount.title": "Lumi organization account",
+  "lumiAccount.scope":
+    "Optional organization sign-in. Your provider account and local workspaces stay separate.",
+  "lumiAccount.busy": "Connecting…",
+  "lumiAccount.error":
+    "Unable to complete this account action. If approval is pending, approve the code in your browser and try again.",
+  "lumiAccount.noBinding":
+    "Signing in does not enroll a device or attach a workspace to an organization.",
+  "lumiAccount.logout": "Sign out of Lumi",
+  "lumiAccount.matchCode": "Match this code in the browser before approving:",
+  "lumiAccount.return": "After approval, return here to complete sign-in.",
+  "lumiAccount.complete": "I approved — complete sign-in",
+  "lumiAccount.cancel": "Cancel",
+  "lumiAccount.begin": "Sign in to Lumi",
+
   "startPlan.recommendation.subagentDescription":
     "Your Start Plan has quota available for {model}. Switch this subagent’s model to the Start Plan?",
   "startPlan.recommendation.preferenceSaveFailed":

@@ -1,3 +1,8 @@
+import {
+  LUMI_ACCOUNT_CHANNEL,
+  type LumiAccountCommand,
+  type LumiAccountResult,
+} from "@zcode/shared";
 // Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import {
   databaseStartupControlSchema,
@@ -237,6 +242,10 @@ window.addEventListener("DOMContentLoaded", updateRendererProcessTitle, {
  * 通过 MessagePort RPC 访问，不再经过此 bridge。
  */
 contextBridge.exposeInMainWorld("zcode", {
+  lumiAccount: {
+    request: (command: LumiAccountCommand): Promise<LumiAccountResult> =>
+      ipcRenderer.invoke(LUMI_ACCOUNT_CHANNEL, command),
+  },
   connectRemote: (
     options: RemoteTarget,
     requestId?: string,
