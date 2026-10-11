@@ -191,6 +191,7 @@ export async function executeTurnCommand(
           rewindCommand === null
             ? createTurnModel(this, {
                 requestDependencies: options?.modelExecution?.requestDependencies,
+                managedContext: options?.modelExecution?.managedContext,
                 selection: admittedModelSelection,
               })
             : undefined;
@@ -571,6 +572,9 @@ export async function executeTurnCommand(
           input,
           modelResponse: "",
           model: loopModel,
+          ...(options?.modelExecution?.managedContext
+            ? { managedContext: options.modelExecution.managedContext }
+            : {}),
           ...(options?.modelExecution?.selectionScope === "execution"
             ? { modelSelectionScope: "execution" as const }
             : {}),

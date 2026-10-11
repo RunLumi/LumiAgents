@@ -7,6 +7,7 @@ import {
   Emitter,
   Event,
   emitNetworkTelemetryObservation,
+  type IDisposable,
   type NetworkObservation,
 } from "@zcode/rpc";
 import {
@@ -183,6 +184,11 @@ interface CreateZCodeTaskServiceAdapterOptions {
   taskIndexSyncer: ZCodeTaskIndexSyncer;
   settingService?: Pick<ISettingService, "get">;
   cuaProductMcpServerResolver?: CuaProductMcpServerResolver;
+  /** Host-private P05 settlement callback for terminal events from managed turns. */
+  onManagedRunTerminal?: (input: {
+    runId: string;
+    outcome: "succeeded" | "failed" | "stopped";
+  }) => Promise<void> | void;
 }
 
 interface TaskTarget {
@@ -1923,20 +1929,57 @@ export function createZCodeTaskServiceAdapter(
         ...storedTarget,
         ...(params.remoteSessionId ? { remoteSessionId: params.remoteSessionId } : {}),
       };
-      await sendPromptToAgent(target, {
-        traceId: params.traceId,
-        queryId: params.queryId,
-        messageId: params.messageId,
-        content: params.content,
-        attachments: params.attachments,
-        ...turnAttributionOf(params),
-        toolDenylist: params.toolDenylist,
-        botDeliveryTarget: params.botDeliveryTarget,
-        clientId: params.clientId,
-        clientMode: params.clientMode,
-        modelSelection: params.modelSelection,
-        modelExecution: params.modelExecution,
-      });
+      const managedContext = params.modelExecution?.managedContext;
+      let terminalSubscription: IDisposable | undefined;
+      if (managedContext && options.onManagedRunTerminal) {
+        terminalSubscription = taskIndexSyncer.onSessionTerminalEvent((terminal) => {
+          if (
+            terminal.target.sessionId !== params.taskId ||
+            activePromptInputIds.get(taskKey(target)) !== params.traceId
+          )
+            return;
+          terminalSubscription?.dispose();
+          void Promise.resolve(
+            options.onManagedRunTerminal?.({
+              runId: managedContext.runId,
+              outcome:
+                terminal.kind === "turn.failed"
+                  ? "failed"
+                  : terminal.kind === "turn.interrupted"
+                    ? "stopped"
+                    : "succeeded",
+            }),
+          ).catch(() => {
+            logger.warn(undefined, "Lumi managed run terminal settlement relay failed", {
+              runId: managedContext.runId,
+            });
+          });
+        });
+      }
+      try {
+        await sendPromptToAgent(target, {
+          traceId: params.traceId,
+          queryId: params.queryId,
+          messageId: params.messageId,
+          content: params.content,
+          attachments: params.attachments,
+          ...turnAttributionOf(params),
+          toolDenylist: params.toolDenylist,
+          botDeliveryTarget: params.botDeliveryTarget,
+          clientId: params.clientId,
+          clientMode: params.clientMode,
+          modelSelection: params.modelSelection,
+          modelExecution: params.modelExecution,
+        });
+      } catch (error) {
+        terminalSubscription?.dispose();
+        if (managedContext && options.onManagedRunTerminal) {
+          void Promise.resolve(
+            options.onManagedRunTerminal({ runId: managedContext.runId, outcome: "failed" }),
+          ).catch(() => {});
+        }
+        throw error;
+      }
     },
 
     async deliverSessionMessage(
@@ -3065,7 +3108,12 @@ export function createZCodeTaskServiceAdapter(
           listener({
             taskId,
             ...(inputId ? { inputId } : {}),
-            outcome: terminal.kind === "turn.failed" ? "failed" : "succeeded",
+            outcome:
+              terminal.kind === "turn.failed"
+                ? "failed"
+                : terminal.kind === "turn.interrupted"
+                  ? "stopped"
+                  : "succeeded",
           });
         });
     },

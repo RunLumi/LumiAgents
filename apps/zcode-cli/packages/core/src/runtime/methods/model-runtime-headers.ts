@@ -10,6 +10,7 @@ export function createRefreshRuntimeHeadersBeforeModelAttempt(
     abortSignal?: AbortSignal;
     model: Model;
     traceContext: TraceContext;
+    managedContext?: import("../../tool/executor/managed-decision.js").LumiManagedExecutionContext;
   },
 ):
   | ((attemptInput: {
@@ -45,6 +46,7 @@ export function createRefreshRuntimeHeadersBeforeModelAttempt(
       accountAccess: attemptInput.accountAccess,
       abortSignal: attemptInput.abortSignal ?? input.abortSignal,
       modelId: String(input.model.modelId),
+      managedContext: input.managedContext,
       providerId: String(input.model.providerId),
       reason: attemptInput.reason ?? "model-request",
       sessionId: runtime.sessionId,

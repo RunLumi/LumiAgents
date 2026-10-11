@@ -1050,6 +1050,10 @@ function summarizeProviderBusinessBody(record: Record<string, unknown>): Record<
     copyScalar(errorRecord, errorSummary, "request_id");
     copyScalar(errorRecord, errorSummary, "requestId");
     copyScalar(errorRecord, errorSummary, "type");
+    // Control-plane gateways expose stable scope/policy refusal reasons under
+    // details.reason. Copy only this allowlisted scalar, never arbitrary details.
+    const details = asRecord(errorRecord.details);
+    if (details) copyScalar(details, errorSummary, "reason");
     summary.error = errorSummary;
   }
 

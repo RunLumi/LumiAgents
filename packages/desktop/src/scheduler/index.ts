@@ -23,6 +23,7 @@ import {
 } from "@zcode/shared";
 import type { MainToSchedulerMessage, SchedulerToMainMessage } from "./schedulerProtocol.js";
 import { settleManualClaimForDispatchResult } from "./manualClaimRelease.js";
+import { createManagedPollTrigger } from "./managedPoll.js";
 import { settleOffPeakDispatchResult } from "./offPeakDispatchSettlement.js";
 import {
   startSchedulerResourceTelemetry,
@@ -56,6 +57,18 @@ const offPeakRetryAt = new Map<string, number>();
 const offPeakRetryAttempts = new Map<string, number>();
 /** 在途派发集合：仅用于退出时释放认领；迟到结果凭 offPeakTaskId 即可结算，不依赖它。 */
 const offPeakInFlight = new Set<string>();
+
+/**
+ * 托管（P06）工作的触发器：只在本地存在 managed 标记时通知 Main 轮询。被接管的原任务已被
+ * claimDue/claimManualRuns 过滤，这里不执行也不结算任何托管 occurrence。
+ */
+const requestManagedPoll = createManagedPollTrigger({
+  hasManagedAdoption: async () =>
+    (await repo.listManagedAdoptions({ state: "managed" })).length > 0,
+  post: (message) => parentPort?.postMessage(message),
+  now: Date.now,
+  logWarn: (message) => log("warn", message),
+});
 
 let ticking = false;
 let tickRequested = false;
@@ -106,6 +119,8 @@ async function tick(): Promise<void> {
         }
         // keep-awake：上报执行中计数，main 据此 + 设置决定 powerSaveBlocker。
         await reportOffPeakActiveCount();
+        // 托管 occurrence 的 due/claim/start 在 Main；这里只触发，失败不影响本地任务。
+        await requestManagedPoll();
       } catch (error) {
         log("error", `tick failed: ${error instanceof Error ? error.message : String(error)}`);
       }

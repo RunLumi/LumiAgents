@@ -23,6 +23,7 @@ import {
   TID_OFFPEAK_TAB,
   isAutomationCreateLimitError,
   resolveWorkspaceKey,
+  type LumiAutomationAdoptionProjection,
   type ZCodeAutomation,
   type ZCodeOffPeakTask,
 } from "@zcode/shared";
@@ -82,6 +83,13 @@ import {
   type AutomationStatusKind,
 } from "@/settings/automationFormat.js";
 import { describeAutomationCardSchedule } from "@/settings/automationCardSchedule.js";
+import { LumiAutomationAdoptionDialog } from "@/settings/LumiAutomationAdoptionDialog.js";
+import { LumiAutomationAttachDialog } from "@/settings/LumiAutomationAttachDialog.js";
+import {
+  LumiAutomationBadge,
+  LumiAutomationMenuItems,
+} from "@/settings/LumiAutomationCardParts.js";
+import { useLumiAutomationAdoptions } from "@/settings/useLumiAutomationAdoptions.js";
 import { AutomationEditView, type AutomationEditSubmit } from "@/settings/AutomationEditView.js";
 import { AutomationScheduleBadge } from "@/settings/AutomationScheduleBadge.js";
 import {
@@ -386,6 +394,14 @@ function resolveOffPeakDetailNavigation(
 interface AutomationActionsMenuProps {
   automation: ZCodeAutomation;
   busy: boolean;
+  /** Lumi hand-over state; a managed original keeps its data but its local run/delete are off. */
+  lumi: {
+    marker: LumiAutomationAdoptionProjection | undefined;
+    canHandOver: boolean;
+    onHandOver: () => void;
+    onAttach: () => void;
+    onReturn: () => void;
+  };
   canRestart: boolean;
   canToggle: boolean;
   onRunNow: (automation: ZCodeAutomation) => void;
@@ -398,6 +414,7 @@ interface AutomationActionsMenuProps {
 function AutomationActionsMenu({
   automation,
   busy,
+  lumi,
   canRestart,
   canToggle,
   onRunNow,
@@ -434,13 +451,15 @@ function AutomationActionsMenu({
         {/* 立即运行：当前 RPC 期间用 busy 防重，返回后恢复入口；活动 run 由 host single-flight 判重。 */}
         <DropdownMenuItem
           className="gap-1"
-          disabled={busy}
+          disabled={busy || lumi.marker !== undefined}
           onSelect={() => void onRunNow(automation)}
         >
           <span className="flex size-5 items-center justify-center">
             <AutomationRunNowIcon className="size-4" aria-hidden="true" />
           </span>
-          {intl.formatMessage({ id: "automations.runNow" })}
+          {intl.formatMessage({
+            id: lumi.marker ? "lumiAutomation.menu.managed" : "automations.runNow",
+          })}
         </DropdownMenuItem>
         {canRestart ? (
           <DropdownMenuItem
@@ -486,11 +505,20 @@ function AutomationActionsMenu({
           </span>
           {intl.formatMessage({ id: "automations.form.editTitle" })}
         </DropdownMenuItem>
+        <LumiAutomationMenuItems
+          marker={lumi.marker}
+          canHandOver={lumi.canHandOver}
+          busy={busy}
+          onHandOver={lumi.onHandOver}
+          onAttach={lumi.onAttach}
+          onReturn={lumi.onReturn}
+        />
         <DropdownMenuSeparator />
         <DropdownMenuItem
           data-testid={TID_AUTOMATION_ACTION_DELETE}
           className="gap-1 !text-destructive data-[highlighted]:!bg-menu-hover data-[highlighted]:!text-destructive focus:!text-destructive [&_svg]:!text-destructive"
-          disabled={busy}
+          // Deleting the retained original would leave the managed copy running with nothing to run.
+          disabled={busy || lumi.marker !== undefined}
           onSelect={() => void onDelete(automation)}
         >
           <AutomationTrashIcon />
@@ -529,6 +557,13 @@ export function AutomationsSection({
   const platform = usePlatform();
   const { clientScenesService, offPeakTaskService, zcodeAgentService } = useServices();
   const confirmDialog = useConfirmDialog();
+  // Lumi hand-over: read-only projection of who runs each retained original (spec 07).
+  const lumi = useLumiAutomationAdoptions();
+  const [handOver, setHandOver] = useState<ZCodeAutomation | null>(null);
+  const [attachTo, setAttachTo] = useState<ZCodeAutomation | null>(null);
+  const lumiOrgAvailable = Boolean(
+    lumi.account?.organizations.some((org) => org.state === "active" && org.status === "active"),
+  );
   const { openCodingPlanUpgrade } = useCodingPlanUpgradeDialog();
   const providerSettingsRead = useProviderSettingsView();
   const providerSettingsView =
@@ -1120,6 +1155,8 @@ export function AutomationsSection({
 
   const handleRunNow = useCallback(
     async (automation: ZCodeAutomation, source: "list" | "editor" = "list") => {
+      // A managed original does not run locally; the editor entry point must not either.
+      if (lumi.markers.has(automation.automationId)) return;
       logger.debug("[automations] 立即运行交互开始", {
         automationId: automation.automationId,
         source,
@@ -1178,6 +1215,7 @@ export function AutomationsSection({
     [
       intl,
       loadRuns,
+      lumi.markers,
       onOpenSession,
       platform,
       providerSettingsView,
@@ -1186,8 +1224,46 @@ export function AutomationsSection({
     ],
   );
 
+  /** Releasing is the only way back: Lumi's copy is paused and deleted before the original resumes. */
+  const handleReturnToDevice = useCallback(
+    async (automation: ZCodeAutomation) => {
+      const orgId = lumi.orgByAutomation.get(automation.automationId);
+      if (!orgId || !platform.lumiAccount) return;
+      const confirmed = await confirmDialog({
+        presentation: "automation-confirmation",
+        title: intl.formatMessage({ id: "lumiAutomation.release.title" }),
+        // An attached original only drops local suppression; the copy must not claim a deletion.
+        description: intl.formatMessage(
+          {
+            id:
+              lumi.markers.get(automation.automationId)?.origin === "attached"
+                ? "lumiAutomation.attach.releaseDescription"
+                : "lumiAutomation.release.description",
+          },
+          { title: automation.title },
+        ),
+        confirmLabel: intl.formatMessage({ id: "lumiAutomation.release.confirm" }),
+        showKeyboardHints: false,
+      });
+      if (!confirmed) return;
+      const result = await platform.lumiAccount
+        .request({
+          action: "release-automation",
+          orgId,
+          localAutomationId: automation.automationId,
+          confirm: true,
+        })
+        .catch(() => undefined);
+      if (!result?.ok) toast(intl.formatMessage({ id: "lumiAutomation.release.failed" }));
+      await lumi.refresh();
+    },
+    [confirmDialog, intl, lumi.markers, lumi.orgByAutomation, lumi.refresh, platform.lumiAccount],
+  );
+
   const handleDelete = useCallback(
     async (automation: ZCodeAutomation, source: "list" | "editor" = "list") => {
+      // Deleting the retained original would leave Lumi's copy with nothing to run.
+      if (lumi.markers.has(automation.automationId)) return;
       const confirmed = await confirmDialog({
         presentation: "automation-confirmation",
         title: intl.formatMessage({ id: "automations.delete.title" }),
@@ -1218,7 +1294,15 @@ export function AutomationsSection({
           : prev,
       );
     },
-    [confirmDialog, deleteAutomation, intl, platform, providerSettingsView, zcodeAgentService],
+    [
+      confirmDialog,
+      deleteAutomation,
+      intl,
+      lumi.markers,
+      platform,
+      providerSettingsView,
+      zcodeAgentService,
+    ],
   );
 
   const handleOffPeakOpenSession = useCallback(
@@ -1492,6 +1576,22 @@ export function AutomationsSection({
   return (
     <div data-automations-content className={cn(SETTINGS_FRAME_CONTENT_CLASSNAME, "flex flex-col")}>
       {pageHeader}
+      {handOver && lumi.account ? (
+        <LumiAutomationAdoptionDialog
+          automation={handOver}
+          account={lumi.account}
+          onClose={() => setHandOver(null)}
+          onChanged={() => void lumi.refresh()}
+        />
+      ) : null}
+      {attachTo && lumi.account ? (
+        <LumiAutomationAttachDialog
+          automation={attachTo}
+          account={lumi.account}
+          onClose={() => setAttachTo(null)}
+          onChanged={() => void lumi.refresh()}
+        />
+      ) : null}
 
       {/* Tab：Scheduled 常驻；Idle 仅在灰度命中或有闲时存量时出现，不再提供 All 混排视图。
          有任务时右上对齐创建（4866-1735）；空态创建入口在大卡内（4889-2013），不重复顶栏按钮。 */}
@@ -1710,9 +1810,14 @@ export function AutomationsSection({
                             )}
                           >
                             <div className="flex h-full min-w-0 flex-1 flex-col gap-3">
-                              <span className="block truncate pr-12 text-ui-base font-medium leading-5 text-foreground">
-                                {automation.title}
-                              </span>
+                              <div className="flex min-w-0 items-center gap-2 pr-12">
+                                <span className="truncate text-ui-base font-medium leading-5 text-foreground">
+                                  {automation.title}
+                                </span>
+                                <LumiAutomationBadge
+                                  marker={lumi.markers.get(automation.automationId)}
+                                />
+                              </div>
                               <p className="text-wrap-phrase line-clamp-2 h-10 text-ui-base font-normal leading-5 text-foreground-subtle">
                                 {automationPromptSummary(automation.prompt)}
                               </p>
@@ -1807,6 +1912,14 @@ export function AutomationsSection({
                               <AutomationActionsMenu
                                 automation={automation}
                                 busy={busy}
+                                lumi={{
+                                  marker: lumi.markers.get(automation.automationId),
+                                  canHandOver:
+                                    lumiOrgAvailable && automation.locationKind === "local",
+                                  onHandOver: () => setHandOver(automation),
+                                  onAttach: () => setAttachTo(automation),
+                                  onReturn: () => void handleReturnToDevice(automation),
+                                }}
                                 canRestart={canRestart}
                                 canToggle={canToggle}
                                 onRunNow={handleRunNow}

@@ -81,8 +81,16 @@ interface WorkspaceBroadcastTarget {
 
 export interface ZCodeTaskIndexTerminalEvent {
   target: ZCodeAgentSessionTarget;
-  /** v4 phase 终态映射：completedSuccess/completedInterrupted → turn.completed；error → turn.failed。 */
-  kind: "turn.completed" | "turn.failed";
+  /** Preserve interrupted turns so the Lumi run owner can cancel rather than complete them. */
+  kind: "turn.completed" | "turn.failed" | "turn.interrupted";
+}
+
+export function terminalKindFromSessionPhase(
+  phase: SessionPhase,
+): ZCodeTaskIndexTerminalEvent["kind"] {
+  if (phase === "error") return "turn.failed";
+  if (phase === "completedInterrupted") return "turn.interrupted";
+  return "turn.completed";
 }
 
 export interface ZCodeTaskIndexReadyEvent {
@@ -555,7 +563,7 @@ export function createZCodeTaskIndexSyncer(
     // 顺序保持旧协议语义：先 turn 终态（收口当前 input），再 prompt ready（放行下一条）。
     terminalEventEmitter.fire({
       target,
-      kind: failed ? "turn.failed" : "turn.completed",
+      kind: terminalKindFromSessionPhase(phase),
     });
     readyEventEmitter.fire({
       target,

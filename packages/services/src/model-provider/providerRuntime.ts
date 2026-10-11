@@ -32,6 +32,8 @@ export interface ProviderRuntimeOptions extends ProviderConfigRuntimeOptions {
 
 export interface ProviderRuntimeDependencies {
   readonly configRuntime: ProviderConfigRuntime;
+  /** Ephemeral host-local Provider projection; persistence still targets configRuntime. */
+  readonly registryConfigSource?: ProviderSource<ProviderConfigSnapshot>;
   readonly accountSource?: RefreshableProviderSource<AccountProviderConfigSnapshot>;
   readonly disposeAccountSource?: () => void;
   readonly testConnectivity?: ProviderSettingsConnectivityTester;
@@ -66,6 +68,7 @@ export class ProviderRuntime {
   readonly providerSettings: IProviderSettingsService;
   readonly modelSelection: IModelSelectionService;
   readonly #configRuntime: ProviderConfigRuntime;
+  readonly #registryConfigSource: ProviderSource<ProviderConfigSnapshot>;
   readonly #disposeAccountSource?: () => void;
   readonly #disposeBuiltinRecovery: () => void;
   readonly #modelSelectionRuntime: IModelSelectionService & { dispose(): void };
@@ -75,15 +78,18 @@ export class ProviderRuntime {
 
   constructor(dependencies: ProviderRuntimeDependencies) {
     this.#configRuntime = dependencies.configRuntime;
+    this.#registryConfigSource =
+      dependencies.registryConfigSource ?? this.#configRuntime.configService;
     this.#disposeAccountSource = dependencies.disposeAccountSource;
     this.#disposeModelSelectionConfiguredDefaultSource =
       dependencies.disposeModelSelectionConfiguredDefaultSource;
     this.configService = this.#configRuntime.configService;
     const accountSource: RefreshableProviderSource<AccountProviderConfigSnapshot> =
-      dependencies.accountSource ?? new EmptyAccountProviderConfigSource(this.configService);
+      dependencies.accountSource ??
+      new EmptyAccountProviderConfigSource(this.#registryConfigSource);
     this.#disposeBuiltinRecovery = this.#configRuntime.onDidCheckZCodeBuiltin(async () => {
       const [config, account] = await Promise.all([
-        this.configService.read(),
+        this.#registryConfigSource.read(),
         accountSource.read(),
       ]);
       if (!this.#disposed && config.zcodeBuiltinRevision !== account.basedOnZCodeBuiltinRevision) {
@@ -91,7 +97,7 @@ export class ProviderRuntime {
       }
     });
     this.registryService = new ProviderRegistryService({
-      configSource: this.configService,
+      configSource: this.#registryConfigSource,
       accountSource,
     });
     const mutations = createSettingsMutationTarget(

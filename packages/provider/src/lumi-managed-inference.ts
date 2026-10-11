@@ -354,6 +354,10 @@ export function resolveLumiAlias(
   return mapping ? normalizeLumiModelAlias(mapping.lumiAlias) : null;
 }
 
+export function createLumiManagedInferenceBaseUrl(value: string): string {
+  return normalizeControlPlaneBaseUrl(value);
+}
+
 function normalizeControlPlaneBaseUrl(value: string): string {
   let parsed: URL;
   try {

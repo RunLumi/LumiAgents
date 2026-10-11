@@ -63,7 +63,8 @@ import {
   getDataBaseDir,
   getZCodeDataRootDir,
   normalizeRuntimeProcessEnv,
-  setDataBaseDir,
+  applyConfiguredDataBaseDir,
+  getBootstrapSettingsFile,
 } from "@zcode/services/node";
 import {
   desktopMenuMessageIds,
@@ -173,6 +174,7 @@ import {
   spawnHostProcess,
 } from "./desktopHostProcess.js";
 import { spawnCronScheduler, type CronSchedulerHandle } from "./desktopCronScheduler.js";
+import { createManagedAutomationHostBridge } from "./lumiManagedAutomationHostBridge.js";
 import {
   clearOAuthRoutesForWindow,
   handleDeepLink,
@@ -533,7 +535,7 @@ async function runBrowserCommandOnView(params: {
 let currentDesktopZoomLevel = 0;
 let currentDesktopWindowSize: DesktopWindowSize | undefined;
 const preloadPath = join(import.meta.dirname, "../preload/index.cjs");
-const settingsFile = join(homedir(), ".zcode", "v2", "setting.json");
+const settingsFile = getBootstrapSettingsFile();
 let activeAppShutdownPolicy = resolveAppShutdownPolicy("normal", process.platform);
 let activeAppShutdownKind: AppShutdownKind | null = null;
 const WINDOWS_AGENT_FORCE_KILL_TIMEOUT_MS = 2_000;
@@ -622,6 +624,41 @@ const windowWorkspaceMap = new Map<number, Set<string>>();
 const windowTaskRealtimeHostIdMap = new Map<number, string>();
 const windowUnreadCountMap = new Map<number, number>();
 const windowHostProcessMap = new Map<number, ElectronUtilityProcess>();
+let resolveLumiManagedRequestAuthForHost: (input: {
+  sessionId: string;
+  workspaceIdentity: string;
+  providerId: string;
+  modelId: string;
+  managedContext: import("@zcode/shared").ZCodeManagedRunContext;
+}) => Promise<{ apiKey: string } | undefined> = async () => undefined;
+let requestLumiManagedToolDecisionForHost: (input: {
+  workspaceIdentity: string;
+  params: import("@zcode/shared").ZCodeManagedToolDecisionRequestParams;
+}) => Promise<import("@zcode/shared").ZCodeManagedToolDecisionResult> = async () => {
+  throw new Error("lumi_managed_tool_unavailable");
+};
+let resolveLumiManagedToolIdentityForHost: (input: {
+  workspaceIdentity: string;
+  params: import("@zcode/shared").ZCodeManagedToolIdentityRequest;
+}) => Promise<import("@zcode/shared").ZCodeManagedToolIdentityResolution> = async () => {
+  throw new Error("lumi_identity_unavailable");
+};
+let reportLumiRuntimeCapabilitiesForHost: (input: {
+  workspaceIdentity: string;
+  params: import("@zcode/shared").ZCodeManagedRuntimeCapabilitiesRequest;
+}) => Promise<import("@zcode/shared").ZCodeManagedRuntimeCapabilitiesAck> = async () => {
+  throw new Error("lumi_runtime_capabilities_unavailable");
+};
+let reportLumiManagedToolResultForHost: (input: {
+  workspaceIdentity: string;
+  params: import("@zcode/shared").ZCodeManagedToolResultRequestParams;
+}) => Promise<import("@zcode/shared").ZCodeManagedToolResultAck> = async () => {
+  throw new Error("lumi_managed_result_unavailable");
+};
+let settleLumiManagedRunForHost: (input: {
+  runId: string;
+  outcome: "succeeded" | "failed" | "stopped";
+}) => Promise<void> = async () => undefined;
 const cuaPipFocusRouter = createCuaPipFocusRouter({
   send: (windowId, event) => {
     windowHostProcessMap.get(windowId)?.postMessage({
@@ -662,6 +699,13 @@ function resolveCronDispatchHost(): ElectronUtilityProcess | null {
   const first = windowHostProcessMap.values().next();
   return first.done ? null : first.value;
 }
+// 托管（P06）automation occurrence 的 Main→Host 通道：与 cron 同一个本地 host，但消息、校验与
+// 结算完全独立（不经过 dispatchCronRun / scheduler 的本地结算）。
+const managedAutomationHostBridge = createManagedAutomationHostBridge({
+  resolveHost: resolveCronDispatchHost,
+});
+// scheduler 的 managed-poll-request 由持有凭据的账号 owner 执行；owner 在 app ready 之后才存在。
+let pollManagedAutomationsForScheduler: () => Promise<unknown> = async () => undefined;
 const disposingHostProcessTimers = new WeakMap<
   ElectronUtilityProcess,
   ReturnType<typeof setTimeout>
@@ -1706,6 +1750,8 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
         label,
         {
           ...initMessage,
+          lumiControlPlaneOrigin:
+            process.env.LUMI_CONTROL_PLANE_ORIGIN ?? "https://agents-cp.runlumi.app",
           zcodeBuiltinProviderConfigFilePath: resolveZCodeBuiltinProviderConfigFilePath({
             env: { ...hostProcessLocalEnv, ...process.env },
           }),
@@ -1737,6 +1783,18 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
           onCronSchedulerWakeRequested: wakeCronScheduler,
           onOffPeakSchedulerWakeRequested: wakeOffPeakScheduler,
           authorizeLocalMediaPreviewPath: localMediaPreviewPathRegistry.authorize,
+          resolveLumiManagedRequestAuth: (request) => resolveLumiManagedRequestAuthForHost(request),
+          requestLumiManagedToolDecision: (request) =>
+            requestLumiManagedToolDecisionForHost(request),
+          reportLumiManagedToolResult: (request) => reportLumiManagedToolResultForHost(request),
+          resolveLumiManagedToolIdentity: (request) =>
+            resolveLumiManagedToolIdentityForHost(request),
+          reportLumiRuntimeCapabilities: (request) => reportLumiRuntimeCapabilitiesForHost(request),
+          onLumiManagedRunTerminal: (request) => settleLumiManagedRunForHost(request),
+          onLumiManagedAutomationRunResult: (result) =>
+            managedAutomationHostBridge.handleResult(result),
+          onLumiManagedAutomationCancelResult: (result) =>
+            managedAutomationHostBridge.handleCancelResult(result),
           // Bugfix: bot service 运行在本地窗口 host 内，/reconnect 必须能从本地 host 请求 main 创建远端 session。
           handleBotRemoteWorkspaceReconnectRequest: async ({
             win,
@@ -1942,9 +2000,8 @@ app.whenReady().then(async () => {
   let bootstrapSettings: AppSettings | undefined;
   try {
     bootstrapSettings = await mainSettingService.get();
-    if (bootstrapSettings.dataBaseDir) {
-      setDataBaseDir(bootstrapSettings.dataBaseDir);
-    }
+    // 显式 ZCODE_DATA_BASE_DIR 优先于设置里的 dataBaseDir。
+    applyConfiguredDataBaseDir(bootstrapSettings.dataBaseDir);
     if (bootstrapSettings.locale) {
       loadedBootstrapLocale = true;
       currentApplicationLocale = bootstrapSettings.locale;
@@ -1972,6 +2029,15 @@ app.whenReady().then(async () => {
         resolveDispatchHost: resolveCronDispatchHost,
         // keep-awake 已改为纯设置驱动；计数上报保留给后续诊断/配额用途，不再联动 blocker。
         onOffPeakActiveCountChanged: () => {},
+        onManagedPollRequested: () => {
+          void pollManagedAutomationsForScheduler().catch((error: unknown) => {
+            // 只记录错误类别：消息可能含路径或服务端文本。
+            logger.warn(
+              "[managed-automation] poll failed:",
+              error instanceof Error ? error.name : "unknown",
+            );
+          });
+        },
       });
     } catch (error) {
       logger.error("[cron-scheduler] failed to spawn scheduler process:", error);
@@ -2063,8 +2129,10 @@ app.whenReady().then(async () => {
     logger,
   });
 
-  registerLumiAccountIpc({
+  const lumiAccountMainBridge = registerLumiAccountIpc({
     origin: process.env.LUMI_CONTROL_PLANE_ORIGIN ?? "https://agents-cp.runlumi.app",
+    automationHost: managedAutomationHostBridge,
+    log: (level, message) => logger[level](`[managed-automation] ${message}`),
     isTrusted: (event) => {
       const win = BrowserWindow.fromWebContents(event.sender);
       if (!win || !windowHostProcessMap.has(win.id) || event.senderFrame !== event.sender.mainFrame)
@@ -2081,6 +2149,13 @@ app.whenReady().then(async () => {
       );
     },
   });
+  resolveLumiManagedRequestAuthForHost = lumiAccountMainBridge.resolveManagedRequestAuth;
+  requestLumiManagedToolDecisionForHost = lumiAccountMainBridge.requestManagedToolDecision;
+  reportLumiManagedToolResultForHost = lumiAccountMainBridge.reportManagedToolResult;
+  resolveLumiManagedToolIdentityForHost = lumiAccountMainBridge.resolveManagedToolIdentity;
+  reportLumiRuntimeCapabilitiesForHost = lumiAccountMainBridge.reportRuntimeCapabilities;
+  settleLumiManagedRunForHost = lumiAccountMainBridge.settleManagedRun;
+  pollManagedAutomationsForScheduler = lumiAccountMainBridge.pollManagedAutomations;
   registerPlatformIpcHandlers({
     fetchHelpConfig: readHelpConfig,
     logger,

@@ -6,6 +6,12 @@ import {
   type AccountProviderStates,
 } from "@zcode/provider";
 import {
+  LumiManagedProviderConfigSource,
+  LUMI_MANAGED_PROVIDER_ALIASES_ENV,
+  LUMI_MANAGED_PROVIDER_ORIGIN_ENV,
+} from "@zcode/provider";
+import { createManagedAliasRegistrar } from "./managed-alias-registrar.js";
+import {
   isBuiltinModelProviderId,
   resolveRuntimeZCodeEndpointOrigin,
   ZCODE_VERSION,
@@ -52,10 +58,16 @@ export async function startProcessProviderRegistryRuntime(
   }
 
   const accountSource = new MutableAccountProviderConfigSource();
+  const managedAliases = parseManagedProviderAliases(env[LUMI_MANAGED_PROVIDER_ALIASES_ENV]);
+  const managedOrigin = env[LUMI_MANAGED_PROVIDER_ORIGIN_ENV]?.trim();
+  if (managedAliases.length > 0 && !managedOrigin) {
+    throw new Error("Lumi managed provider bootstrap configuration is incomplete");
+  }
   const credentialStore = options.standalone
     ? (options.standalone.credentialStore ?? createSharedZCodeCredentialStore({ env: { ...env } }))
     : undefined;
   let standaloneAccount: AccountProviderService | undefined;
+  let managedSource: LumiManagedProviderConfigSource | undefined;
   const bundledFile = options.standalone
     ? env[ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE_ENV]?.trim()
     : undefined;
@@ -85,6 +97,18 @@ export async function startProcessProviderRegistryRuntime(
       : {}),
     onZCodeBuiltinRefreshError: options.standalone?.onBuiltinRefreshError,
     accountSource,
+    // 受信 origin 存在即创建进程内 source（允许 0 个别名），后续别名经
+    // provider/registerManagedAlias 进入同一 source；无 origin 则没有 managed 能力。
+    ...(managedOrigin
+      ? {
+          registryConfigSourceFactory(configSource) {
+            const source = new LumiManagedProviderConfigSource(configSource, managedOrigin);
+            for (const alias of managedAliases) source.registerAlias(alias);
+            managedSource = source;
+            return source;
+          },
+        }
+      : {}),
     ...(credentialStore
       ? {
           createAccountSource(configService) {
@@ -156,6 +180,10 @@ export async function startProcessProviderRegistryRuntime(
           await runtime.registryService.refresh("host-account-config");
           return changed;
         },
+        registerManagedAlias: createManagedAliasRegistrar({
+          getSource: () => managedSource,
+          registry: runtime.registryService,
+        }),
         dispose() {
           disposeCredentialSubscription?.();
           disposeRecovery?.();
@@ -188,6 +216,23 @@ export async function startProcessProviderRegistryRuntime(
     runtime.dispose();
     throw error;
   }
+}
+
+export function parseManagedProviderAliases(raw: string | undefined): readonly string[] {
+  if (raw === undefined || raw.trim() === "") return [];
+  let value: unknown;
+  try {
+    value = JSON.parse(raw);
+  } catch {
+    throw new Error("Lumi managed provider aliases are invalid JSON");
+  }
+  if (!Array.isArray(value) || value.length > 100) {
+    throw new Error("Lumi managed provider aliases have an invalid shape");
+  }
+  if (value.some((item) => typeof item !== "string")) {
+    throw new Error("Lumi managed provider aliases must be strings");
+  }
+  return Object.freeze([...new Set(value as string[])]);
 }
 
 /** 把协议信封解析为进程 Registry 使用的第三层 Account Config Overlay。 */

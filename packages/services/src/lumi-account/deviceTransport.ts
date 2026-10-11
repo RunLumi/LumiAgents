@@ -1,5 +1,12 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
-import { LumiAccountError } from "./hostTransport.js";
+import { randomUUID } from "node:crypto";
+import type { LumiManagedRunProjection, LumiManagedSessionProjection } from "@zcode/shared";
+import { id, instant } from "./deviceFields.js";
+import { LumiDevicePolicyHostTransport } from "./deviceHeartbeatPolicy.js";
+import { LumiAccountError } from "./errors.js";
+import { LumiManagedRunHostTransport } from "./managedRunTransport.js";
+import { LumiManagedToolHostTransport } from "./managedToolTransport.js";
+import { createLumiAutomationLeaseTransport } from "./automationLeaseTransport.js";
 
 export interface DeviceEnrollmentInput {
   org_slug: string;
@@ -19,20 +26,30 @@ export interface LumiDeviceCredential extends LumiDeviceProjection {
   token: string;
 }
 
-function id(value: unknown, prefix: string): string {
-  if (typeof value !== "string" || !new RegExp(`^${prefix}_[0-9a-f]{32}$`).test(value))
-    throw new LumiAccountError("lumi_device_response_invalid");
-  return value;
+export type LumiRuntimeCapabilityReport = Partial<
+  Record<
+    | "browser_use"
+    | "computer_use"
+    | "remote_environment"
+    | "automation_eligible"
+    | "filesystem_write"
+    | "process_execution"
+    | "network_access"
+    | "mcp_execution",
+    boolean
+  >
+>;
+
+export interface LumiWorkspaceBinding {
+  id: string;
+  orgId: string;
+  projectId: string;
+  deviceId: string;
+  workspaceIdentity: string;
+  displayName: string;
+  environmentType: "local" | "ssh" | "wsl" | "docker" | "remote";
 }
-function instant(value: unknown): string {
-  if (
-    typeof value !== "string" ||
-    !Number.isFinite(Date.parse(value)) ||
-    Date.parse(value) <= Date.now()
-  )
-    throw new LumiAccountError("lumi_device_response_invalid");
-  return value;
-}
+
 /** Device-only transport. Human cookies never accompany these requests. Main owns custody. */
 export class LumiDeviceHostTransport {
   readonly #origin: string;
@@ -44,6 +61,9 @@ export class LumiDeviceHostTransport {
         save(value: LumiDeviceCredential): Promise<void>;
       }
     | undefined;
+  readonly #managedRuns: LumiManagedRunHostTransport;
+  readonly #managedTools: LumiManagedToolHostTransport;
+  readonly #policy: LumiDevicePolicyHostTransport;
   constructor(
     origin: string,
     fetchImpl: typeof fetch = fetch,
@@ -66,7 +86,174 @@ export class LumiDeviceHostTransport {
     this.#origin = url.origin;
     this.#fetch = fetchImpl;
     this.#persistence = persistence;
+    this.#managedRuns = new LumiManagedRunHostTransport(
+      (path, method, body, headers) => this.#request(path, method, body, true, headers),
+      () => this.#credential,
+    );
+    this.#managedTools = new LumiManagedToolHostTransport(
+      (path, body, headers) => this.#request(path, "POST", body, true, headers),
+      () => this.#credential,
+    );
+    this.#policy = new LumiDevicePolicyHostTransport(
+      (path, method, body) => this.#request(path, method, body, true),
+      () => this.#credential,
+    );
   }
+
+  /** P06 lease routes over the device token. Refusals keep the server's stable reason. */
+  automationLeases() {
+    return createLumiAutomationLeaseTransport(this.#origin, this.#fetch, () => this.#credential);
+  }
+  async listWorkspaceBindings(): Promise<LumiWorkspaceBinding[]> {
+    const row = await this.#request("/api/v1/devices/bindings", "GET", undefined, true);
+    if (!Array.isArray(row?.items) || row.items.length > 100)
+      throw new LumiAccountError("lumi_device_response_invalid");
+    return row.items.map((value: Record<string, unknown>) => {
+      if (
+        !value ||
+        typeof value.id !== "string" ||
+        !/^wsb_[0-9a-f]{32}$/.test(value.id) ||
+        typeof value.org_id !== "string" ||
+        value.org_id !== this.#credential?.orgId ||
+        typeof value.project_id !== "string" ||
+        !/^prj_[0-9a-f]{32}$/.test(value.project_id) ||
+        typeof value.device_id !== "string" ||
+        value.device_id !== this.#credential?.id ||
+        typeof value.workspace_identity !== "string" ||
+        !/^[A-Za-z0-9._~-]{1,256}$/.test(value.workspace_identity) ||
+        typeof value.display_name !== "string" ||
+        !value.display_name ||
+        value.display_name.length > 120 ||
+        !["local", "ssh", "wsl", "docker", "remote"].includes(String(value.environment_type))
+      )
+        throw new LumiAccountError("lumi_device_response_invalid");
+      return {
+        id: value.id,
+        orgId: value.org_id,
+        projectId: value.project_id,
+        deviceId: value.device_id,
+        workspaceIdentity: value.workspace_identity,
+        displayName: value.display_name,
+        environmentType: value.environment_type as LumiWorkspaceBinding["environmentType"],
+      };
+    });
+  }
+
+  async createWorkspaceBinding(input: {
+    projectId: string;
+    workspaceIdentity: string;
+    displayName: string;
+    environmentType: LumiWorkspaceBinding["environmentType"];
+  }): Promise<LumiWorkspaceBinding> {
+    if (
+      !this.#credential ||
+      !/^prj_[0-9a-f]{32}$/.test(input.projectId) ||
+      !/^[A-Za-z0-9._~-]{1,256}$/.test(input.workspaceIdentity) ||
+      !input.displayName.trim() ||
+      input.displayName.length > 120 ||
+      !["local", "ssh", "wsl", "docker", "remote"].includes(input.environmentType)
+    )
+      throw new LumiAccountError("lumi_workspace_invalid");
+    const row = await this.#request(
+      "/api/v1/devices/bindings",
+      "POST",
+      {
+        project_id: input.projectId,
+        workspace_identity: input.workspaceIdentity,
+        display_name: input.displayName.trim(),
+        environment_type: input.environmentType,
+      },
+      true,
+    );
+    if (!row) throw new LumiAccountError("lumi_device_response_invalid");
+    return this.#workspaceBinding(row);
+  }
+
+  async deleteWorkspaceBinding(bindingId: string): Promise<void> {
+    if (!/^wsb_[0-9a-f]{32}$/.test(bindingId)) throw new LumiAccountError("lumi_workspace_invalid");
+    await this.#request(`/api/v1/devices/bindings/${bindingId}`, "DELETE", undefined, true);
+  }
+
+  #workspaceBinding(value: Record<string, unknown>): LumiWorkspaceBinding {
+    if (
+      typeof value.id !== "string" ||
+      !/^wsb_[0-9a-f]{32}$/.test(value.id) ||
+      value.org_id !== this.#credential?.orgId ||
+      typeof value.project_id !== "string" ||
+      !/^prj_[0-9a-f]{32}$/.test(value.project_id) ||
+      value.device_id !== this.#credential?.id ||
+      typeof value.workspace_identity !== "string" ||
+      !/^[A-Za-z0-9._~-]{1,256}$/.test(value.workspace_identity) ||
+      typeof value.display_name !== "string" ||
+      !value.display_name ||
+      value.display_name.length > 128 ||
+      !["local", "ssh", "wsl", "docker", "remote"].includes(String(value.environment_type))
+    )
+      throw new LumiAccountError("lumi_device_response_invalid");
+    return {
+      id: value.id,
+      orgId: value.org_id as string,
+      projectId: value.project_id,
+      deviceId: this.#credential?.id as string,
+      workspaceIdentity: value.workspace_identity,
+      displayName: value.display_name,
+      environmentType: value.environment_type as LumiWorkspaceBinding["environmentType"],
+    };
+  }
+
+  async createManagedSession(
+    input: {
+      projectId: string;
+      agentDefinitionId: string;
+      workspaceBindingId: string;
+      title?: string;
+    },
+    idempotencyKey = randomUUID(),
+  ): Promise<LumiManagedSessionProjection> {
+    return this.#managedRuns.createSession(input, idempotencyKey);
+  }
+
+  async createManagedRun(
+    agentSessionId: string,
+    modelAlias: string,
+    idempotencyKey = randomUUID(),
+  ): Promise<LumiManagedRunProjection> {
+    return this.#managedRuns.createRun(agentSessionId, modelAlias, idempotencyKey);
+  }
+
+  async getManagedRun(runId: string): Promise<LumiManagedRunProjection> {
+    return this.#managedRuns.getRun(runId);
+  }
+  requestManagedToolDecision(input: import("@zcode/shared").ZCodeManagedToolDecisionRequestParams) {
+    return this.#managedTools.decide(input);
+  }
+  reportManagedToolResult(
+    input: Parameters<LumiManagedToolHostTransport["reportResult"]>[0],
+    status: "completed" | "failed" | "cancelled",
+  ) {
+    return this.#managedTools.reportResult(input, status);
+  }
+
+  async startManagedRun(run: LumiManagedRunProjection, idempotencyKey = randomUUID()) {
+    return this.#managedRuns.startRun(run, idempotencyKey);
+  }
+
+  async completeManagedRun(run: LumiManagedRunProjection, idempotencyKey = randomUUID()) {
+    return this.#managedRuns.completeRun(run, idempotencyKey);
+  }
+
+  async failManagedRun(
+    run: LumiManagedRunProjection,
+    failureCode: string,
+    idempotencyKey = randomUUID(),
+  ) {
+    return this.#managedRuns.failRun(run, failureCode, idempotencyKey);
+  }
+
+  async cancelManagedRun(run: LumiManagedRunProjection, idempotencyKey = randomUUID()) {
+    return this.#managedRuns.cancelRun(run, idempotencyKey);
+  }
+
   async restore(): Promise<boolean> {
     const value = await this.#persistence?.load();
     if (!value) return false;
@@ -81,8 +268,14 @@ export class LumiDeviceHostTransport {
     this.#credential = value;
     return true;
   }
-  async #request(path: string, method: "GET" | "POST", body?: unknown, authenticated = false) {
-    const headers: Record<string, string> = { Accept: "application/json" };
+  async #request(
+    path: string,
+    method: "GET" | "POST" | "DELETE",
+    body?: unknown,
+    authenticated = false,
+    extraHeaders: Record<string, string> = {},
+  ) {
+    const headers: Record<string, string> = { Accept: "application/json", ...extraHeaders };
     if (body !== undefined) headers["Content-Type"] = "application/json";
     if (authenticated) {
       if (!this.#credential || Date.parse(this.#credential.tokenExpiresAt) <= Date.now())
@@ -157,22 +350,14 @@ export class LumiDeviceHostTransport {
     const { id, orgId, tokenExpiresAt, policyVersion } = this.#credential;
     return { id, orgId, tokenExpiresAt, policyVersion };
   }
-  async policy() {
-    const row = await this.#request("/api/v1/devices/policy", "GET", undefined, true);
-    if (!row || row.org_id !== this.#credential?.orgId || !Number.isSafeInteger(row.policy_version))
-      throw new LumiAccountError("lumi_policy_invalid");
-    instant(row.expires_at);
-    return row;
+  policy() {
+    return this.#policy.policy();
   }
-  async acknowledge(policyVersion: number): Promise<void> {
-    if (!Number.isSafeInteger(policyVersion) || policyVersion < 1)
-      throw new LumiAccountError("lumi_policy_invalid");
-    await this.#request(
-      "/api/v1/devices/policy/ack",
-      "POST",
-      { policy_version: policyVersion },
-      true,
-    );
+  acknowledge(policyVersion: number): Promise<void> {
+    return this.#policy.acknowledge(policyVersion);
+  }
+  heartbeat(appVersion: string, capabilities: LumiRuntimeCapabilityReport) {
+    return this.#policy.heartbeat(appVersion, capabilities);
   }
 
   async adoptRecoveredToken(value: {

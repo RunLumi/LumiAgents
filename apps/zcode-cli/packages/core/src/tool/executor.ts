@@ -41,3 +41,4 @@ export {
   resolveManagedToolIdentity,
   stableSerialize,
 } from "./executor/managed-tool-identity.js";
+export { summarizeRuntimeCapabilities } from "./executor/runtime-capabilities.js";

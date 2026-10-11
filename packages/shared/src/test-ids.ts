@@ -697,6 +697,16 @@ export const TID_AUTOMATION_FORM_TITLE = "automation-form-title";
 export const TID_AUTOMATION_FORM_PROMPT = "automation-form-prompt";
 export const TID_AUTOMATION_FORM_SUBMIT = "automation-form-submit";
 export const TID_AUTOMATION_RUN_NOW = "automation-run-now";
+export const TID_LUMI_AUTOMATION_HANDOVER = "lumi-automation-handover";
+export const TID_LUMI_AUTOMATION_RETURN = "lumi-automation-return";
+export const TID_LUMI_AUTOMATION_ATTACH = "lumi-automation-attach";
+export const TID_LUMI_AUTOMATION_ATTACH_OPTION = "lumi-automation-attach-option";
+export const TID_LUMI_AUTOMATION_ATTACH_ACK = "lumi-automation-attach-ack";
+export const TID_LUMI_AUTOMATION_BADGE = "lumi-automation-badge";
+export const TID_LUMI_AUTOMATION_DIALOG = "lumi-automation-dialog";
+export const TID_LUMI_AUTOMATION_CONFIRM = "lumi-automation-confirm";
+export const TID_LUMI_AUTOMATION_CANCEL = "lumi-automation-cancel";
+export const TID_LUMI_AUTOMATION_STATUS = "lumi-automation-status";
 export const TID_AUTOMATION_EDIT_BACK = "automation-edit-back";
 // 调度 builder / 自定义重复 / 年度月日选择器（e2e 稳定锚点）
 export const TID_AUTOMATION_FREQUENCY_SELECT = "automation-frequency-select";
