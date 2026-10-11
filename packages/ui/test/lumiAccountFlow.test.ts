@@ -61,8 +61,9 @@ test("errors surface a code and clear on the next request", () => {
   assert.equal(s.restored, true);
   s = reduce(s, { type: "start", seq: 2 });
   assert.equal(s.error, undefined);
-  s = reduce(s, { type: "failed", seq: 2, code: "lumi_account_failed" });
+  s = reduce(s, { type: "failed", seq: 2, command: "begin", code: "lumi_account_failed" });
   assert.equal(s.error, "lumi_account_failed");
+  assert.equal(s.errorCommand, "begin");
 });
 
 test("logout clears the Lumi projection only", () => {

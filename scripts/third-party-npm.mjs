@@ -143,7 +143,15 @@ export async function readPackageNotices(directory) {
   return files.sort((a, b) => a.member.localeCompare(b.member, "en"));
 }
 
-function productionPackages(projects) {
+export {
+  createInstallablePackageFilter,
+  readInstallTargets,
+  readLockfilePlatformConstraints,
+} from "./third-party-npm-platform.mjs";
+
+// 修复：pnpm 按 supportedArchitectures 跳过的平台包（如 sharp 的 s390x/wasm32 构建）从不安装、不分发，
+// 此前靠按包名的例外名单放行，新依赖一引入就会误报缺失；现在按锁文件平台约束整棵子树跳过。
+export function productionPackages(projects, isInstallable = () => true) {
   const own = new Set(projects.map((project) => project.name));
   const required = new Map();
 
@@ -162,6 +170,7 @@ function productionPackages(projects) {
   function dependencies(deps, edgeOptional = false, inheritedOptional = false) {
     for (const [alias, info] of Object.entries(deps ?? {})) {
       const name = info.name ?? alias;
+      if (!isInstallable(name, info.version)) continue;
       const optional = inheritedOptional || edgeOptional;
       if (!own.has(name) && !name.startsWith("@zcode/") && !info.version.startsWith("link:")) {
         record(name, info.version, optional);

@@ -44,6 +44,17 @@ export const VERIFIED_UPSTREAM_IMPORTS = new Map([
       authorEmail: "weiqi.wu@aminer.cn",
     },
   ],
+  // Exact upstream v3.15.1 release from zai-org/ZCode (offered as RunLumi PR #42); its parent is
+  // the v3.14.3 import above. Provenance: commit and tree verified via the GitHub API on 2026-10-11,
+  // Apache-2.0 LICENSE unchanged. See docs/upstream/FORK-DIFFERENCES.md.
+  [
+    "aac4755666d09fdcd70272fcf063c077a639015f",
+    {
+      tree: "f7522405655f8d2992af41fd0f20cb4bcbcd0902",
+      parent: "29628c9acdb81b703bbd4080c207a0e7ce5e276e",
+      authorEmail: "weiqi.wu@aminer.cn",
+    },
+  ],
 ]);
 // Historical fork commits merged before DCO became merge-blocking. This cutoff is
 // immutable policy state: entries may only be exact ancestors of this commit.

@@ -42,3 +42,8 @@ test("normalizeThemePreference collapses legacy dark preferences to light", () =
   assert.equal(normalizeThemePreference("light"), "light");
   assert.equal(normalizeThemePreference("system"), "system");
 });
+
+test("applyLumiBranding passes a missing message through instead of throwing", () => {
+  // formatMessage 对缺失 id 原样返回 undefined；品牌改写不能因此打断渲染。
+  assert.equal(applyLumiBranding(undefined as unknown as string), undefined);
+});

@@ -44,6 +44,12 @@ const terminalStatuses = "'completed','failed','cancelled'";
 const activePredicate = `session_id IS NOT NULL AND status NOT IN (${terminalStatuses})`;
 const boundIndex = `CREATE UNIQUE INDEX IF NOT EXISTS idx_off_peak_bound_active ON off_peak_tasks(workspace_key,session_id) WHERE ${activePredicate}`;
 
+function tableHasColumn(db: DatabaseSync, table: string, column: string): boolean {
+  return (db.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>).some(
+    (row) => row.name === column,
+  );
+}
+
 // 与 Agent 同样是库级串行事务，但不跨域依赖其具体 adapter。TS 转换使用冻结语义版本，
 // 禁用 function.toString 哈希：Electron/SEA 打包会改变函数文本而非迁移语义。
 const definitions = [
@@ -134,7 +140,11 @@ export function runTasksDatabaseMigrations(
         db.exec(AUTOMATION_MANAGED_ADOPTION_MIGRATION_SQL);
       else if (migration.id === "0005_automation_managed_guard")
         db.exec(AUTOMATION_MANAGED_GUARD_MIGRATION_SQL);
-      else db.exec(AUTOMATION_MANAGED_ATTACH_MIGRATION_SQL);
+      else if (!tableHasColumn(db, "automation_managed_adoptions", "origin"))
+        // 修复：0004/0005 都是 IF NOT EXISTS 幂等语句，唯独 0006 的 ADD COLUMN 不幂等。账本被清空
+        // 或丢失后重放迁移（上游 v3.15.1 的升级回归测试即此场景）会抛 duplicate column 而阻断启动；
+        // 列已存在时只补记账本，不改 SQL 本身，checksum 保持不变。
+        db.exec(AUTOMATION_MANAGED_ATTACH_MIGRATION_SQL);
       migrationFacts.executedCount++;
       db.prepare("INSERT INTO tasks_schema_migration VALUES(?,?,?)").run(
         migration.id,

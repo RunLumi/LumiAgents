@@ -20,7 +20,9 @@ const PROTECTED_PHRASES = ["ZCode Agent", "ZCode CDN", "ZCode CLI"] as const;
 const PRODUCT_NAME_TOKEN = "ZCode";
 
 export function applyLumiBranding(message: string): string {
-  if (!message.includes(PRODUCT_NAME_TOKEN)) {
+  // 修复：上游 formatMessage 对缺失的 id 会原样返回 undefined（调用方据此不渲染）；
+  // 品牌改写不能因此抛错把整棵 UI 渲染打断，非字符串原样透传。
+  if (typeof message !== "string" || !message.includes(PRODUCT_NAME_TOKEN)) {
     return message;
   }
 

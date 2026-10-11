@@ -116,7 +116,7 @@ test("DCO：retrospective remediation 仅针对审定的 exact SHAs，声明不�
 test("DCO：上游导入只接受精确 release commit", () => {
   assert.deepEqual(
     [...VERIFIED_UPSTREAM_IMPORTS.keys()],
-    ["29628c9acdb81b703bbd4080c207a0e7ce5e276e"],
+    ["29628c9acdb81b703bbd4080c207a0e7ce5e276e", "aac4755666d09fdcd70272fcf063c077a639015f"],
   );
 });
 

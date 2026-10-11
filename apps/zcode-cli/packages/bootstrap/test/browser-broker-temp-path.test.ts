@@ -58,8 +58,10 @@ test("browser broker starts with a long TMPDIR while preserving socket auth and 
     assert.equal(allowed.ok, true);
     assert.deepEqual(allowed.browsers, []);
     assert.equal(calls, 1);
-    assert.equal((await request(broker.token, "subagent")).ok, false);
-    assert.equal(calls, 1);
+    // 上游 v3.15.1：subagent 不再在 socket 层拒绝，交给 BrowserControlPort 按 forChildSession
+    // 登记做权威校验；有效 token 的 subagent 请求因此到达端口。
+    await request(broker.token, "subagent");
+    assert.equal(calls, 2);
   } finally {
     await broker.close();
     if (before === undefined) delete process.env.TMPDIR;

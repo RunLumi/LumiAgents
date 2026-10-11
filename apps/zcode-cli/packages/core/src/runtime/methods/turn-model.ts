@@ -1,4 +1,5 @@
 import {
+  ModelRetryBudget,
   SESSION_ENTRY_MODEL_SELECTION,
   type Model,
   type ModelSelection,
@@ -12,18 +13,35 @@ import { createRefreshRuntimeHeadersBeforeModelAttempt } from "./model-runtime-h
 import { createRuntimeModel, withModelInvocationContext } from "./runtime-model.js";
 import { applyRuntimeExecutionState } from "../execution-state.js";
 
+/**
+ * 带退回声明且 Selection 指向声明 provider 的执行句柄只允许一次物理请求：失败后由 core 退回会话模型
+ * 继续本轮，适配层再按默认预算退避重试只会把降级拖到数分钟之后（spec §2.2「加速请求 0 次重试」）。
+ * 其余句柄返回 undefined，沿用按 taskType 解析的默认预算。
+ */
+export function resolveExecutionModelRetryBudget(input: {
+  selection: ModelSelection | undefined;
+  selectionFallback: import("../types.js").ModelExecutionContext["selectionFallback"];
+}): ModelRetryBudget | undefined {
+  if (!input.selection || !input.selectionFallback) return undefined;
+  return input.selection.providerId === input.selectionFallback.providerId
+    ? ModelRetryBudget.SingleAttempt
+    : undefined;
+}
+
 export function createTurnModel(
   runtime: AgentRuntimeInternal,
   options: {
     selection?: ModelSelection;
     requestDependencies?: import("@zcode/contracts").ModelRequestDependencies;
     managedContext?: import("../../tool/executor/managed-decision.js").LumiManagedExecutionContext;
+    retryBudget?: ModelRetryBudget;
   } = {},
 ): Model {
   const selection = options.selection ?? runtime.getSessionModelSelection();
   const model = createRuntimeModel(runtime, {
     selection,
     requestDependencies: options.requestDependencies,
+    retryBudget: options.retryBudget,
   });
   return withModelInvocationContext(model, (request) => ({
     refreshRuntimeHeadersBeforeAttempt: createRefreshRuntimeHeadersBeforeModelAttempt(runtime, {
@@ -51,16 +69,17 @@ export async function applySubmissionExecutionState(
   let model = preparedModel;
 
   if (selection) {
-    // The early admitted model is built before the submission's execution-only context exists.
-    // Rebuild it here when execution-scoped material (request auth or managed P05 scope) is
-    // present; otherwise the first physical provider request silently loses that material.
-    if (!model || modelExecution?.selectionScope === "execution") {
-      model = createTurnModel(runtime, {
+    // 上游 v3.15.1 起 admitted Model 在创建时就带上执行作用域材料（request auth 与 Lumi 托管
+    // P05 上下文，见 turn.ts），这里只在没有 preparedModel 时创建，不再重建。
+    model ??= createTurnModel(runtime, {
+      selection,
+      requestDependencies: modelExecution?.requestDependencies,
+      managedContext: modelExecution?.managedContext,
+      retryBudget: resolveExecutionModelRetryBudget({
         selection,
-        requestDependencies: modelExecution?.requestDependencies,
-        managedContext: modelExecution?.managedContext,
-      });
-    }
+        selectionFallback: modelExecution?.selectionFallback,
+      }),
+    });
     if (modelExecution?.selectionScope !== "execution") {
       const appliedSelection = cloneModelSelection(selection);
       runtime.setSessionModelSelection(appliedSelection);

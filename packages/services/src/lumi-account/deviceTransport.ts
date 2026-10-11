@@ -7,6 +7,7 @@ import { LumiAccountError } from "./errors.js";
 import { LumiManagedRunHostTransport } from "./managedRunTransport.js";
 import { LumiManagedToolHostTransport } from "./managedToolTransport.js";
 import { createLumiAutomationLeaseTransport } from "./automationLeaseTransport.js";
+import { pagePath, readCompletePages } from "./pagination.js";
 
 export interface DeviceEnrollmentInput {
   org_slug: string;
@@ -105,37 +106,18 @@ export class LumiDeviceHostTransport {
     return createLumiAutomationLeaseTransport(this.#origin, this.#fetch, () => this.#credential);
   }
   async listWorkspaceBindings(): Promise<LumiWorkspaceBinding[]> {
-    const row = await this.#request("/api/v1/devices/bindings", "GET", undefined, true);
-    if (!Array.isArray(row?.items) || row.items.length > 100)
-      throw new LumiAccountError("lumi_device_response_invalid");
-    return row.items.map((value: Record<string, unknown>) => {
-      if (
-        !value ||
-        typeof value.id !== "string" ||
-        !/^wsb_[0-9a-f]{32}$/.test(value.id) ||
-        typeof value.org_id !== "string" ||
-        value.org_id !== this.#credential?.orgId ||
-        typeof value.project_id !== "string" ||
-        !/^prj_[0-9a-f]{32}$/.test(value.project_id) ||
-        typeof value.device_id !== "string" ||
-        value.device_id !== this.#credential?.id ||
-        typeof value.workspace_identity !== "string" ||
-        !/^[A-Za-z0-9._~-]{1,256}$/.test(value.workspace_identity) ||
-        typeof value.display_name !== "string" ||
-        !value.display_name ||
-        value.display_name.length > 120 ||
-        !["local", "ssh", "wsl", "docker", "remote"].includes(String(value.environment_type))
-      )
-        throw new LumiAccountError("lumi_device_response_invalid");
-      return {
-        id: value.id,
-        orgId: value.org_id,
-        projectId: value.project_id,
-        deviceId: value.device_id,
-        workspaceIdentity: value.workspace_identity,
-        displayName: value.display_name,
-        environmentType: value.environment_type as LumiWorkspaceBinding["environmentType"],
-      };
+    // The route has no cursor and a hard ceiling of 100 rows; a full page fails closed (see pagination.ts).
+    return readCompletePages<LumiWorkspaceBinding>({
+      fetchPage: (cursor) =>
+        this.#request(pagePath("/api/v1/devices/bindings", cursor), "GET", undefined, true),
+      parse: (value) => {
+        if (!value || typeof value !== "object")
+          throw new LumiAccountError("lumi_device_response_invalid");
+        return this.#workspaceBinding(value as Record<string, unknown>);
+      },
+      keyOf: (item) => item.id,
+      invalid: "lumi_device_response_invalid",
+      ceilingWithoutCursor: true,
     });
   }
 
