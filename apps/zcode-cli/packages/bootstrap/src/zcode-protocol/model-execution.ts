@@ -16,6 +16,7 @@ export function createModelExecutionContext(
         }
       : {}),
     ...(input.subagents ? { subagents: input.subagents } : {}),
+    ...(input.managedContext ? { managedContext: input.managedContext } : {}),
   };
 }
 

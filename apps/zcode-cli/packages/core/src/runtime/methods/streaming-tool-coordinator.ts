@@ -24,6 +24,7 @@ import {
   recoverPartialAssistantOutputFailure,
 } from "./streaming-recovery.js";
 import { executeToolCallsForModelStep } from "./turn-tools.js";
+import { executeTurnToolSchedule } from "./turn-tool-execution.js";
 import { mcpToolPartMetadata } from "./tool-part-metadata.js";
 import { persistPendingToolPart } from "./tool-part-persistence.js";
 import {
@@ -284,7 +285,7 @@ async function executeDuringStream(
     input,
   });
 
-  const execution = await runtime.executeTools([toolCall], schedule, {
+  const execution = await executeTurnToolSchedule(runtime, state, [toolCall], schedule, {
     subagentModelOverride: state.subagentModelOverride,
     model: state.model,
     automationTurn: isAutomationMutationRestrictedTurn(state),

@@ -1,6 +1,7 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice. */
 
 import { createHash } from "node:crypto";
+import { toToolJsonSchema } from "@zcode/contracts";
 import type {
   ManagedToolIdentity,
   ManagedToolRiskClass,
@@ -10,9 +11,6 @@ import type {
 
 const opaqueIdPattern = /^[a-z][a-z0-9]*_[0-9a-f]{32}$/;
 const metadataIdPattern = /^[A-Za-z0-9._:-]{1,160}$/;
-const MAX_ARGUMENT_SUMMARY_LENGTH = 512;
-const MAX_ARGUMENT_FIELDS = 24;
-const MAX_ARGUMENT_VALUE_LENGTH = 160;
 
 /** Canonical JSON used only for identity hashing. */
 export function stableSerialize(value: unknown): string {
@@ -35,6 +33,9 @@ export function createManagedResourceId(
 }
 
 export function createManagedCapabilityId(value: unknown): string {
+  // Platform catalog identities, not execution grants (backend migration 0023).
+  if (value === "browser") return "cap_62726f77736572000000000000000000";
+  if (value === "computer") return "cap_636f6d70757465720000000000000000";
   return createManagedResourceId("cap", value);
 }
 
@@ -42,7 +43,7 @@ export function createManagedToolFingerprint(value: unknown): string {
   // The control-plane tool endpoint accepts the raw SHA-256 digest. A
   // `sha256:` prefix is accepted by some legacy projections, but is rejected
   // by the current P05 route validator.
-  return createStableManagedHash("lumi-tool-fingerprint-v1", value);
+  return createStableManagedHash("lumi-tool-fingerprint-v2", value);
 }
 
 /**
@@ -71,7 +72,7 @@ export function resolveManagedToolIdentity(entry: ToolEntry): ManagedToolIdentit
     stableName,
     inputSchema: entry.inputSchema,
     outputSchema: entry.outputSchema,
-    runtimeInputSchema: entry.runtimeInputSchema,
+    runtimeInputSchema: canonicalRuntimeInputSchema(entry.runtimeInputSchema),
     permission: entry.permission,
     readOnly: entry.metadata?.readOnly === true,
     destructive: entry.metadata?.destructive === true,
@@ -127,20 +128,7 @@ export function normalizeManagedCapabilityId(value: unknown): string | undefined
   return createManagedCapabilityId(normalized);
 }
 
-export function createManagedArgumentsSummary(input: unknown): string {
-  const fields: string[] = [];
-  if (input !== null && typeof input === "object" && !Array.isArray(input)) {
-    const record = input as Record<string, unknown>;
-    for (const key of Object.keys(record).sort().slice(0, MAX_ARGUMENT_FIELDS)) {
-      if (!isSummaryKey(key)) continue;
-      const value = summarizeArgumentValue(key, record[key]);
-      if (value !== undefined) fields.push(`${key.toLowerCase()}=${value}`);
-    }
-  }
-
-  const summary = fields.length > 0 ? fields.join(";") : summarizeNonObject(input);
-  return truncateSummary(summary);
-}
+export { createManagedArgumentsSummary } from "./managed-arguments.js";
 
 export function createManagedArgumentsHash(summary: string): string {
   // Match the control-plane approval binding: SHA-256 over the exact bounded
@@ -148,7 +136,8 @@ export function createManagedArgumentsHash(summary: string): string {
   return createHash("sha256").update(summary).digest("hex");
 }
 
-export function createManagedToolCallId(localToolCallId: string): string {
+export function createManagedToolCallId(localToolCallId: string, runId?: string): string {
+  if (runId) return createManagedResourceId("tcl", { runId, localToolCallId });
   const value = localToolCallId.trim();
   if (isOpaqueId(value, "tcl")) return value;
   return createManagedResourceId("tcl", value);
@@ -254,73 +243,6 @@ function hasCapability(entry: ToolEntry, value: string): boolean {
   return searchable.includes(value);
 }
 
-function summarizeNonObject(input: unknown): string {
-  if (input === null) return "type=null";
-  if (Array.isArray(input)) return `type=array;length=${input.length}`;
-  if (typeof input === "string") return `type=string;length=${input.length}`;
-  if (typeof input === "number" || typeof input === "boolean" || typeof input === "bigint") {
-    return `${typeof input}=${String(input)}`;
-  }
-  return `type=${typeof input}`;
-}
-
-function summarizeArgumentValue(key: string, value: unknown): string | undefined {
-  if (value === null) return "null";
-  if (typeof value === "boolean" || typeof value === "number" || typeof value === "bigint") {
-    return String(value);
-  }
-  if (typeof value !== "string") return `[${Array.isArray(value) ? "array" : typeof value}]`;
-  if (isSensitiveKey(key)) return "[redacted]";
-  const normalized = stripControlCharacters(value).trim();
-  if (normalized.length === 0) return "";
-  if (key.toLowerCase() === "url" || normalized.includes("://")) {
-    return sanitizeUrlValue(normalized);
-  }
-  if (/(bearer\s+|token\s*[=:]|secret\s*[=:]|password\s*[=:])/i.test(normalized)) {
-    return "[redacted]";
-  }
-  return truncateValue(normalized);
-}
-
-function truncateValue(value: string): string {
-  return value.length <= MAX_ARGUMENT_VALUE_LENGTH
-    ? value
-    : `${value.slice(0, MAX_ARGUMENT_VALUE_LENGTH)}…`;
-}
-
-function truncateSummary(value: string): string {
-  return value.length <= MAX_ARGUMENT_SUMMARY_LENGTH
-    ? value
-    : `${value.slice(0, MAX_ARGUMENT_SUMMARY_LENGTH - 1)}…`;
-}
-
-function isSummaryKey(value: string): boolean {
-  return /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(value);
-}
-
-function isSensitiveKey(value: string): boolean {
-  return /(secret|token|password|authorization|cookie|credential|api[_-]?key|prompt|body|content)/i.test(
-    value,
-  );
-}
-
-function stripControlCharacters(value: string): string {
-  return Array.from(value, (character) => {
-    const code = character.charCodeAt(0);
-    return code < 0x20 || code === 0x7f ? " " : character;
-  }).join("");
-}
-
-function sanitizeUrlValue(value: string): string {
-  try {
-    const parsed = new URL(value);
-    if (!parsed.hostname) return "[url]";
-    return `${parsed.protocol}//${parsed.hostname}`;
-  } catch {
-    return "[url]";
-  }
-}
-
 function normalizeCapabilityIds(values: readonly string[] | undefined): string[] {
   return [
     ...new Set(
@@ -383,6 +305,20 @@ function isManagedRiskClass(value: unknown): value is ManagedToolRiskClass {
     value === "external_side_effect" ||
     value === "destructive"
   );
+}
+
+function canonicalRuntimeInputSchema(schema: unknown): unknown {
+  if (schema && typeof schema === "object") {
+    const value = schema as { _def?: { typeName?: unknown }; safeParse?: unknown };
+    if (
+      typeof value._def?.typeName === "string" &&
+      value._def.typeName.startsWith("Zod") &&
+      typeof value.safeParse === "function"
+    ) {
+      return toToolJsonSchema(schema as Parameters<typeof toToolJsonSchema>[0]);
+    }
+  }
+  return schema;
 }
 
 function serializeStableValue(value: unknown, seen: WeakSet<object>): string {

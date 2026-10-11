@@ -567,6 +567,13 @@ export interface ZCodeAgentStorageStartupSnapshot {
 }
 
 export interface IZCodeAgentService {
+  /** Prepare a Host-only transient Lumi alias for a Main-issued managed run. */
+  prepareManagedProviderAlias(params: {
+    modelAlias: string;
+    managedContext: import("@zcode/shared").ZCodeManagedRunContext;
+    /** Exact workspace whose process-owned Agent must learn the alias before task creation. */
+    workspace: ZCodeAgentWorkspaceTarget;
+  }): Promise<ModelSelection>;
   /** 控制面不需要账号或模型，且不发送普通协议请求。 */
   prepareStorage(params: ZCodeAgentWorkspaceTarget): Promise<void>;
   getStorageStartupState(

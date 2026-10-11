@@ -173,7 +173,16 @@ export class AiSdkModelAdapter {
       // 普通 API-key Model 若也消费该 Port，会把静态鉴权误送到 Host 刷新并在请求前失败。
       // Off-Peak Model 始终使用创建时注入的执行作用域 Source，不依赖账号服务。
       const refreshRuntimeHeadersBeforeAttempt = requestAuthRequired
-        ? async (input: ModelRequestAuthSourceInput) => {
+        ? options.providerId === LUMI_MANAGED_PROVIDER_ID &&
+          !requestAuthDependency?.source?.resolve
+          ? (contextRefreshRuntimeHeadersBeforeAttempt ??
+            (async () => {
+              throw new ModelProtocolError(
+                ModelErrorCode.ModelRequestAuthMissing,
+                `Managed model request auth is unavailable: ${resolved.providerId}/${resolved.modelId}`,
+              );
+            }))
+          : async (input: ModelRequestAuthSourceInput) => {
             const requestAuth = await requestAuthDependency?.source?.resolve(input);
             if (!hasRequestAuth(requestAuth)) {
               throw new ModelProtocolError(

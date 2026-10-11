@@ -13,7 +13,7 @@ export interface LumiVaultEncryption {
 export function createLumiPrivateVault<T>(options: {
   directory: string;
   identity: string;
-  namespace: "session" | "device";
+  namespace: "session" | "device" | "workspace";
   encryption: LumiVaultEncryption;
   platform?: NodeJS.Platform;
   validate(value: unknown): T;

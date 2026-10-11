@@ -40,6 +40,7 @@ export function createProviderRuntimeHeadersPort(
             workspace,
             modelSelection: { providerId: input.providerId, modelId: input.modelId },
             providerId: input.providerId,
+            ...(input.managedContext ? { managedContext: input.managedContext } : {}),
             ...(input.accountAccess ? { accountAccess: input.accountAccess } : {}),
             reason: input.reason,
           },

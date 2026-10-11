@@ -3,6 +3,7 @@ import {
   MutableAccountProviderConfigSource,
   createFailClosedAccountProviderConfigSnapshot,
   type AccountProviderConfigSnapshot,
+  type ProviderConfigSnapshot,
   type ProviderSource,
 } from "@zcode/provider";
 import {
@@ -12,8 +13,11 @@ import {
 
 export interface NodeProviderRegistryRuntimeOptions extends NodeProviderConfigRuntimeOptions {
   readonly accountSource?: ProviderSource<AccountProviderConfigSnapshot>;
+  readonly registryConfigSourceFactory?: (
+    configSource: NodeProviderConfigRuntime["configService"],
+  ) => ProviderSource<ProviderConfigSnapshot>;
   readonly createAccountSource?: (
-    configService: NodeProviderConfigRuntime["configService"],
+    configSource: ProviderSource<ProviderConfigSnapshot>,
   ) => ProviderSource<AccountProviderConfigSnapshot>;
 }
 
@@ -22,18 +26,21 @@ export class NodeProviderRegistryRuntime {
   readonly configService: NodeProviderConfigRuntime["configService"];
   readonly registryService: ProviderRegistryService;
   readonly #configRuntime: NodeProviderConfigRuntime;
+  readonly #registryConfigSource: ProviderSource<ProviderConfigSnapshot>;
   readonly #accountSource: ProviderSource<AccountProviderConfigSnapshot>;
   #disposed = false;
 
   constructor(options: NodeProviderRegistryRuntimeOptions) {
     this.#configRuntime = new NodeProviderConfigRuntime(options);
     this.configService = this.#configRuntime.configService;
+    this.#registryConfigSource =
+      options.registryConfigSourceFactory?.(this.configService) ?? this.configService;
     this.#accountSource =
-      options.createAccountSource?.(this.configService) ??
+      options.createAccountSource?.(this.#registryConfigSource) ??
       options.accountSource ??
       new MutableAccountProviderConfigSource();
     this.registryService = new ProviderRegistryService({
-      configSource: this.configService,
+      configSource: this.#registryConfigSource,
       accountSource: this.#accountSource,
     });
   }
@@ -45,7 +52,7 @@ export class NodeProviderRegistryRuntime {
       const account = await this.#accountSource.read();
       if (account.basedOnZCodeBuiltinRevision === "uninitialized") {
         this.#accountSource.replace(
-          createFailClosedAccountProviderConfigSnapshot(await this.configService.read()),
+          createFailClosedAccountProviderConfigSnapshot(await this.#registryConfigSource.read()),
           "initial-fail-closed",
         );
       }
