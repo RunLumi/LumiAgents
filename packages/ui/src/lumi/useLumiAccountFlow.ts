@@ -3,12 +3,9 @@ import { useCallback, useEffect, useReducer, useRef } from "react";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import {
   initialLumiAccountFlow,
-  LUMI_FLOW_SLOW_MS,
-  LUMI_FLOW_TIMEOUT_MS,
   lumiAccountFlowReducer,
   type LumiFlowCommand,
 } from "./lumiAccountFlow.js";
-import { requestStartupRestore } from "./lumiRestore.js";
 
 /** Single renderer client of the host-owned `platform.lumiAccount` session; never a second owner. */
 export function useLumiAccountFlow() {
@@ -18,33 +15,17 @@ export function useLumiAccountFlow() {
   const busy = useRef(false);
 
   const run = useCallback(
-    async (command: LumiFlowCommand, options?: { startup?: boolean }) => {
+    async (command: LumiFlowCommand) => {
       if (!lumiAccount || (busy.current && command !== "restore" && command !== "cancel")) return;
       const seq = ++sequence.current;
       busy.current = true;
       dispatch({ type: "start", seq });
-      // Only a restore can be slow in a way the user cannot act on; both timers are fenced by seq.
-      const slowTimer =
-        command === "restore"
-          ? setTimeout(() => dispatch({ type: "slow", seq }), LUMI_FLOW_SLOW_MS)
-          : undefined;
-      const giveUpTimer = setTimeout(() => {
-        if (seq !== sequence.current) return;
-        // Supersede the abandoned request so its late host completion cannot overwrite a newer one.
-        const nextSeq = ++sequence.current;
-        busy.current = false;
-        dispatch({ type: "timeout", seq, nextSeq, command });
-      }, LUMI_FLOW_TIMEOUT_MS);
       try {
-        const result = await (command === "restore" && options?.startup
-          ? requestStartupRestore(lumiAccount)
-          : lumiAccount.request(command));
+        const result = await lumiAccount.request(command);
         dispatch({ type: "settled", seq, command, result });
       } catch {
-        dispatch({ type: "failed", seq, command, code: "lumi_account_failed" });
+        dispatch({ type: "failed", seq, code: "lumi_account_failed" });
       } finally {
-        clearTimeout(slowTimer);
-        clearTimeout(giveUpTimer);
         if (seq === sequence.current) busy.current = false;
       }
     },
@@ -52,7 +33,7 @@ export function useLumiAccountFlow() {
   );
 
   useEffect(() => {
-    void run("restore", { startup: true });
+    void run("restore");
     return () => {
       // Unmount invalidates any in-flight result.
       busy.current = false;

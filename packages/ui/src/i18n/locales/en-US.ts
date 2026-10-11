@@ -151,11 +151,6 @@ const enUS: Record<string, string> = {
   "lumiEntry.localHint":
     "Local workspaces and your own API keys work without a Lumi account. Signing in does not enroll this device or share any workspace.",
   "lumiEntry.retry": "Try again",
-  "lumiEntry.restoringSlow":
-    "This is taking longer than usual. You can continue locally or use your own API key below while we keep checking.",
-  "lumiEntry.restoreFailed":
-    "Could not check your saved Lumi session. Local workspaces and your own keys are unaffected.",
-  "lumiEntry.checkAgain": "Check saved session again",
 
   "lumiWorkspace.title": "Workspace adoption",
   "lumiWorkspace.privacy":
@@ -167,21 +162,8 @@ const enUS: Record<string, string> = {
   "lumiWorkspace.ownership": "Ownership",
   "lumiWorkspace.stage": "Adoption stage",
   "lumiWorkspace.busy": "Reading or updating workspace state…",
-  "lumiWorkspace.noProjects": "No projects available",
-  "lumiWorkspace.noProjectsHint":
-    "Your organization has no open projects you can use yet. Ask an organization admin to create one or grant you access.",
-  "lumiWorkspace.reload": "Reload workspace state",
-  "lumiError.generic":
-    "Workspace action failed. Check device, membership and network, then try again.",
-  "lumiError.pageIncomplete":
-    "Your organization has more projects or workspaces than this app can safely list, so nothing was loaded or changed. This app does not support lists this large yet; no workspace was bound. Local workspaces and your own keys still work.",
-  "lumiError.timeout":
-    "Lumi did not answer in time. Nothing was changed on this device. Check your connection and try again.",
-  "lumiError.changed":
-    "The account, organization or workspace changed while this was running. The latest state has been reloaded; review it before trying again.",
-  "lumiError.notPersisted":
-    "Your organization did not confirm the change, so it was not recorded. The latest state has been reloaded.",
-  "lumiError.denied": "This window is not allowed to manage the Lumi account.",
+  "lumiWorkspace.error":
+    "Workspace action failed. Check device, membership and network, then retry.",
   "lumiWorkspace.deviceRequired": "Enroll or recover this device before binding the workspace.",
   "lumiWorkspace.bind": "Review and bind this workspace",
   "lumiWorkspace.next.account_optional": "Continue: account is optional",

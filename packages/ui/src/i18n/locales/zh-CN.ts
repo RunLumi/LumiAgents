@@ -135,10 +135,6 @@ const zhCN: Record<string, string> = {
   "lumiEntry.localHint":
     "本地工作区和你自己的 API key 无需 Lumi 账户即可使用。登录不会注册此设备，也不会共享任何工作区。",
   "lumiEntry.retry": "重试",
-  "lumiEntry.restoringSlow":
-    "耗时比平时长。你可以先在本地继续，或使用下方自己的 API key，我们会继续检查。",
-  "lumiEntry.restoreFailed": "无法检查已保存的 Lumi 会话。本地工作区和你自己的密钥不受影响。",
-  "lumiEntry.checkAgain": "重新检查已保存的会话",
 
   "lumiWorkspace.title": "工作区组织管理",
   "lumiWorkspace.privacy":
@@ -150,18 +146,7 @@ const zhCN: Record<string, string> = {
   "lumiWorkspace.ownership": "归属",
   "lumiWorkspace.stage": "接入阶段",
   "lumiWorkspace.busy": "正在读取或更新工作区状态…",
-  "lumiWorkspace.noProjects": "暂无可用项目",
-  "lumiWorkspace.noProjectsHint":
-    "你的组织暂时没有可用的开放项目。请联系组织管理员创建项目或授予访问权限。",
-  "lumiWorkspace.reload": "重新加载工作区状态",
-  "lumiError.generic": "工作区操作失败。请检查设备、成员资格和网络后重试。",
-  "lumiError.pageIncomplete":
-    "你的组织的项目或工作区数量超出本应用可安全列出的范围，因此未加载也未更改任何内容。本应用暂不支持如此大的列表，也没有绑定任何工作区。本地工作区和你自己的密钥仍可使用。",
-  "lumiError.timeout": "Lumi 未能及时响应。此设备上未做任何更改。请检查网络后重试。",
-  "lumiError.changed":
-    "操作进行期间，账户、组织或工作区发生了变化。已重新加载最新状态，请确认后再重试。",
-  "lumiError.notPersisted": "你的组织未确认此更改，因此未被记录。已重新加载最新状态。",
-  "lumiError.denied": "此窗口无权管理 Lumi 账户。",
+  "lumiWorkspace.error": "工作区操作失败。请检查设备、成员资格和网络后重试。",
   "lumiWorkspace.deviceRequired": "请先登记或恢复此设备，再绑定工作区。",
   "lumiWorkspace.bind": "检查并绑定此工作区",
   "lumiWorkspace.next.account_optional": "继续：确认账户步骤",

@@ -1,14 +1,7 @@
 # Lumi workspace adoption and managed runtime ownership
 
-Status: candidate, not yet verified; implementation in progress for
-DE2E-INT-03. Full managed-run wiring remains unproven. No acceptance criterion
-below is claimed as met until evidence is recorded for it.
-
-Scope: workspace adoption and binding, the account/org/session fence, the
-three frozen credential-choice labels, the Lumi-first startup and bootstrap
-state-root rules that adoption depends on, and managed runtime ownership.
-Adopting a workspace never by itself starts, authorizes or configures managed
-execution, tools, automation or provider routing.
+Status: implementation in progress for DE2E-INT-03. Full managed-run
+wiring remains unproven.
 
 ## Product boundary
 
@@ -99,50 +92,6 @@ Missing or unreadable mapping, mismatched org/device/project, expired policy,
 offline state, or unsupported client compatibility never falls through to a
 managed request. The local provider path remains available.
 
-## Account, organization and session fence
-
-Adoption commands (read, bind, advance, rollback, credential choice) run under
-one fence owned by Main (`lumiSessionFence`). The scope is
-`{session generation, selected-org epoch}`:
-
-- The session generation is bumped when sign-in begins, at the start of
-  completion, again when it settles, and around sign-out (including failure).
-  Session restore does not bump.
-- The selected-org epoch is per workspace key. `read-workspace` for a
-  different org (including A to B to A) bumps it; a same-org re-read does not.
-  The org the command names must still be the selected one, else
-  `lumi_workspace_org_changed`, refused before the owner is reached.
-- The scope is captured at admission, before the first await, and every
-  command is re-checked (epoch plus live membership) before each server write,
-  each local mapping save, and before the projection is returned.
-- A write that already committed is never undone or retried. The stale
-  command only has its later writes, mapping save and projection refused with
-  `lumi_account_changed`, `lumi_workspace_org_changed` or
-  `lumi_workspace_org_unavailable`. The local mapping is a cache of the server
-  row and is re-derived by the next read in the current scope.
-- Workspaces do not interfere with each other; provider credentials are never
-  touched by the fence.
-
-## Lumi-first startup and bootstrap state root
-
-Startup (behavior detail in `04-control-plane-account.md`): when the Lumi
-bridge exists, Lumi restore alone owns automatic login entry. The visible z.ai /
-BigModel OAuth provider login is hidden on the entry screen; the existing BYOK
-API-key form and an explicit per-launch "Continue locally" remain, so local use
-never requires a Lumi account. ZCode auth/session custody, BYOK keys, the
-active provider and local workspaces are not removed or altered.
-
-State root and OS identity (behavior implemented by this cut): Main resolves
-its bootstrap home and `setting.json` through one boundary, in the order
-`ZCODE_DATA_BASE_DIR`, `ZCODE_DESKTOP_HOME_DIR`, `HOME`, `USERPROFILE`,
-`homedir()`. An explicit `ZCODE_DATA_BASE_DIR` also wins over a `dataBaseDir`
-stored in settings. With no explicit root, installed behavior is unchanged.
-Main's own process `HOME` is never rewritten: `safeStorage` / the OS keychain
-use the real OS account HOME, an explicit app root never replaces or bypasses
-them, and unavailable encryption stays fail-closed with no plaintext fallback.
-Adoption mapping and account/device vaults therefore live under the app root
-while their encryption keys stay with the OS identity.
-
 ## Credential choice
 
 Status: client source implemented from the frozen `p08-cg-v1` wire. Persistence
@@ -155,8 +104,7 @@ separate from the P04 execution policy `credential_mode` and from any
 `credentials` row, and it does not enforce, provision or route anything. No P08
 route accepts a secret and P08 never exports a local provider key. An adopted
 workspace shows its server-returned mode beside ownership and stage and lets the
-user choose among exactly the three frozen labels (`P08_CREDENTIAL_MODES` in
-`packages/shared/src/p08-migration-adoption.ts`):
+user choose among the three frozen labels:
 
 | Mode                         | What the user is told                                                                                                                                         | What is sent   |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
@@ -235,61 +183,13 @@ main: account fence -> fresh server read -> compare stage/version -> validate wi
   focus, one destination sentence per option, loading and error reuse the
   section's status regions, EN and ZH strings.
 
-## Client states: startup wait, incomplete lists and failures
+## Acceptance evidence
 
-Renderer-only behavior; the host stays the owner of session and adoption state.
-
-- **Page cap is fail-closed, not supported scale.** The control plane caps a list
-  page at 100. A full page cannot prove completeness, so Main returns
-  `lumi_page_incomplete` and the UI shows dedicated copy (EN/ZH) saying nothing
-  was loaded or changed and that lists this large are not supported yet. It never
-  claims 100+ support, hides the code, shows a partial list, or offers a plain
-  retry (the outcome is deterministic until the organization's data changes).
-  Local workspaces and BYOK stay usable.
-- **Startup wait.** The startup gate opens the entry screen after 5 s without a
-  restore answer (the host may take up to 30 s per request). Local/BYOK entry is
-  never gated on Lumi. The gate and the entry panel share one launch `restore`
-  request, so the host sees one call. The panel shows a "taking longer" notice
-  at 5 s and gives up at 35 s with `lumi_request_timeout`. The abandoned
-  request is superseded by sequence, so its late host answer is dropped and can
-  never replace a newer result. Only an explicit "Check saved session again"
-  re-issues a restore (never glued to a hung attempt); a failed restore is never
-  retried as a sign-in. A restored session still needs an explicit Continue.
-- **After a failed or interrupted command** (bind, advance, rollback, credential
-  choice; including a dropped IPC reply) the on-screen projection is untrusted:
-  the UI re-reads the server row, and if that also fails it clears the projection
-  so bind/advance stay disabled until an explicit "Reload workspace state"
-  proves the state. Nothing is retried automatically, so a failed bind can never
-  silently create a second binding.
-- Loading shows a status with a spinner (static under reduced motion); empty
-  project lists show their own copy; every error shows user copy plus the stable
-  code. Buttons with long labels wrap instead of clipping at 320 px.
-
-## Acceptance (not yet demonstrated)
-
-Each item needs recorded evidence before this spec's status can change.
-
-- Rendered UI evidence (screenshots at desktop and 320 px, keyboard focus walk,
-  reduced motion) for the entry panel states (restoring, slow, restore failed,
-  signed-in, sign-in code) and the workspace section states (loading, empty,
-  `lumi_page_incomplete`, retryable failure, credential choice).
-
-- The real Electron app adopts one synthetic workspace against Worker/D1,
-  restarts and reads back its server-owned stage, runs a second workspace
-  locally, and rolls back while local state is proven unchanged.
-- D1 binding/adoption rows and the exact SHA pair are inspected; paths and
-  content are proven absent from requests and logs.
-- In a disposable verifier run, mutating the selected project, workspace key,
-  org, device, policy version, and authorization state makes the affected write
-  refuse before dispatch.
-- Org switch, A to B to A, sign-in and sign-out during an in-flight command
-  are refused as specified under the fence section.
-- Each of the three credential labels persists only through server readback;
-  `org_managed_credential` is refused locally on an unmanaged row.
-- First open with the Lumi bridge shows no z.ai OAuth provider button, keeps
-  BYOK and Continue locally, and no Lumi account is required for local use.
-- With explicit `ZCODE_DATA_BASE_DIR` and a different fake OS HOME, bootstrap
-  settings, logs and vaults land under the explicit root, nothing is created
-  under the fake OS HOME, and `safeStorage` still uses the OS identity.
-- No P05 or P04 behavior is credited until an actual Electron agent request
-  crosses that boundary.
+The real Electron app must adopt one synthetic workspace against Worker/D1,
+restart and read back its server-owned stage, run a second workspace locally,
+and roll back while proving local state unchanged. Inspect D1 binding/adoption
+rows and exact SHA pair; prove paths and content are absent from requests and
+logs. Mutate the selected project, workspace key, org, device, policy version,
+and authorization state in a disposable verifier run; the affected managed
+action must refuse before dispatch. No P05 or P04 behavior is credited until an
+actual Electron agent request crosses that boundary.

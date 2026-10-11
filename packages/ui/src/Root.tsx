@@ -461,25 +461,16 @@ function RootInner({
   // Lumi 登录是首次启动的主入口：先读取宿主持有的 Lumi 会话，未恢复时打开入口页。
   // 门禁只读不写，不会自动登录、注册设备或绑定 workspace（spec 04）。
   const lumiStartupGate = useLumiStartupGate(platform.lumiAccount);
-  // The entry opens from an effect, one commit after the gate decides. In that gap the startup
-  // fallback below would already see "no entry open" and create the default workspace before the
-  // user could choose. The flag keeps startup blocked until the entry has actually been opened, and
-  // stays true afterwards so closing the entry releases the fallback as before.
-  const [lumiEntryOpened, setLumiEntryOpened] = useState(false);
   useEffect(() => {
     if (lumiStartupGate === "entry-required") {
       setWelcomeScreenOpenReason((currentReason) => currentReason ?? "startup-lumi-required");
-      setLumiEntryOpened(true);
     }
   }, [lumiStartupGate]);
-  const isLumiEntryPending = lumiStartupGate === "entry-required" && !lumiEntryOpened;
   const isResolvingProviderStartupState =
     shouldResolveProviderStartupState({
       providerStartupSyncPending,
       providerAvailabilityStartupCheckCompleted,
-    }) ||
-    lumiStartupGate === "pending" ||
-    isLumiEntryPending;
+    }) || lumiStartupGate === "pending";
   const isStartupProviderLoginEntryOpen =
     welcomeScreenOpenReason === "startup-provider-required" ||
     welcomeScreenOpenReason === "startup-lumi-required";

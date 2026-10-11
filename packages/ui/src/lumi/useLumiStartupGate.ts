@@ -1,13 +1,8 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
 import { useEffect, useState } from "react";
 import type { LumiAccountBridge } from "@zcode/shared";
-import { requestStartupRestore } from "./lumiRestore.js";
 
-/**
- * A hung host restore must not hold the app on the startup screen forever. The host may keep
- * restoring for up to 30 s per request; after this the entry opens (local/BYOK are never gated on
- * Lumi) and the entry panel keeps waiting on the same shared restore with its own bounded retry.
- */
+/** A hung host restore must not hold the app on the startup screen forever. */
 export const LUMI_STARTUP_RESTORE_TIMEOUT_MS = 5000;
 
 export type LumiStartupGate = "pending" | "signed-in" | "entry-required";
@@ -25,7 +20,7 @@ export function useLumiStartupGate(lumiAccount: LumiAccountBridge | undefined): 
       if (live) setGate((current) => (current === "pending" ? next : current));
     };
     const timeout = setTimeout(() => settle("entry-required"), LUMI_STARTUP_RESTORE_TIMEOUT_MS);
-    requestStartupRestore(lumiAccount).then(
+    lumiAccount.request("restore").then(
       (result) => settle(result.ok && result.account ? "signed-in" : "entry-required"),
       () => settle("entry-required"),
     );

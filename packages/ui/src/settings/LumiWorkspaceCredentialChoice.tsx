@@ -29,7 +29,7 @@ export function LumiWorkspaceCredentialChoice(props: {
 
   return (
     <fieldset
-      className="min-w-0 space-y-2 rounded-md border border-border p-3"
+      className="space-y-2 rounded-md border border-border p-3"
       aria-describedby="lumi-credential-explainer"
       disabled={props.busy}
     >
@@ -70,12 +70,7 @@ export function LumiWorkspaceCredentialChoice(props: {
       {selected === "org_managed_credential" && orgAllowed ? (
         <div className="space-y-1">
           <p className="text-foreground-subtle">{text("consoleHint")}</p>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-auto min-h-8 w-full justify-start whitespace-normal py-1.5 text-left"
-            onClick={props.onOpenConsole}
-          >
+          <Button type="button" variant="outline" onClick={props.onOpenConsole}>
             {text("console")}
           </Button>
         </div>

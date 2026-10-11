@@ -25,7 +25,7 @@ export function createLumiSessionFence() {
   let orgEpoch = 0;
   const selected = new Map<string, { orgId: string; epoch: number }>();
   return {
-    /** The account generation consumed by account commands. */
+    /** The account generation consumed by automation commands. */
     generation: (): number => session,
     /** Invalidates everything admitted earlier. Call at the start AND end of a login transition. */
     bump(): void {
@@ -101,33 +101,6 @@ export async function admitWorkspaceMutation<
   fence.assertOrgSelected(key, command.orgId);
   const admitted = fence.epoch(key);
   return (await (await workspaceFor(command.orgId))[method](command, admitted)) as Result<T, K>;
-}
-
-/** Throws `lumi_account_changed` once the session captured at admission has been replaced. */
-export type LumiSessionGuard = () => void;
-
-/**
- * Session-scope admission for commands that name no workspace (device enroll/read/sync/refresh/
- * recover, project listing). The generation is captured synchronously, before the first await, so
- * the awaits that resolve the owner are covered. Device state is per org and user, not per
- * workspace, so there is no selected-org epoch to compare here.
- */
-export function admitSession(fence: LumiSessionFence): LumiSessionGuard {
-  const started = fence.generation();
-  return () => {
-    if (fence.generation() !== started) throw new Error("lumi_account_changed");
-  };
-}
-
-/** Runs `work` under a session guard and re-checks it before the result is returned. */
-export async function withSessionGuard<T>(
-  fence: LumiSessionFence,
-  work: (guard: LumiSessionGuard) => Promise<T>,
-): Promise<T> {
-  const guard = admitSession(fence);
-  const result = await work(guard);
-  guard();
-  return result;
 }
 
 /** Credential-choice admission (kept as the named entry for the credential lane and its tests). */
