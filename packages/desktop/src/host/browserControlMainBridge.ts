@@ -22,7 +22,7 @@ import { authorizeBrowserCommand } from "./browserManagedPolicyGuard.js";
  * 持有 device token / run 状态 / policy 缓存的进程，所以这里是权威校验点。
  */
 
-interface BrowserExecuteRequestMessage {
+export interface BrowserExecuteRequestMessage {
   type: typeof HostResponseTypes.BrowserExecuteRequest;
   requestId: string;
   browserId: string;
@@ -38,7 +38,7 @@ interface BrowserExecuteRequestMessage {
   command: BrowserCommand;
 }
 
-interface BrowserExecuteResultMessage {
+export interface BrowserExecuteResultMessage {
   requestId: string;
   result: BrowserCommandResult;
 }
@@ -99,7 +99,7 @@ function mayHaveSideEffects(command: BrowserCommand): boolean {
   ].includes(command.method);
 }
 
-interface BrowserControlMainBridge {
+export interface BrowserControlMainBridge {
   list(): Promise<BrowserBackendDescriptor[]>;
   execute(input: {
     requestId?: string;

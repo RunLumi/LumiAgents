@@ -1,6 +1,6 @@
 // Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import type { ZCodeRuntimeEnv } from "./runtimeEnv.js";
-import { resolveLumiTelemetryEnabled } from "./lumiDistribution.js";
+import { resolveLumiAutoUpdateEnabled, resolveLumiTelemetryEnabled } from "./lumiDistribution.js";
 
 export type ZCodeEnv = "test" | "production";
 /** 安装包身份：决定应用名、app id、Electron 数据目录与更新策略；与后端环境 `ZCodeEnv` 是两个轴。 */
@@ -55,6 +55,8 @@ export const ZCODE_TELEMETRY_ENABLED: boolean = resolveLumiTelemetryEnabled(
   typeof process !== "undefined" ? process.env : {},
 );
 
+// 上游 v3.15.1 把下列端点改为构建期 define 注入（scripts/build-time-config.mjs）。Lumi 保持
+// 运行时读取：构建产物不内嵌任何端点，上游的构建期 define 在这里刻意不读取。
 /** 数仓事件上报端点：由运行时环境变量提供，未配置即停用，构建产物不内嵌。 */
 export const ZCODE_TELEMETRY_REPORT_ENDPOINT =
   typeof process !== "undefined" ? (process.env.ZCODE_TELEMETRY_REPORT_ENDPOINT ?? "") : "";
@@ -62,6 +64,14 @@ export const ZCODE_TELEMETRY_REPORT_ENDPOINT =
 /** ARMS RUM 接入端点：由运行时环境变量提供，未配置即停用，构建产物不内嵌。 */
 export const ZCODE_ARMS_RUM_ENDPOINT =
   typeof process !== "undefined" ? (process.env.ZCODE_ARMS_RUM_ENDPOINT ?? "") : "";
+
+/**
+ * 桌面自动更新是否启用。上游由构建期 `ZCODE_AUTO_UPDATE` 决定；Lumi 只在显式配置了
+ * Lumi 自有 https 更新源（LUMI_UPDATE_FEED_URL）时启用，绝不回退到上游更新源。
+ */
+export const ZCODE_AUTO_UPDATE_ENABLED: boolean = resolveLumiAutoUpdateEnabled(
+  typeof process !== "undefined" ? process.env : {},
+);
 
 /** 将本地运行态与编译期 ZCODE_ENV 映射为 ARMS 控制台识别的上报环境标签 */
 export function mapZCodeEnvToArmsRumEnv(runtimeEnv: ZCodeRuntimeEnv): ArmsRumEnv {

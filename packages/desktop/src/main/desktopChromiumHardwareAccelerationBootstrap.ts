@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { existsSync, readFileSync } from "node:fs";
 import { getBootstrapSettingsFile } from "@zcode/services/node";
 
@@ -5,7 +6,7 @@ interface ChromiumHardwareAccelerationApp {
   disableHardwareAcceleration(): void;
 }
 
-function extractBootstrapChromiumHardwareAccelerationEnabled(rawValue: unknown): boolean {
+export function extractBootstrapChromiumHardwareAccelerationEnabled(rawValue: unknown): boolean {
   if (!rawValue || typeof rawValue !== "object" || Array.isArray(rawValue)) {
     return true;
   }

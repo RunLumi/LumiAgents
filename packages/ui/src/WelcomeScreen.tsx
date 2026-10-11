@@ -23,6 +23,7 @@ import { LoginApiKeyForm } from "./login/LoginApiKeyForm.js";
 import { LumiEntryPanel } from "./lumi/LumiEntryPanel.js";
 import { PRODUCT_NAME } from "./lib/productBrand.js";
 import { useZCodeStore } from "./store/StoreProvider.js";
+import { DesktopOverlayWindowControls } from "@/DesktopOverlayWindowControls.js";
 
 interface WelcomeScreenProps {
   onComplete: (reason: LoginCompleteReason) => void | Promise<void>;
@@ -33,7 +34,9 @@ export type LoginCompleteReason = "oauth" | "apiKey" | "skip" | "lumi";
 export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
   return (
     <main className="relative flex h-full min-h-dvh items-center justify-center overflow-hidden bg-background px-4 py-6 text-foreground sm:px-6">
-      <div className="pointer-events-none absolute left-0 top-0 right-0 z-10 flex h-12 w-full items-center [app-region:drag]" />
+      {/* 原生拖拽命中不受 pointer-events/z-index 约束；拖拽层必须避开窗控，且先于 no-drag 区声明。 */}
+      <div className="pointer-events-none absolute left-0 top-0 right-0 z-10 flex h-12 items-center [app-region:drag] platform-windows-desktop:right-[134px] platform-linux-desktop:right-[134px]" />
+      <DesktopOverlayWindowControls />
       <section className="relative z-10 w-full flex flex-col gap-10 max-w-sm rounded-2xl border border-popover-border bg-background p-8 text-ui-base/relaxed shadow-md sm:p-10">
         <LoginPanel active onComplete={onComplete} />
       </section>
@@ -51,21 +54,21 @@ interface ActiveLoginEntryAttempt {
   providerId: OAuthProviderMeta["id"];
 }
 
-function shouldCompleteProviderLoginAttempt(params: {
+export function shouldCompleteProviderLoginAttempt(params: {
   attempt: ActiveLoginEntryAttempt | null;
   successProvider: OAuthProviderMeta["id"] | null;
 }): boolean {
   return !params.attempt || params.successProvider === params.attempt.providerId;
 }
 
-function shouldCompleteLoginFromExistingUser(params: {
+export function shouldCompleteLoginFromExistingUser(params: {
   hasUser: boolean;
   attempt: ActiveLoginEntryAttempt | null;
 }): boolean {
   return params.hasUser && !params.attempt;
 }
 
-function LoginPanel({ active, onComplete }: LoginPanelProps) {
+export function LoginPanel({ active, onComplete }: LoginPanelProps) {
   const { intl } = useZCodeIntl();
   const hasLumiBridge = Boolean(usePlatform().lumiAccount);
   const { startLogin, cancel, reset, status, error, providers, pendingProvider, refreshProviders } =
@@ -286,7 +289,7 @@ function LoginPanel({ active, onComplete }: LoginPanelProps) {
       </LoginPanelHeader>
 
       <div className="space-y-6">
-        {/* Root 层写入 oauthError（轮询/回调失败）后 effect 会把 useOAuth reset 回 idle，
+        {/* Bugfix: Root 层写入 oauthError（轮询/回调失败）后 effect 会把 useOAuth reset 回 idle，
             若只判断 status==="idle" 会让失败块和渠道按钮列表同屏、状态纠缠。
             失败期间统一由下方失败块接管（重新登录/取消），渠道列表等错误清掉后再回来。 */}
         {/* ZCode OAuth providers (z.ai / BigModel) are intentionally not listed here: Lumi sign-in
@@ -371,7 +374,7 @@ function LoginPanel({ active, onComplete }: LoginPanelProps) {
             >
               <TriangleAlertIcon className="size-4" />
               <AlertDescription className="text-center">
-                {/* 登录失败通常是可重试/可切换提供方的状态，不能用 destructive 红色误导为破坏性错误。
+                {/* Bugfix: 登录失败通常是可重试/可切换提供方的状态，不能用 destructive 红色误导为破坏性错误。
                     这里统一用 warning 语义，并居中文案以匹配登录面板的居中视觉节奏。 */}
                 {oauthError || error}
               </AlertDescription>
@@ -442,18 +445,19 @@ function LoginPanelHeader({
 
 function LoginPanelLogo() {
   return (
-    // 登录 logo 壳是固定深色底，边框不能跟随浅色主题 token，否则浅色主题下边框过重。
+    // 登录 logo 壳沿用 Lumi 官方启动图标：品牌蓝渐变底 + 白色单色标记（RunLumi/brand.runlumi）。
+    // 底色固定，边框不跟随浅色主题 token，否则浅色主题下边框过重。
     <div
-      className="relative mb-1 flex size-16 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,#000000_0%,#151718_100%)] text-[#ffffff] shadow-lg/20 before:pointer-events-none before:absolute before:inset-0 before:rounded-2xl before:border before:border-[rgba(255,255,255,0.1)]"
+      className="relative mb-1 flex size-16 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#0162A4_0%,#00396C_100%)] text-[#ffffff] shadow-lg/20 before:pointer-events-none before:absolute before:inset-0 before:rounded-2xl before:border before:border-[rgba(255,255,255,0.1)]"
       aria-label={PRODUCT_NAME}
       role="img"
     >
-      <LumiBrandMark className="size-10" />
+      <LumiBrandMark className="size-10" tone="mono" />
     </div>
   );
 }
 
-function resolveLoginRetryProvider({
+export function resolveLoginRetryProvider({
   pendingProvider,
   lastAttemptProvider,
   providers,

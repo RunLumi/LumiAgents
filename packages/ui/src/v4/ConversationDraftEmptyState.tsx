@@ -16,7 +16,7 @@ const GREETING_BOUNDARY_HOURS = [5, 9, 12, 14, 18, 23] as const;
 const GREETING_MIN_FONT_SIZE_PX = 20;
 const GREETING_MAX_FONT_SIZE_PX = 30;
 
-type ChatEmptyGreetingMessageId =
+export type ChatEmptyGreetingMessageId =
   | "chat.empty.greeting.morningEarly"
   | "chat.empty.greeting.morning"
   | "chat.empty.greeting.noon"
@@ -24,7 +24,7 @@ type ChatEmptyGreetingMessageId =
   | "chat.empty.greeting.evening"
   | "chat.empty.greeting.lateNight";
 
-function getChatEmptyGreetingMessageId(date: Date = new Date()): ChatEmptyGreetingMessageId {
+export function getChatEmptyGreetingMessageId(date: Date = new Date()): ChatEmptyGreetingMessageId {
   const hour = date.getHours();
 
   if (hour >= 5 && hour < 9) return "chat.empty.greeting.morningEarly";
@@ -36,7 +36,7 @@ function getChatEmptyGreetingMessageId(date: Date = new Date()): ChatEmptyGreeti
   return "chat.empty.greeting.lateNight";
 }
 
-function getNextChatEmptyGreetingDelayMs(date: Date = new Date()) {
+export function getNextChatEmptyGreetingDelayMs(date: Date = new Date()) {
   const candidates = GREETING_BOUNDARY_HOURS.map((hour) => {
     const boundary = new Date(date);
     boundary.setHours(hour, 0, 0, 0);
@@ -52,13 +52,18 @@ function getNextChatEmptyGreetingDelayMs(date: Date = new Date()) {
   return Math.max(1, nextBoundary.getTime() - date.getTime());
 }
 
-function resolveGreetingFontSizePx({
+export function resolveGreetingFontSizePx({
   availableWidthPx,
   naturalTextWidthPx,
+  compactForRemoteControl = false,
 }: {
   availableWidthPx: number;
   naturalTextWidthPx: number;
+  compactForRemoteControl?: boolean;
 }) {
+  if (compactForRemoteControl) {
+    return GREETING_MIN_FONT_SIZE_PX;
+  }
   if (
     !Number.isFinite(availableWidthPx) ||
     !Number.isFinite(naturalTextWidthPx) ||
@@ -78,7 +83,13 @@ function resolveGreetingFontSizePx({
   );
 }
 
-export function ConversationDraftEmptyState({ className }: { className?: string }) {
+export function ConversationDraftEmptyState({
+  className,
+  compactForRemoteControl = false,
+}: {
+  className?: string;
+  compactForRemoteControl?: boolean;
+}) {
   const { intl } = useZCodeIntl();
   const isOfficeMode = useIsOfficeMode();
   const [greetingDate, setGreetingDate] = useState(() => new Date());
@@ -100,6 +111,10 @@ export function ConversationDraftEmptyState({ className }: { className?: string 
   }, [greetingDate]);
 
   useLayoutEffect(() => {
+    if (compactForRemoteControl) {
+      setGreetingFontSizePx(GREETING_MIN_FONT_SIZE_PX);
+      return;
+    }
     const container = greetingContainerRef.current;
     const measurement = greetingMeasurementRef.current;
     if (!container || !measurement) {
@@ -166,7 +181,7 @@ export function ConversationDraftEmptyState({ className }: { className?: string 
       }
       observer.disconnect();
     };
-  }, [greeting]);
+  }, [compactForRemoteControl, greeting]);
 
   return (
     <div
@@ -194,7 +209,9 @@ export function ConversationDraftEmptyState({ className }: { className?: string 
         }
         className={cn(
           "relative z-10 w-full px-4 text-center font-medium text-foreground",
-          "text-[length:var(--v4-draft-greeting-font-size)]/[1.2]",
+          compactForRemoteControl
+            ? "text-xl/[1.2]"
+            : "text-[length:var(--v4-draft-greeting-font-size)]/[1.2]",
         )}
       >
         <span
@@ -230,13 +247,18 @@ function ZCodeEmptyStateLogo({ className }: { className?: string }) {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* 折叠 L 几何（brand/lumi-mark.svg）：竖直平面 + 水平平面由 45° 通道分开。 */}
-        <g transform="translate(56 48) scale(1.15)">
-          <path d="M56 32H120V160L56 224Z" stroke="currentColor" strokeWidth="2" fill="none" />
+        {/* Lumi 官方折叠 L 几何（brand/lumi-mark.svg，来自 RunLumi/brand.runlumi）的线框水印。 */}
+        <g transform="translate(97 31) scale(0.65)">
           <path
-            d="M120 176L128 168H232V232H64Z"
+            d="M99.4558 0C99.4558 99.4558 99.3907 198.912 99.3257 298.302C66.2171 331.151 33.1086 363.934 0 396.782C0 297.327 0 197.871 0 98.4801C33.1086 65.6317 66.2822 32.8484 99.3907 0H99.4558Z"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="3"
+            fill="none"
+          />
+          <path
+            d="M126.71 298.302C189.935 298.302 253.16 298.302 316.45 298.302C283.406 331.086 250.363 363.934 217.385 396.717C154.355 396.717 91.3248 396.717 28.2949 396.717C61.1433 363.869 93.9266 331.086 126.775 298.237L126.71 298.302Z"
+            stroke="currentColor"
+            strokeWidth="3"
             fill="none"
           />
         </g>

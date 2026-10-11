@@ -102,6 +102,9 @@ test("DCO：retrospective remediation 仅针对审定的 exact SHAs，声明不�
       "df76e64fd2cd536d36c89313a4c0f2b774155f49",
       "f9af8846d5662167d14651316706bb83bd2bad6a",
       "f3e3e1d4c36c1d4e8a230c36a74b9c6d1a8c0d69",
+      "9dc43d63a5109331d67b2b8d5bd128d0ee786459",
+      "4e9f1327129111d33aaeb45f8faf1e5d6da64518",
+      "12e34302b0206d28a3d3cea88100135f52547d9a",
     ].sort(),
   );
   assert.ok(doc.attestations.every((entry) => entry.statement === DCO_ATTESTATION_STATEMENT));
@@ -113,7 +116,7 @@ test("DCO：retrospective remediation 仅针对审定的 exact SHAs，声明不�
 test("DCO：上游导入只接受精确 release commit", () => {
   assert.deepEqual(
     [...VERIFIED_UPSTREAM_IMPORTS.keys()],
-    ["29628c9acdb81b703bbd4080c207a0e7ce5e276e"],
+    ["29628c9acdb81b703bbd4080c207a0e7ce5e276e", "aac4755666d09fdcd70272fcf063c077a639015f"],
   );
 });
 

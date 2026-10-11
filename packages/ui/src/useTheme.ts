@@ -66,9 +66,12 @@ export function applyTheme(theme: Theme) {
   const root = document.documentElement;
   // 唯一的 Lumi 主题层：始终启用 theme-lumi，并清掉上游 dark / zai 主题类。
   // 既保证 light-only，也让旧的 localStorage 主题值不会留下混合状态。
-  root.classList.remove("dark", "theme-zai-light", "theme-zai-dark");
-  root.classList.add("theme-lumi");
-  root.style.colorScheme = "light";
+  // 用 toggle(…, force) 而非 remove/add：语义相同，且与上游测试里只实现 toggle 的 classList 桩兼容。
+  root.classList.toggle("dark", false);
+  root.classList.toggle("theme-zai-light", false);
+  root.classList.toggle("theme-zai-dark", false);
+  root.classList.toggle("theme-lumi", true);
+  if (root.style) root.style.colorScheme = "light";
   syncBrowserThemeSurface(resolved);
 }
 

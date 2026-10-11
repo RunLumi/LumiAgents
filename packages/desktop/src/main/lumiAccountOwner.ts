@@ -1,6 +1,6 @@
+/* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
 import { createLumiDeviceOwner } from "./lumiDeviceOwner.js";
 import { createLumiDeviceVault } from "./lumiDeviceVault.js";
-/* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
 import { app, safeStorage } from "electron";
 import { ZCODE_VERSION, type ZCodeManagedRunContext } from "@zcode/shared";
 import { join } from "node:path";
@@ -21,6 +21,7 @@ import {
   createLumiSessionFence,
   fencedLoginTransitions,
   fencedSignOut,
+  withSessionGuard,
 } from "./lumiSessionFence.js";
 import { createLumiSessionVault } from "./lumiSessionVault.js";
 import { createLumiWorkspaceVault } from "./lumiWorkspaceVault.js";
@@ -57,9 +58,10 @@ export function createLumiAccountOwner(origin: string, options: LumiAccountOwner
     ManagedRunLeaseEntry<Awaited<ReturnType<typeof deviceFor>>>
   >();
   /**
-   * Bumped on sign-out and on every sign-in completion/restore. Automation commands capture it
-   * and re-check before each server call or local write, so a session replaced mid-confirm
-   * (even by the same user) cannot finish what the previous session started.
+   * Bumped on sign-out and on every sign-in begin/complete/restore. Workspace, device and
+   * automation commands capture it at admission and re-check before each server call or local
+   * write, so a session replaced mid-confirm (even by the same user) cannot finish what the
+   * previous session started.
    */
   const fence = createLumiSessionFence();
   let sharedAutomationRepo: AutomationRepo | undefined;
@@ -97,6 +99,9 @@ export function createLumiAccountOwner(origin: string, options: LumiAccountOwner
     const account = await transport.readAccount();
     const userId = account.user.id;
     const identity = `${orgId}:${userId}`;
+    // Resolve the device owner before the cache check: a concurrent call must not build a second
+    // workspace owner (separate queue and installation id) for the same org and user.
+    const device = await deviceFor(orgId);
     let owner = workspaces.get(identity);
     if (!owner) {
       owner = createLumiWorkspaceOwner({
@@ -105,7 +110,7 @@ export function createLumiAccountOwner(origin: string, options: LumiAccountOwner
         userId,
         appVersion: ZCODE_VERSION || app.getVersion(),
         account: transport,
-        device: await deviceFor(orgId),
+        device,
         epoch: (workspaceKey) => fence.epoch(workspaceKey),
         vault: createLumiWorkspaceVault({
           directory: join(app.getPath("userData"), "lumi-workspaces"),
@@ -343,8 +348,8 @@ export function createLumiAccountOwner(origin: string, options: LumiAccountOwner
     pollManagedAutomations: () => automation.poll(),
     cancelSignIn: () => transport.cancelSignIn(),
     readAccount: () => transport.readAccount(),
-    // Fence first (any automation or credential command in flight must stop before its next
-    // step), tear down, then fence again for anything admitted while the session was ending.
+    // Fence first (any workspace, automation or credential command in flight must stop before its
+    // next step), tear down, then fence again for anything admitted while the session was ending.
     signOut: () =>
       fencedSignOut(
         fence,
@@ -356,12 +361,20 @@ export function createLumiAccountOwner(origin: string, options: LumiAccountOwner
         },
         () => transport.signOut(),
       ),
-    enrollDevice: async (orgId: string) => (await deviceFor(orgId)).enroll(),
-    readDevice: async (orgId: string) => (await deviceFor(orgId)).read(),
-    syncDevicePolicy: async (orgId: string) => (await deviceFor(orgId)).syncPolicy(),
-    refreshDevice: async (orgId: string) => (await deviceFor(orgId)).refresh(),
-    recoverDevice: async (orgId: string) => (await deviceFor(orgId)).recover(),
-    listProjects: async (orgId: string) => (await workspaceFor(orgId)).listProjects(orgId),
+    // Device commands run under the session fence too: enroll and recover span several server
+    // calls and vault writes, and a sign-out or replaced session must stop the next step.
+    enrollDevice: (orgId: string) =>
+      withSessionGuard(fence, async (guard) => (await deviceFor(orgId)).enroll(guard)),
+    readDevice: (orgId: string) =>
+      withSessionGuard(fence, async (guard) => (await deviceFor(orgId)).read(guard)),
+    syncDevicePolicy: (orgId: string) =>
+      withSessionGuard(fence, async (guard) => (await deviceFor(orgId)).syncPolicy(guard)),
+    refreshDevice: (orgId: string) =>
+      withSessionGuard(fence, async (guard) => (await deviceFor(orgId)).refresh(guard)),
+    recoverDevice: (orgId: string) =>
+      withSessionGuard(fence, async (guard) => (await deviceFor(orgId)).recover(guard)),
+    listProjects: (orgId: string) =>
+      withSessionGuard(fence, async () => (await workspaceFor(orgId)).listProjects(orgId)),
     listManagedOptions: async (orgId: string, projectId: string) => {
       const account = await transport.readAccount();
       if (

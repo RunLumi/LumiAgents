@@ -28,6 +28,7 @@ Lumi Agents is an AI coding workspace with desktop, browser, and terminal interf
 
 ## Upstream updates
 
+- 2026-10-11: Integrated ZCode v3.15.1 changes from upstream commit `aac4755`, while preserving Lumi branding and distribution policy.
 - 2026-09-23: Integrated ZCode v3.14.3 changes from upstream commit `29628c9`, while preserving Lumi branding and distribution policy.
 
 > The sections below are inherited from the upstream ZCode documentation and still describe upstream command and path names (such as the `zcode` CLI and `~/.zcode`). This fork keeps those names unchanged.
@@ -135,6 +136,12 @@ node apps/zcode-cli/packages/cli/dist/zcode.cjs --help
 ```
 
 This entry runs the Agent CLI directly and does not handle the distribution's `--web` switch. Use `pnpm dev:web` for Web development, or the extracted `bin/zcode.mjs` shown below to test the unified command.
+
+### UI Plugin development
+
+See the [UI Plugin guide](UI_PLUGIN.en.md) for the Excalidraw workflow, supported APIs, plugin installation and updates, and host debugging.
+
+**Plugin PRs in `zcode-plugins` must declare whether they affect a UI Plugin and list the plugin names in the PR template.** See the [required plugin-type declaration](UI_PLUGIN.en.md#declare-the-plugin-type-in-pull-requests).
 
 ## Configuration
 

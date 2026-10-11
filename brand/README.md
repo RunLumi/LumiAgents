@@ -1,6 +1,6 @@
 # Lumi Agents 品牌资产源
 
-本目录是 Lumi Agents **原创品牌图形的唯一来源**。平台所需的位图与容器格式都由
+本目录是 Lumi Agents **品牌图形的唯一来源**，内容取自 Lumi 官方品牌仓库 [RunLumi/brand.runlumi](https://github.com/RunLumi/brand.runlumi)（`cb8e83c`）。平台所需的位图与容器格式都由
 [`scripts/build-lumi-brand-assets.mjs`](../scripts/build-lumi-brand-assets.mjs) 从这里确定性生成，
 不手工导出、不复制上游 ZCode 资源。
 
@@ -10,23 +10,16 @@ node scripts/build-lumi-brand-assets.mjs   # 或 pnpm lumi:brand-assets
 
 ## 文件
 
-| 文件                | 用途                                                                                |
-| ------------------- | ----------------------------------------------------------------------------------- |
-| `lumi-mark.svg`     | 单色折叠 L 标记（`currentColor`，两平面用不透明度区分），用于 UI 内联图形           |
-| `lumi-app-icon.svg` | 应用图标版：暖纸圆角方底 + 双色折叠 L（Lumi Blue `#006093` / Civic Navy `#102A43`） |
+| 文件                | 用途                                                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `lumi-mark.svg`     | 官方 Lumi 折叠 L 标记（`lumi-logo.svg` 原样几何与配色：竖直平面 `#019EDD`、水平平面 `#0162A4`）              |
+| `lumi-app-icon.svg` | 应用图标：按官方启动图标（`adaptive/ic_launcher_foreground.png`）构图——`#0162A4`→`#00396C` 渐变底 + 白色标记 |
 
 ## 几何
 
-折叠 L 由**两个多边形平面**组成，之间是一道精确的 45° 通道（对应 `DESIGN.md` §2
-「two planes divided by a precise diagonal channel」）：
-
-```
-Plane A（竖直平面）: M56 32 H120 V160 L56 224 Z         区域 x+y <= 280
-Plane B（水平平面）: M120 176 L128 168 H232 V232 H64 Z  区域 x+y >= 296
-```
-
-通道位于 `x+y = 280` 与 `x+y = 296` 之间，从内角延伸到左下外沿。图标版给标记留出
-约 1.2× 的四周留白（`DESIGN.md` §2.3 要求清空区至少等于通道宽度）。
+几何不在本仓库重新设计：两个平面的路径原样复制自官方 `lumi-logo.svg`（500×500 画布，
+`translate(91.5 51.5)`）。单色场景使用官方单色版的规则（两平面同色）。更换图形时先更新
+官方品牌仓库，再同步本目录与 `LumiBrandMark.tsx`，并重新运行生成脚本。
 
 ## 生成产物
 
@@ -39,9 +32,8 @@ Plane B（水平平面）: M120 176 L128 168 H232 V232 H64 Z  区域 x+y >= 296
 
 ## 重要说明
 
-- **这是过渡用原创标记，不是已批准的最终品牌资产。** 取得官方 folded-L 原图后，替换
-  本目录的 SVG 并重新运行生成脚本即可，无需改动 `packages/ui/src/components/ui/LumiBrandMark.tsx`
-  以外的代码（该组件需要同步内联路径）。
+- 这些是 Lumi 官方品牌图形，是 **CLOUDJET SOLUTIONS PTE. LTD. 的财产，保留所有权利**，
+  **不**按 Apache-2.0 授权（见下方英文说明与 `TRADEMARKS.md`）。
 - 生成脚本不引入新的许可义务：只使用已在生产依赖图中、且列在
   `THIRD-PARTY-NOTICES.md` 的 `@napi-rs/canvas`（SVG 光栅化）与 `@fiahfy/icns`（ICNS 容器）。
   `.ico` 由脚本内联编码（Windows Vista+ 支持 PNG 载荷）。
@@ -50,11 +42,18 @@ Plane B（水平平面）: M120 176 L128 168 H232 V232 H64 Z  区域 x+y >= 296
 - `packages/desktop/build/dmg_background*.png` **仍是上游 DMG 背景图**，未在本目录内；
   属于发布阻塞项，见 [`docs/licensing/COMPLIANCE.md`](../docs/licensing/COMPLIANCE.md) 第 9 节。
 
-
 ## License and trademark boundary
 
-The original Lumi artwork source files in this directory are published as covered
-repository content under Apache-2.0 unless a file states otherwise. That copyright
-license does not grant trademark permission to present a modified distribution as
-an official Lumi Agents product or to imply Cloudjet sponsorship or endorsement.
-See [TRADEMARKS.md](../TRADEMARKS.md) and [RIGHTS.md](../RIGHTS.md).
+The official Lumi logo files in this directory (`lumi-mark.svg`, `lumi-app-icon.svg`)
+and every icon generated from them (`packages/desktop/build/icon*`,
+`packages/desktop/build/icons/*`, `public/logo/icons/*`, `public/icon_512@2x.png`) and the
+inline copies of the mark in `LumiBrandMark.tsx`, `aboutWindow.ts` and the empty-state
+watermark are the property of **CLOUDJET SOLUTIONS PTE. LTD.** All rights are reserved.
+They are **not** licensed under Apache-2.0 or any other licence in this repository; the
+"unless a file states otherwise" exception applies to them. They are included only so
+official Lumi Agents builds carry the Lumi brand. A fork or modified distribution must
+remove or replace them with its own artwork.
+
+Artwork that was previously published here under Apache-2.0 (the interim folded-L mark in
+earlier history) keeps the copyright permissions already granted for those files; this
+change does not retract them. See [TRADEMARKS.md](../TRADEMARKS.md) and [RIGHTS.md](../RIGHTS.md).

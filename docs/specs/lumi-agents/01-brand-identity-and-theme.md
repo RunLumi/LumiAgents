@@ -115,7 +115,9 @@ Added in the second pass (see `docs/licensing/COMPLIANCE.md` for results):
 
 8. **Original brand assets** — `pnpm lumi:brand-assets` regenerates platform icons from
    `brand/` alone; `packages/ui/src/assets/Z.svg` and `ZCodeAboutLogo.tsx` no longer exist;
-   `LumiBrandMark` and the About window draw the Lumi folded-L geometry.
+   `LumiBrandMark` and the About window draw the official Lumi folded-L mark (geometry and
+   colours unchanged from RunLumi/brand.runlumi `lumi-logo.svg`); the app icon follows the
+   official launcher artwork (white mark on the `#0162A4`→`#00396C` gradient).
 9. **§4(b) modification notices** — `pnpm lumi:notice` passes; every file in `MODIFIED_FILES`
    carries the canonical notice sentence in its header region; JSON/binary entries are
    registered in `NOTICE_EXCEPTIONS` and documented in `docs/licensing/MODIFICATIONS.md`.

@@ -19,6 +19,8 @@
         // Lumi Agents 是 light-only（DESIGN.md §5）：首屏固定 light，不读取 prefers-color-scheme，
         // 也与已保存的旧 dark 偏好无关，避免第一帧闪出深色或与 theme-lumi 不一致。
         const LUMI_THEME_COLOR = "#F4F0E8";
+        // 上游 Web 远控跨 workspace 跳转会写入启动壳快照；Lumi 只沿用其中的颜色 token，主题仍固定 light。
+        const BOOTSTRAP_SNAPSHOT_KEY = "zcode:web-remote-control:bootstrap-shell";
 
         const syncBrowserThemeSurface = () => {
           document.documentElement.setAttribute("data-zcode-browser-theme-surface", "light");
@@ -30,6 +32,27 @@
         };
 
         try {
+          const bootstrapSnapshotRaw = window.sessionStorage.getItem(BOOTSTRAP_SNAPSHOT_KEY);
+          if (bootstrapSnapshotRaw) {
+            window.sessionStorage.removeItem(BOOTSTRAP_SNAPSHOT_KEY);
+            try {
+              const snapshot = JSON.parse(bootstrapSnapshotRaw);
+              if (snapshot && typeof snapshot === "object") {
+                for (const [field, variable] of [
+                  ["background", "--zcode-bootstrap-bg"],
+                  ["foreground", "--zcode-bootstrap-fg"],
+                  ["border", "--zcode-bootstrap-border"],
+                  ["card", "--zcode-bootstrap-card"],
+                ]) {
+                  if (typeof snapshot[field] === "string") {
+                    document.documentElement.style.setProperty(variable, snapshot[field]);
+                  }
+                }
+              }
+            } catch {
+              // ignore invalid snapshot
+            }
+          }
           document.documentElement.setAttribute("data-zcode-bootstrap-theme", "light");
           syncBrowserThemeSurface();
         } catch {
@@ -68,7 +91,7 @@
       html[data-zcode-browser-theme-surface],
       html[data-zcode-browser-theme-surface] body,
       html[data-zcode-browser-theme-surface] #root {
-        /* 共享 UI 样式为 Electron vibrancy 强制透明根背景；浏览器入口必须用语义背景
+        /* 修复原因：共享 UI 样式为 Electron vibrancy 强制透明根背景；浏览器入口必须用语义背景
            覆盖该桌面专属行为，否则浏览器工具栏、overscroll 和页面画布会回退为系统白色。 */
         background: var(--color-background, var(--zcode-bootstrap-bg, #161616)) !important;
       }
@@ -128,7 +151,7 @@
   </head>
   <body>
     <div id="root">
-      <!-- 远程控制跨 workspace 时会整页跳转；在 JS 入口执行前先给出 loading 壳，避免出现白屏空档。-->
+      <!-- Bugfix: 远程控制跨 workspace 时会整页跳转；在 JS 入口执行前先给出 loading 壳，避免出现白屏空档。 -->
       <div
         class="zcode-boot-loading"
         role="status"
