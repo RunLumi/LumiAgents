@@ -1,21 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Lumi Agents mark">
-  <title>Lumi Agents mark (interim)</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500" fill="none" role="img" aria-label="Lumi mark">
+  <title>Lumi mark</title>
   <!--
-    Interim Lumi Agents mark — original artwork authored for this fork.
-
-    Geometry: a geometric folded L-form. Two planes (the upright stem and the
-    horizontal foot) are divided by a precise 45-degree channel that runs from
-    the inner corner out to the lower-left edge. See DESIGN.md §2.
-
-    Plane A: M56 32 H120 V160 L56 224 Z      (region x+y <= 280)
-    Plane B: M120 176 L128 168 H232 V232 H64 Z  (region x+y >= 296)
-
-    Two flat tones, no gradients, no glow, no shadow (DESIGN.md §2.2).
-    This is NOT an approved final brand asset; replace with the official
-    folded-L artwork when it is available.
+    Official Lumi folded-L mark, copied unchanged (geometry, proportions and colours) from
+    RunLumi/brand.runlumi lumi-logo.svg at cb8e83c182c9ce2a2efb44a63df28e4fba331616.
+    Plane A (upright) #019EDD, plane B (foot) #0162A4.
+    Licence of this official artwork inside this repository is pending the brand
+    owner's decision (see brand/README.md); trademark boundary: TRADEMARKS.md.
   -->
-  <g fill="currentColor">
-    <path d="M56 32H120V160L56 224Z" />
-    <path d="M120 176L128 168H232V232H64Z" fill-opacity="0.55" />
+  <g transform="translate(91.5 51.5)">
+    <path d="M99.4558 0C99.4558 99.4558 99.3907 198.912 99.3257 298.302C66.2171 331.151 33.1086 363.934 0 396.782C0 297.327 0 197.871 0 98.4801C33.1086 65.6317 66.2822 32.8484 99.3907 0H99.4558Z" fill="#019EDD" />
+    <path d="M126.71 298.302C189.935 298.302 253.16 298.302 316.45 298.302C283.406 331.086 250.363 363.934 217.385 396.717C154.355 396.717 91.3248 396.717 28.2949 396.717C61.1433 363.869 93.9266 331.086 126.775 298.237L126.71 298.302Z" fill="#0162A4" />
   </g>
 </svg>
