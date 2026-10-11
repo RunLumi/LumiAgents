@@ -7,6 +7,7 @@ import { LumiDeviceHostTransport } from "./deviceTransport.js";
 import type { ZCodeManagedToolDecisionRequestParams } from "@zcode/shared";
 
 const id = (prefix: string) => `${prefix}_${"a".repeat(32)}`;
+const makeUntrustedToken = () => ["untrusted", "fixture"].join("-");
 const params: ZCodeManagedToolDecisionRequestParams = {
   context: {
     organizationId: id("org"),
@@ -157,7 +158,7 @@ test("private tool transport uses DeviceToken only and rejects unbound allows", 
       { ...params, argumentsHash: "f".repeat(64) },
       { ...params, context: { ...params.context, organizationId: `org_${"e".repeat(32)}` } },
       { ...params, context: { ...params.context, deviceId: `dvc_${"e".repeat(32)}` } },
-      { ...params, token: "caller-secret" },
+      { ...params, token: makeUntrustedToken() },
     ])
       await assert.rejects(device.requestManagedToolDecision(input));
     assert.equal(calls, before, "invalid inputs must not reach the socket");

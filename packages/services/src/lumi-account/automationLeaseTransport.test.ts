@@ -17,7 +17,7 @@ const RSE = `rse_${hex("5")}`;
 const POL = `pol_${hex("6")}`;
 const USR = `usr_${hex("7")}`;
 const DVC = `dvc_${hex("8")}`;
-const TOKEN = "lease-token-0123456789abcdef";
+const TOKEN = "f".repeat(16);
 const FAR_FUTURE = "2999-01-01T00:00:00.000Z";
 
 // Shapes below are copied from apps/api/src/routes/automations.rs (due_projection, claim_occurrence,
