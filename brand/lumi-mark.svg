@@ -4,8 +4,9 @@
     Official Lumi folded-L mark, copied unchanged (geometry, proportions and colours) from
     RunLumi/brand.runlumi lumi-logo.svg at cb8e83c182c9ce2a2efb44a63df28e4fba331616.
     Plane A (upright) #019EDD, plane B (foot) #0162A4.
-    Licence of this official artwork inside this repository is pending the brand
-    owner's decision (see brand/README.md); trademark boundary: TRADEMARKS.md.
+    © CLOUDJET SOLUTIONS PTE. LTD. All rights reserved. This artwork is NOT licensed
+    under Apache-2.0 or any other licence in this repository; see brand/README.md
+    and TRADEMARKS.md.
   -->
   <g transform="translate(91.5 51.5)">
     <path d="M99.4558 0C99.4558 99.4558 99.3907 198.912 99.3257 298.302C66.2171 331.151 33.1086 363.934 0 396.782C0 297.327 0 197.871 0 98.4801C33.1086 65.6317 66.2822 32.8484 99.3907 0H99.4558Z" fill="#019EDD" />

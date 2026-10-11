@@ -53,7 +53,7 @@ JSON 标准不允许注释，内联声明会破坏文件。替代机制：
 | 文件                                     | 修改内容                                                                                                                                               |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `package.json`                           | 新增 `lumi:drift` / `lumi:notice` 等维护命令                                                                                                           |
-| `packages/desktop/package.json`          | `productName` / `description` 使用 Lumi Agents，`author` 明确为 CLOUDJET SOLUTIONS PTE. LTD.                                                         |
+| `packages/desktop/package.json`          | `productName` / `description` 使用 Lumi Agents，`author` 明确为 CLOUDJET SOLUTIONS PTE. LTD.                                                           |
 | `third-party/npm-overrides.json`         | 逐包许可材料：新增 `materialReview` 复核记录；`keyv@4.5.4` 曾换成真实版本适用 LICENSE，2026-09-21 随 `@arms/rum-*` 遥测替换整体移除（连同 rrweb 家族） |
 | `third-party/copied-components.json`     | 复制来源（React Best Practices skill）新增 `materialReview`                                                                                            |
 | `third-party/embedded-components.json`   | Skia / QuickJS-NG 的未决标记改为带证据的 `materialReview`                                                                                              |
@@ -71,7 +71,9 @@ JSON 标准不允许注释，内联声明会破坏文件。替代机制：
 位图与容器格式（PNG / ICNS / ICO）无法承载文本声明。替代机制：
 
 - 这些文件**全部由** [`scripts/build-lumi-brand-assets.mjs`](../../scripts/build-lumi-brand-assets.mjs)
-  从 `brand/` 下的原创 SVG **确定性生成**，不包含任何上游字节；
+  从 `brand/` 下的 Lumi 官方标志 SVG **确定性生成**，不包含任何上游字节；
+- 这些图标与其源 SVG 是 CLOUDJET SOLUTIONS PTE. LTD. 的财产，保留所有权利，**不**按 Apache-2.0
+  授权（见 `brand/README.md`）；
 - 每个路径都在 `NOTICE_EXCEPTIONS` 中逐条登记；
 - 生成脚本本身自带 Lumi 署名与 DESIGN.md 依据，并在本文件说明。
 
@@ -80,12 +82,12 @@ JSON 标准不允许注释，内联声明会破坏文件。替代机制：
 
 ## 4. 删除与替换的上游资产
 
-| 上游文件                                           | 处理                                                  |
-| -------------------------------------------------- | ----------------------------------------------------- |
-| `packages/ui/src/assets/Z.svg`                     | 删除（上游 ZCode 标识）；水印改用 Lumi 折叠 L 几何    |
-| `packages/ui/src/components/ui/ZCodeAboutLogo.tsx` | 删除（上游 ZCode 图形）；由 `LumiBrandMark.tsx` 取代  |
-| `packages/desktop/build/icon*`、`packages/desktop/build/icons/*`、`public/logo/icons/*` | 被第 3.2 节的 Lumi 原创资产整体替换 |
-| `packages/desktop/build/dmg_background*.png`       | **已删除**；DMG 改用 electron-builder 的纯色 `backgroundColor`，不再分发上游背景图 |
+| 上游文件                                                                                | 处理                                                                               |
+| --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `packages/ui/src/assets/Z.svg`                                                          | 删除（上游 ZCode 标识）；水印改用 Lumi 折叠 L 几何                                 |
+| `packages/ui/src/components/ui/ZCodeAboutLogo.tsx`                                      | 删除（上游 ZCode 图形）；由 `LumiBrandMark.tsx` 取代                               |
+| `packages/desktop/build/icon*`、`packages/desktop/build/icons/*`、`public/logo/icons/*` | 被第 3.2 节的 Lumi 原创资产整体替换                                                |
+| `packages/desktop/build/dmg_background*.png`                                            | **已删除**；DMG 改用 electron-builder 的纯色 `backgroundColor`，不再分发上游背景图 |
 
 ## 5. 待处理 / 需法务复核
 

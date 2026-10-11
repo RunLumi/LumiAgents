@@ -25,7 +25,9 @@ code or artwork.
   [RunLumi/brand.runlumi](https://github.com/RunLumi/brand.runlumi), reproduced in
   `brand/` for this fork (see [docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md) §3);
   it deliberately replaces upstream ZCode promotional graphics and is not derived
-  from them.
+  from them. The logo artwork is the property of **CLOUDJET SOLUTIONS PTE. LTD.**, all
+  rights reserved, and is **not** distributed under Apache-2.0 (see
+  [brand/README.md](brand/README.md) for the exact files).
 
 Upstream relationship: this project is an independent fork of
 [ZCode](https://github.com/zai-org/ZCode). It is not an official ZCode or Z.AI
@@ -41,7 +43,8 @@ truthful origin ("fork of ZCode"), not to suggest sponsorship.
 - **Nominative use**: refer to the product by name in articles, reviews,
   tutorials, benchmark tables, issue reports and comparison pages.
 - **Independent forks**: you may exercise the copyright permissions granted by
-  Apache-2.0 for covered code and artwork. For trademark safety, use a distinct
+  Apache-2.0 for covered code and artwork. The official Lumi logo files are not
+  covered artwork: remove or replace them in a fork. For trademark safety, use a distinct
   product identity when a modified distribution could otherwise be confused with
   an official Lumi Agents build, and describe the fork relationship truthfully.
 - **Unmodified redistribution**: redistributing the community edition verbatim

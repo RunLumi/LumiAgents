@@ -21,6 +21,10 @@
   独立贡献者的版权仍归各自权利人，除非另有有效转让。根 `LICENSE` 中的
   “Copyright 2026 Z.AI Co., Ltd” 因此保留，不替换为 Cloudjet。权利边界详见
   [RIGHTS.md](RIGHTS.md)。
+- **Lumi 标志**：`brand/` 中的官方 Lumi 标志文件及由其生成的应用图标是 CLOUDJET SOLUTIONS PTE. LTD.
+  的财产，保留所有权利，**不**按 Apache-2.0 授权；文件清单见 [brand/README.md](brand/README.md)。
+  The official Lumi logo files are © CLOUDJET SOLUTIONS PTE. LTD., all rights reserved, and are
+  not licensed under Apache-2.0.
 - **分支关系**：Lumi Agents 不是 ZCode 或 Z.AI 的官方发行版；Lumi 没有 ZCode 的账户、订阅、
   关怀或支持义务，也不承诺提供上游官方产品的全部功能与活动政策。
 - **以下声明的适用范围**：从第二节开始的内容（功能与权限风险、上传接口与对外请求、本地数据与凭据、

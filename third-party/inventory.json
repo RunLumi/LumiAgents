@@ -1704,7 +1704,7 @@
     "packages/ui/src/components/ui/kbd.tsx": "a7fabb33892c759337ae5c936d3b62f27fb2356a5a6340dbff8bfbac6f0a359f",
     "packages/ui/src/components/ui/label.tsx": "717bd1167a7c8c136abfe0b3e23e8cfcb38abbe51b04c74d6d01ba1ea0b53fa5",
     "packages/ui/src/components/ui/lightweight-diff-preview.tsx": "7d1ff2a02815d988f5ffd2d6549848920c98488a4dba43f67ba9d81a3da49d01",
-    "packages/ui/src/components/ui/LumiBrandMark.tsx": "8a18b153ad0dbde61926d335950190cebc3c2f17c74a66ef39c32b93af0226eb",
+    "packages/ui/src/components/ui/LumiBrandMark.tsx": "8d8ea1313fd4b6ae7140d724ac1ae6c20c6840acbe5432206fa81657e23228c0",
     "packages/ui/src/components/ui/pdf-viewer.tsx": "19ba82ab97a84599bb99178de85a4d5c6a89da6924ba55a0dc14f33286187fdc",
     "packages/ui/src/components/ui/popover.tsx": "e23c9238865ba7e85965ebed89e7328cfbdbbdcc2264156c775d51e9e264b484",
     "packages/ui/src/components/ui/pptx-preview-viewer.tsx": "64d7ed9e83cad0e98ba56ff2c49be2db335aedca4230b207cba5a383a15cb93d",
@@ -19985,7 +19985,7 @@
         },
         {
           "file": "packages/ui/src/components/ui/LumiBrandMark.tsx",
-          "sha256": "8a18b153ad0dbde61926d335950190cebc3c2f17c74a66ef39c32b93af0226eb"
+          "sha256": "8d8ea1313fd4b6ae7140d724ac1ae6c20c6840acbe5432206fa81657e23228c0"
         },
         {
           "file": "packages/ui/src/components/ui/README.md",

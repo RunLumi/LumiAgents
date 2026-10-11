@@ -29,6 +29,8 @@ expected to add, and what this licensing model does **not** do.
   permission to exercise rights Apache already grants.
 - Contributing back is lightweight: sign your commits (`git commit -s`, DCO 1.1).
   You keep copyright; Apache-2.0 inbound/outbound for first-party public code.
+- The official Lumi logo files (see [brand/README.md](brand/README.md)) are the property of
+  CLOUDJET SOLUTIONS PTE. LTD., all rights reserved, and are not Apache-licensed.
 - Apache-2.0 may grant copyright permissions in covered Lumi artwork files, but
   section 6 does **not** grant trademark permission to use the Lumi Agents name or
   folded-L mark as a source identifier implying official origin or endorsement.
@@ -136,7 +138,8 @@ Apache-licensed code; you already have that.
 **Does Apache grant trademark rights to the Lumi name or mark?**
 No. Apache-2.0 section 6 does not grant trademark rights. Separately, if a Lumi
 artwork file is itself distributed under Apache-2.0, the copyright permissions of
-that license can apply to the file. Using the artwork as a product/source mark
+that license can apply to the file. The official Lumi logo files are not such files:
+they are Cloudjet property, all rights reserved. Using the artwork as a product/source mark
 remains a distinct trademark question; see [TRADEMARKS.md](TRADEMARKS.md).
 
 **What can't this licensing model protect?**

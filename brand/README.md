@@ -32,8 +32,8 @@ node scripts/build-lumi-brand-assets.mjs   # 或 pnpm lumi:brand-assets
 
 ## 重要说明
 
-- 这些是 Lumi 官方品牌图形（不再是过渡用原创标记）。商标边界见 `TRADEMARKS.md`；
-  官方图形的版权许可状态以品牌所有者的决定为准（官方品牌仓库目前没有许可文件）。
+- 这些是 Lumi 官方品牌图形，是 **CLOUDJET SOLUTIONS PTE. LTD. 的财产，保留所有权利**，
+  **不**按 Apache-2.0 授权（见下方英文说明与 `TRADEMARKS.md`）。
 - 生成脚本不引入新的许可义务：只使用已在生产依赖图中、且列在
   `THIRD-PARTY-NOTICES.md` 的 `@napi-rs/canvas`（SVG 光栅化）与 `@fiahfy/icns`（ICNS 容器）。
   `.ico` 由脚本内联编码（Windows Vista+ 支持 PNG 载荷）。
@@ -44,8 +44,16 @@ node scripts/build-lumi-brand-assets.mjs   # 或 pnpm lumi:brand-assets
 
 ## License and trademark boundary
 
-The original Lumi artwork source files in this directory are published as covered
-repository content under Apache-2.0 unless a file states otherwise. That copyright
-license does not grant trademark permission to present a modified distribution as
-an official Lumi Agents product or to imply Cloudjet sponsorship or endorsement.
-See [TRADEMARKS.md](../TRADEMARKS.md) and [RIGHTS.md](../RIGHTS.md).
+The official Lumi logo files in this directory (`lumi-mark.svg`, `lumi-app-icon.svg`)
+and every icon generated from them (`packages/desktop/build/icon*`,
+`packages/desktop/build/icons/*`, `public/logo/icons/*`, `public/icon_512@2x.png`) and the
+inline copies of the mark in `LumiBrandMark.tsx`, `aboutWindow.ts` and the empty-state
+watermark are the property of **CLOUDJET SOLUTIONS PTE. LTD.** All rights are reserved.
+They are **not** licensed under Apache-2.0 or any other licence in this repository; the
+"unless a file states otherwise" exception applies to them. They are included only so
+official Lumi Agents builds carry the Lumi brand. A fork or modified distribution must
+remove or replace them with its own artwork.
+
+Artwork that was previously published here under Apache-2.0 (the interim folded-L mark in
+earlier history) keeps the copyright permissions already granted for those files; this
+change does not retract them. See [TRADEMARKS.md](../TRADEMARKS.md) and [RIGHTS.md](../RIGHTS.md).

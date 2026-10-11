@@ -52,9 +52,7 @@ test("shipped desktop metadata points to Cloudjet/Lumi, not upstream product con
   assert.ok(desktopBuilder.includes('homepage: "https://agents.runlumi.app"'));
   assert.ok(desktopBuilder.includes('name: "CLOUDJET SOLUTIONS PTE. LTD."'));
   assert.ok(
-    desktopBuilder.includes(
-      'maintainer: "CLOUDJET SOLUTIONS PTE. LTD. <hong@cloudjetkpi.com>"',
-    ),
+    desktopBuilder.includes('maintainer: "CLOUDJET SOLUTIONS PTE. LTD. <hong@cloudjetkpi.com>"'),
   );
   assert.ok(desktopBuilder.includes("ZCode portions © 2026 Z.AI Co., Ltd"));
   assert.doesNotMatch(desktopBuilder, /homepage:\s*"https:\/\/zcode\.z\.ai"/);
@@ -127,7 +125,9 @@ test("maintainer text is escaped, not interpreted as HTML", () => {
     ...baseInput,
     maintainerCredit: `<img src=x onerror="alert('x')"> & maintainer`,
   });
-  assert.ok(html.includes("&lt;img src=x onerror=&quot;alert(&#39;x&#39;)&quot;&gt; &amp; maintainer"));
+  assert.ok(
+    html.includes("&lt;img src=x onerror=&quot;alert(&#39;x&#39;)&quot;&gt; &amp; maintainer"),
+  );
   assert.doesNotMatch(html, /<img src=x/);
 });
 
@@ -158,7 +158,9 @@ test("the legal surface identifies the maintainer without replacing other owners
 });
 
 test("independent-fork and non-official-distribution notices remain in both locales", () => {
-  assert.ok(legal.includes("independent fork of ZCode, not an official ZCode or Z.AI distribution"));
+  assert.ok(
+    legal.includes("independent fork of ZCode, not an official ZCode or Z.AI distribution"),
+  );
   assert.ok(legal.includes("独立维护分支，不是 ZCode 或 Z.AI 的官方发行版"));
 });
 
@@ -166,7 +168,7 @@ test("all existing packaged legal-material entries and escaping are preserved", 
   assert.match(legal, /LEGAL_NOTICES_FILE_NAME = "THIRD-PARTY-NOTICES\.md"/);
   assert.ok(legal.includes('[LEGAL_NOTICES_FILE_NAME, "LICENSE", "NOTICE.md"] as const'));
   assert.ok(legal.includes("escapeHtml(material.content)"));
-  assert.ok(legal.includes('content="default-src \'none\''));
+  assert.ok(legal.includes("content=\"default-src 'none'"));
 });
 
 test("modified upstream source retains prominent modification notices", () => {
@@ -184,4 +186,21 @@ test("the inherited Apache license and Z.AI notice are byte-for-byte unchanged",
   // Baseline blob at 143ed56ab15f638339685357f5537e5784b09214.
   assert.equal(blobHash, "550d8df4cfc74878663a511caa97852f15fd9592");
   assert.ok(license.toString("utf8").includes(inheritedCopyright));
+});
+
+test("official Lumi logo files are Cloudjet property, all rights reserved, not Apache-licensed", () => {
+  for (const file of ["brand/lumi-mark.svg", "brand/lumi-app-icon.svg"]) {
+    const svg = read(file);
+    assert.ok(svg.includes("CLOUDJET SOLUTIONS PTE. LTD. All rights reserved."), file);
+    assert.ok(svg.includes("NOT licensed"), file);
+  }
+  const brandReadme = read("brand/README.md").replace(/\s+/g, " ");
+  assert.ok(
+    brandReadme.includes("property of **CLOUDJET SOLUTIONS PTE. LTD.** All rights are reserved."),
+  );
+  assert.ok(brandReadme.includes("**not** licensed under Apache-2.0"));
+  assert.ok(
+    read("TRADEMARKS.md").replace(/\s+/g, " ").includes("is **not** distributed under Apache-2.0"),
+  );
+  assert.ok(read("NOTICE.md").includes("not licensed under Apache-2.0"));
 });
