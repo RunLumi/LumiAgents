@@ -1,14 +1,14 @@
-# Lumi workspace adoption and credential choice
+# Lumi workspace adoption and managed runtime ownership
 
-Status: candidate, not yet verified; acceptance not demonstrated. This spec
-defines the behavior the workspace adoption cut implements. No acceptance
-criterion below is claimed as met until evidence is recorded for it.
+Status: candidate, not yet verified; implementation in progress for
+DE2E-INT-03. Full managed-run wiring remains unproven. No acceptance criterion
+below is claimed as met until evidence is recorded for it.
 
 Scope: workspace adoption and binding, the account/org/session fence, the
-three frozen credential-choice labels, and the Lumi-first startup and bootstrap
-state-root rules that adoption depends on. Managed execution, tools,
-automation and provider-routing changes are not part of this spec; adopting a
-workspace here never starts, authorizes or configures any of them.
+three frozen credential-choice labels, the Lumi-first startup and bootstrap
+state-root rules that adoption depends on, and managed runtime ownership.
+Adopting a workspace never by itself starts, authorizes or configures managed
+execution, tools, automation or provider routing.
 
 ## Product boundary
 
@@ -19,9 +19,9 @@ workspaces, sessions, credentials, and provider selection remain usable in local
 mode. A second workspace remains local unless separately adopted.
 
 The control plane is authoritative for P03 workspace binding, P08 adoption
-stage/ownership, and policy. The desktop owns only its local mapping from
-workspace identity to opaque external reference and device credentials. A
-renderer projection is never authority.
+stage/ownership, P05 session/run, and policy. The desktop owns only its local
+mapping from workspace identity to opaque external reference and device
+credentials. A renderer projection is never authority.
 
 ## Privacy boundary
 
@@ -37,7 +37,7 @@ previews that metadata immediately before the first write.
 
 The mapping remains in the main process and separate from the account/device
 credential record. Corrupt or unavailable secure storage fails closed for
-adoption writes while local-only work remains available.
+managed work while local-only work remains available.
 
 ## State ownership and sequence
 
@@ -55,10 +55,15 @@ adoption writes while local-only work remains available.
 4. Each later ladder transition is a separate user action. The UI renders only
    server-returned stage and ownership. `workspace_bound` requires a stored P03
    binding plus active device/project and acknowledged current policy.
-5. Rollback calls the frozen P08 rollback route and removes the matching P03
+5. Managed execution may start only after current device, membership, binding,
+   compatibility, policy and project checks pass. The backend creates the
+   session/run and supplies server-owned run identifiers. The desktop supplies
+   those identifiers to the existing per-request model-auth seam; it never
+   invents organization authority from renderer fields.
+6. Rollback calls the frozen P08 rollback route and removes the matching P03
    binding. If either step is interrupted, local work stays intact and the next
    read reconciles the partial remote state before retry.
-6. Local-only work never depends on network availability. History sync remains
+7. Local-only work never depends on network availability. History sync remains
    unavailable under `p08-cg-v1`.
 
 P03-CR-003 retains removed binding rows for run attribution and hides them from
@@ -79,9 +84,9 @@ metadata can be unbound without changing local ownership or contents.
   local by default; org-managed credentials require the existing secure P04
   provisioning path and explicit destination consent.
 - Policy expiry, revocation, minimum-version refusal, stale context, or an
-  incomplete binding blocks the adoption step before any server write.
+  incomplete binding blocks managed work before any provider/tool side effect.
 - Rollback removes server binding/authority without deleting or rewriting local
-  files, sessions or credentials.
+  files, sessions, credentials, or automation.
 - No P08 stage-5 request or history upload is built.
 
 ## Failure and recovery
@@ -92,7 +97,7 @@ identity. A partial rollback retries only the missing remote cleanup and keeps
 the workspace visibly local-only until readback confirms the server state.
 Missing or unreadable mapping, mismatched org/device/project, expired policy,
 offline state, or unsupported client compatibility never falls through to a
-server write. The local provider path remains available.
+managed request. The local provider path remains available.
 
 ## Account, organization and session fence
 
@@ -140,9 +145,10 @@ while their encryption keys stay with the OS identity.
 
 ## Credential choice
 
-Status: client behavior specified from the frozen `p08-cg-v1` wire; candidate,
-not yet verified. Persistence of a mode that keeps the stage depends on
-control-plane P08-CR-003 and is verified by readback, never assumed.
+Status: client source implemented from the frozen `p08-cg-v1` wire. Persistence
+of a mode that keeps the stage depends on control-plane P08-CR-003 and is
+verified by readback, never assumed. Control-plane packet:
+`docs/implementation/packets/DE2E-INT-03-CRED.md` in the parent repository.
 
 The P08 `credential_mode` is a **label** stored with the adoption record. It is
 separate from the P04 execution policy `credential_mode` and from any
@@ -199,14 +205,25 @@ main: account fence -> fresh server read -> compare stage/version -> validate wi
   switching labels; the copy says so and the web console revokes them.
 - `metadata_only` claims no fingerprint or provider registration: the frozen
   contract stores only the label.
-- The fence described above is re-run after every await boundary (before the
-  PATCH, after it before the confirming read, and before the projection is
-  returned). A PATCH already sent is never undone or retried; a stale owner
-  only has its completion refused.
+- The account/org/session fence is re-run after every await boundary (before the PATCH, after it
+  before the confirming read, and before the projection is returned). The scope is
+  `{session generation, selected-org epoch}` from `lumiSessionFence`, captured at admission before
+  the first await. A new login bumps the session when it begins and again when it settles, and
+  `read-workspace` for a different org (including A→B→A) bumps the org epoch, so an old-org owner
+  cannot complete even while that org's membership is still valid. A PATCH already sent is never
+  undone or retried and provider credentials are untouched; a stale owner only has its completion
+  refused with `lumi_account_changed`, `lumi_workspace_org_changed` or
+  `lumi_workspace_org_unavailable`.
+- The same scope applies to `read`, `bind`, `advance` and `rollback`: the epoch is captured at
+  admission, the command's own org must still be the selected one for that workspace key, and the fence
+  runs before every server write (binding, adoption, policy sync), before each local mapping save and
+  before the projection is returned. A write that already committed stays; the stale command's later
+  writes, mapping save and projection are refused, and the local mapping (a cache of the server row) is
+  re-derived by the next read. Selections are per workspace key, so workspaces do not interfere.
 - The adoption row parser is exact about the replayed full server row: `version >= 1`,
   `org_managed_credential` only with `ownership: org_managed`, and a mode-only response must be the
   requested `adoption_state_id` and `org_id`, else `lumi_response_invalid`. Verification status and
-  remaining obligations: [credential-choice-handoff.md](credential-choice-handoff.md).
+  remaining runtime obligations: [credential-choice-handoff.md](credential-choice-handoff.md).
 - Stable client codes: `lumi_command_invalid`, `lumi_workspace_stale`,
   `lumi_workspace_credential_mode_invalid`, `lumi_workspace_stage_invalid`,
   `lumi_workspace_credential_not_persisted`, `lumi_workspace_binding_missing`.
@@ -274,3 +291,5 @@ Each item needs recorded evidence before this spec's status can change.
 - With explicit `ZCODE_DATA_BASE_DIR` and a different fake OS HOME, bootstrap
   settings, logs and vaults land under the explicit root, nothing is created
   under the fake OS HOME, and `safeStorage` still uses the OS identity.
+- No P05 or P04 behavior is credited until an actual Electron agent request
+  crosses that boundary.

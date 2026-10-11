@@ -12,12 +12,14 @@ import { Button } from "@/components/ui/button.js";
 /** Separate optional organization account; provider login stays in its existing owner. */
 export function LumiAccountSection({
   workspace,
+  onManagedRunStarted,
 }: {
   workspace?: {
     workspacePath: string;
     workspaceIdentity?: string;
     environmentType: LumiWorkspaceEnvironment;
   };
+  onManagedRunStarted?: () => void;
 }) {
   const platform = usePlatform();
   const { intl } = useZCodeIntl();
@@ -57,7 +59,12 @@ export function LumiAccountSection({
             onDeviceChanged={() => setWorkspaceRefresh((value) => value + 1)}
           />
           {workspace ? (
-            <LumiWorkspaceSection account={account} refreshKey={workspaceRefresh} {...workspace} />
+            <LumiWorkspaceSection
+              account={account}
+              refreshKey={workspaceRefresh}
+              onManagedRunStarted={onManagedRunStarted}
+              {...workspace}
+            />
           ) : null}
           <ul>
             {account.organizations.map((org) => (

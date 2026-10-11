@@ -2,6 +2,8 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { LumiAccountError } from "./errors.js";
 import { LumiAdoptionHostTransport, type LumiAdoptionRecord } from "./adoptionTransport.js";
+import { LumiReviewedToolCatalogTransport } from "./reviewedToolCatalog.js";
+import { LumiAutomationAdoptionHostTransport } from "./automationAdoptionTransport.js";
 export { LumiAccountError } from "./errors.js";
 export type { LumiAdoptionRecord } from "./adoptionTransport.js";
 type AdoptionInput<K extends keyof LumiAdoptionHostTransport> =
@@ -63,6 +65,19 @@ export class LumiAccountHostTransport {
     this.#adoption = new LumiAdoptionHostTransport((path, method, body, headers) =>
       this.#request(path, method, body, headers),
     );
+    this.#automations = new LumiAutomationAdoptionHostTransport((path, method, body, headers) =>
+      this.#request(path, method, body, headers),
+    );
+  }
+
+  readonly #automations: LumiAutomationAdoptionHostTransport;
+
+  /**
+   * P08 preview + P06 definition operations; Main-only like every other member.
+   * A method, not a public field: the transport must stay free of enumerable state.
+   */
+  automations(): LumiAutomationAdoptionHostTransport {
+    return this.#automations;
   }
 
   async #request(
@@ -260,6 +275,23 @@ export class LumiAccountHostTransport {
     };
   }
 
+  /** Main-only input to one managed inference attempt; caller must keep it ephemeral. */
+  async readManagedInferenceBearer(orgId: string, userId: string): Promise<string> {
+    if (!/^org_[0-9a-f]{32}$/.test(orgId) || !/^usr_[0-9a-f]{32}$/.test(userId))
+      throw new LumiAccountError("lumi_managed_auth_refused");
+    if (!this.#session) throw new LumiAccountError("lumi_cookie_missing");
+    const account = await this.readAccount();
+    const membership = account.organizations.find(
+      (organization) =>
+        organization.id === orgId &&
+        organization.state === "active" &&
+        organization.status === "active",
+    );
+    if (account.user.id !== userId || !membership)
+      throw new LumiAccountError("lumi_managed_auth_refused");
+    return this.#session;
+  }
+
   async approveDeviceEnrollment(
     orgId: string,
     enrollmentId: string,
@@ -336,8 +368,28 @@ export class LumiAccountHostTransport {
     };
   }
 
+  resolveReviewedToolIdentity(
+    orgId: string,
+    descriptor: import("@zcode/shared").ZCodeManagedToolIdentity,
+  ) {
+    return new LumiReviewedToolCatalogTransport(
+      async (path) => (await (await this.#request(path, "GET")).json()) as Record<string, unknown>,
+    ).resolve(orgId, descriptor);
+  }
   listProjects(orgId: string): Promise<LumiProjectProjection[]> {
     return this.#adoption.listProjects(orgId);
+  }
+
+  listAgents(orgId: string, projectId: string) {
+    return this.#adoption.listAgents(orgId, projectId);
+  }
+
+  listManagedModels(orgId: string) {
+    return this.#adoption.listManagedModels(orgId);
+  }
+
+  closeManagedSession(orgId: string, agentSessionId: string) {
+    return this.#adoption.closeManagedSession(orgId, agentSessionId);
   }
 
   listAdoptionRecords(orgId: string): Promise<LumiAdoptionRecord[]> {

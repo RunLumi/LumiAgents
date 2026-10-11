@@ -20,11 +20,20 @@ import {
   zcodeMcpResourceSamplesSchema,
   zcodeToolExecResourceSchema,
   zcodeProcessResourceSampleSchema,
+  zcodeManagedToolDecisionRequestParamsSchema,
+  zcodeManagedToolDecisionResultSchema,
+  zcodeManagedToolResultRequestParamsSchema,
+  zcodeManagedToolResultAckSchema,
+  zcodeManagedToolIdentityRequestSchema,
+  zcodeManagedToolIdentityResolutionSchema,
+  zcodeManagedRuntimeCapabilitiesRequestSchema,
+  zcodeManagedRuntimeCapabilitiesAckSchema,
 } from "./zcode-protocol/index.js";
 import { zcodeTaskModeSchema } from "./zcode-task-mode-schema.js";
 import { PROTOCOL_V4_LIMITS } from "./zcode-protocol-v4/core.js";
 import { errorAttributionSchema } from "./zcode-protocol-v4/snapshot.js";
 import { sessionWorkflowActivitySchema } from "./zcode-protocol-v4/sessions-index-workflow-activity.js";
+import { zcodeManagedRunContextSchema } from "./zcode-protocol/managed-run-context.js";
 import {
   taskOwnerCommandDeliverySchema,
   taskOwnerCommandRequestSchema,
@@ -189,6 +198,7 @@ export const hostInitLocalMessageSchema = z.object({
   agentWarmupTargets: z.array(hostAgentWarmupTargetSchema).max(3).optional(),
   agentSpawnFallbackCwd: nonEmptyStringSchema.optional(),
   zcodeBuiltinProviderConfigFilePath: nonEmptyStringSchema,
+  lumiControlPlaneOrigin: z.string().url().optional(),
   runtimeProcessEnvPatch: z
     .record(z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/), z.string())
     .optional(),
@@ -467,11 +477,255 @@ export type HostResourceUsageSnapshotRequestMessage = z.infer<
   typeof hostResourceUsageSnapshotRequestMessageSchema
 >;
 
+/** Host→Main asks for one-attempt auth; no path, prompt, or credential crosses this request. */
+export const hostLumiManagedRequestAuthRequestResponseSchema = z
+  .object({
+    type: z.literal("lumi-managed-request-auth-request"),
+    requestId: nonEmptyStringSchema,
+    sessionId: nonEmptyStringSchema.max(255),
+    workspaceIdentity: nonEmptyStringSchema.max(4096),
+    providerId: z.literal("lumi-managed"),
+    modelId: z.string().regex(/^[a-z0-9][a-z0-9._-]{0,127}$/),
+    managedContext: zcodeManagedRunContextSchema,
+  })
+  .strict();
+
+export const hostLumiManagedRunTerminalOutcomeResponseSchema = z
+  .object({
+    type: z.literal("lumi-managed-run-terminal-outcome"),
+    runId: z.string().regex(/^run_[0-9a-f]{32}$/),
+    outcome: z.enum(["succeeded", "failed", "stopped"]),
+  })
+  .strict();
+
+/** Main→Host returns only a short-lived Lumi session credential or a redacted refusal code. */
+export const hostLumiManagedRequestAuthResultMessageSchema = z
+  .object({
+    type: z.literal("lumi-managed-request-auth-result"),
+    requestId: nonEmptyStringSchema,
+    ok: z.boolean(),
+    apiKey: z
+      .string()
+      .regex(/^[0-9a-f]{64}$/)
+      .optional(),
+    errorCode: z
+      .string()
+      .regex(/^lumi_[a-z_]{1,80}$/)
+      .optional(),
+  })
+  .strict()
+  .refine((value) => (value.ok ? value.apiKey !== undefined : value.apiKey === undefined), {
+    message: "successful managed auth must carry the session credential and refusal must not",
+  });
+
+/**
+ * Main→Host: run one managed automation occurrence. The prompt is read locally by Main from the
+ * retained original; the context is server-issued and non-secret. No token, fence, lease or cookie
+ * has a field here, and `.strict()` rejects any attempt to add one.
+ */
+export const hostLumiManagedAutomationRunMessageSchema = z
+  .object({
+    type: z.literal("lumi-managed-automation-run"),
+    requestId: nonEmptyStringSchema.max(128),
+    localAutomationId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/),
+    workspacePath: nonEmptyStringSchema.max(4096),
+    workspaceIdentity: z.string().max(4096).optional(),
+    prompt: nonEmptyStringSchema.max(100_000),
+    mode: z.string().max(64).optional(),
+    modelAlias: z.string().regex(/^[a-z0-9][a-z0-9._-]{0,127}$/),
+    managedContext: zcodeManagedRunContextSchema.refine(
+      (context) => context.executionMode === "managed",
+      { message: "a managed automation run requires a managed execution context" },
+    ),
+  })
+  .strict();
+
+export type HostLumiManagedAutomationRunMessage = z.infer<
+  typeof hostLumiManagedAutomationRunMessageSchema
+>;
+
+export const hostLumiManagedAutomationRunResultResponseSchema = z
+  .object({
+    type: z.literal("lumi-managed-automation-run-result"),
+    requestId: nonEmptyStringSchema.max(128),
+    ok: z.boolean(),
+    taskId: nonEmptyStringSchema.max(256).optional(),
+    errorCode: z
+      .string()
+      .regex(/^lumi_[a-z_]{1,80}$/)
+      .optional(),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      value.ok
+        ? value.taskId !== undefined && value.errorCode === undefined
+        : value.taskId === undefined && value.errorCode !== undefined,
+    { message: "a managed automation run result is either a task or a stable refusal code" },
+  );
+
+/**
+ * Main→Host: stop one managed automation run after Main lost its lease. The run id is the only
+ * payload: the Host maps it to its own task, and no token, fence, lease or prompt has a field.
+ */
+export const hostLumiManagedAutomationCancelMessageSchema = z
+  .object({
+    type: z.literal("lumi-managed-automation-cancel"),
+    requestId: nonEmptyStringSchema.max(128),
+    runId: zcodeManagedRunContextSchema.shape.runId,
+  })
+  .strict();
+
+export type HostLumiManagedAutomationCancelMessage = z.infer<
+  typeof hostLumiManagedAutomationCancelMessageSchema
+>;
+
+export const LUMI_MANAGED_AUTOMATION_CANCEL_OUTCOMES = [
+  "stopped",
+  "prevented",
+  "already_cancelled",
+] as const;
+
+export const hostLumiManagedAutomationCancelResultResponseSchema = z
+  .object({
+    type: z.literal("lumi-managed-automation-cancel-result"),
+    requestId: nonEmptyStringSchema.max(128),
+    runId: zcodeManagedRunContextSchema.shape.runId,
+    ok: z.boolean(),
+    outcome: z.enum(LUMI_MANAGED_AUTOMATION_CANCEL_OUTCOMES).optional(),
+    errorCode: z
+      .string()
+      .regex(/^lumi_[a-z_]{1,80}$/)
+      .optional(),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      value.ok
+        ? value.outcome !== undefined && value.errorCode === undefined
+        : value.outcome === undefined && value.errorCode !== undefined,
+    { message: "a managed automation cancel ack is either an outcome or a stable refusal code" },
+  );
+
+export const hostLumiManagedToolDecisionRequestSchema = z
+  .object({
+    type: z.literal("lumi-managed-tool-decision-request"),
+    requestId: nonEmptyStringSchema.max(128),
+    workspaceIdentity: nonEmptyStringSchema.max(4096),
+    params: zcodeManagedToolDecisionRequestParamsSchema,
+  })
+  .strict();
+export const hostLumiManagedToolReportRequestSchema = z
+  .object({
+    type: z.literal("lumi-managed-tool-report-request"),
+    requestId: nonEmptyStringSchema.max(128),
+    workspaceIdentity: nonEmptyStringSchema.max(4096),
+    params: zcodeManagedToolResultRequestParamsSchema,
+  })
+  .strict();
+export const hostLumiManagedToolIdentityRequestSchema = z
+  .object({
+    type: z.literal("lumi-managed-tool-identity-request"),
+    requestId: nonEmptyStringSchema.max(128),
+    workspaceIdentity: nonEmptyStringSchema.max(4096),
+    params: zcodeManagedToolIdentityRequestSchema,
+  })
+  .strict();
+export const hostLumiManagedToolIdentityResultSchema = z
+  .object({
+    type: z.literal("lumi-managed-tool-identity-result"),
+    requestId: nonEmptyStringSchema.max(128),
+    ok: z.boolean(),
+    resolution: zcodeManagedToolIdentityResolutionSchema.optional(),
+    errorCode: z
+      .string()
+      .regex(/^lumi_[a-z_]{1,80}$/)
+      .optional(),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      value.ok
+        ? value.resolution !== undefined && value.errorCode === undefined
+        : value.resolution === undefined,
+    { message: "refused identity resolution cannot carry result" },
+  );
+export const hostLumiRuntimeCapabilitiesRequestSchema = z
+  .object({
+    type: z.literal("lumi-runtime-capabilities-request"),
+    requestId: nonEmptyStringSchema.max(128),
+    workspaceIdentity: nonEmptyStringSchema.max(4096),
+    params: zcodeManagedRuntimeCapabilitiesRequestSchema,
+  })
+  .strict();
+export const hostLumiRuntimeCapabilitiesResultSchema = z
+  .object({
+    type: z.literal("lumi-runtime-capabilities-result"),
+    requestId: nonEmptyStringSchema.max(128),
+    ok: z.boolean(),
+    ack: zcodeManagedRuntimeCapabilitiesAckSchema.optional(),
+    errorCode: z
+      .string()
+      .regex(/^lumi_[a-z_]{1,80}$/)
+      .optional(),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      value.ok ? value.ack !== undefined && value.errorCode === undefined : value.ack === undefined,
+    { message: "refused runtime capability report cannot carry ack" },
+  );
+export const hostLumiManagedToolReportResultSchema = z
+  .object({
+    type: z.literal("lumi-managed-tool-report-result"),
+    requestId: nonEmptyStringSchema.max(128),
+    ok: z.boolean(),
+    ack: zcodeManagedToolResultAckSchema.optional(),
+    errorCode: z
+      .string()
+      .regex(/^lumi_[a-z_]{1,80}$/)
+      .optional(),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      value.ok ? value.ack !== undefined && value.errorCode === undefined : value.ack === undefined,
+    { message: "refused report cannot carry an ACK" },
+  );
+export const hostLumiManagedToolDecisionResultSchema = z
+  .object({
+    type: z.literal("lumi-managed-tool-decision-result"),
+    requestId: nonEmptyStringSchema.max(128),
+    ok: z.boolean(),
+    result: zcodeManagedToolDecisionResultSchema.optional(),
+    errorCode: z
+      .string()
+      .regex(/^lumi_[a-z_]{1,80}$/)
+      .optional(),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      value.ok
+        ? value.result !== undefined && value.errorCode === undefined
+        : value.result === undefined,
+    {
+      message: "a refused tool decision cannot carry an execution result",
+    },
+  );
+
 export const hostIncomingMessageSchema = z.discriminatedUnion("type", [
   z
     .object({ type: z.literal("database-startup-control"), control: databaseStartupControlSchema })
     .strict(),
   hostResourceUsageSnapshotRequestMessageSchema,
+  hostLumiManagedRequestAuthResultMessageSchema,
+  hostLumiManagedToolDecisionResultSchema,
+  hostLumiManagedToolReportResultSchema,
+  hostLumiManagedToolIdentityResultSchema,
+  hostLumiManagedAutomationRunMessageSchema,
+  hostLumiManagedAutomationCancelMessageSchema,
+  hostLumiRuntimeCapabilitiesResultSchema,
   z
     .object({ type: z.literal("resource-usage-snapshot-cancel"), requestId: nonEmptyStringSchema })
     .strict(),
@@ -1025,6 +1279,14 @@ export const hostResponseMessageSchema = z.discriminatedUnion("type", [
   hostFeedbackLogArchiveRequestResponseSchema,
   hostBrowserExecuteRequestResponseSchema,
   hostLocalMediaPreviewPathAuthorizeRequestResponseSchema,
+  hostLumiManagedRequestAuthRequestResponseSchema,
+  hostLumiManagedToolDecisionRequestSchema,
+  hostLumiManagedToolReportRequestSchema,
+  hostLumiManagedToolIdentityRequestSchema,
+  hostLumiRuntimeCapabilitiesRequestSchema,
+  hostLumiManagedRunTerminalOutcomeResponseSchema,
+  hostLumiManagedAutomationRunResultResponseSchema,
+  hostLumiManagedAutomationCancelResultResponseSchema,
   hostNetworkTelemetryBatchResponseSchema,
   hostProviderProvisioningSourceChangedResponseSchema,
   hostProviderProvisioningExecutionResultResponseSchema,

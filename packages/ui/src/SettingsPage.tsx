@@ -1663,6 +1663,7 @@ export function SettingsPage({
                         {activeSection === "general" ? (
                           <>
                             <LumiAccountSection
+                              onManagedRunStarted={() => onBack?.()}
                               workspace={
                                 activeWorkspacePath
                                   ? {

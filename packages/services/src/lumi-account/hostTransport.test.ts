@@ -15,6 +15,59 @@ test("refuses credentials, insecure remote origins and non-origin URLs", () => {
   }
 });
 
+test("host transport exposes only validated server-owned managed options", async () => {
+  const orgId = `org_${"a".repeat(32)}`;
+  const projectId = `prj_${"b".repeat(32)}`;
+  const agentId = `agd_${"c".repeat(32)}`;
+  const transport = new LumiAccountHostTransport("https://lumi.example", async (url, init) => {
+    const parsed = new URL(String(url));
+    if (parsed.pathname === `/api/v1/orgs/${orgId}/agents`) {
+      assert.equal(parsed.searchParams.get("project_id"), projectId);
+      return Response.json({
+        items: [
+          {
+            id: agentId,
+            org_id: orgId,
+            project_id: projectId,
+            name: "Managed agent",
+            version: 2,
+            lifecycle: "active",
+            default_model_alias: "coding-default",
+          },
+        ],
+        has_more: false,
+      });
+    }
+    assert.equal(parsed.pathname, "/api/v1/inference/models");
+    assert.equal(new Headers(init?.headers).get("X-Org-ID"), orgId);
+    return Response.json({
+      items: [
+        {
+          alias: "coding-default",
+          display_name: "Coding",
+          available: true,
+          lifecycle: "active",
+        },
+      ],
+      has_more: false,
+    });
+  });
+  assert.deepEqual(await transport.listAgents(orgId, projectId), [
+    {
+      id: agentId,
+      orgId,
+      projectId,
+      name: "Managed agent",
+      version: 2,
+      defaultModelAlias: "coding-default",
+      lifecycle: "active",
+    },
+  ]);
+  assert.deepEqual(await transport.listManagedModels(orgId), [
+    { alias: "coding-default", displayName: "Coding", available: true, lifecycle: "active" },
+  ]);
+});
+
 test("real S256 pair and host-private cookies follow the frozen auth contract", async () => {
   const session = "a".repeat(64);
   const csrf = "b".repeat(64);

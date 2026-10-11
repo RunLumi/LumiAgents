@@ -156,6 +156,15 @@ keychain / `safeStorage` identity are not rewritten.
 
 ## Not done / needs a separate decision
 
+The in-progress managed integration adds a private Agent reverse tool-decision
+port through Host/Main to the Lumi DeviceToken broker. Main retains the credential
+and validates run/workspace/session scope; Core preserves local mode and blocks
+late allow after cancellation. See [managed execution spec](../specs/lumi-agents/06-managed-run-execution.md)
+for ownership, compatibility and proof boundaries. This is not a release-complete
+tool/approval/scheduler implementation: private client admission now obtains the
+backend's once-only claim before releasing allow; reviewed catalog mapping,
+approval waiting/automatic result reporting and actual Electron effects remain owed.
+
 - **Official brand artwork.** `brand/*` is an **interim original mark** authored for this
   fork, not an approved final brand. Replace with the official folded-L set and re-run
   `pnpm lumi:brand-assets`.

@@ -95,6 +95,43 @@ rewritten and no new environment name is introduced. Acceptance: a fake OS HOME
 holding a conflicting `setting.json` does not change an explicit root; a fresh
 runtime replay proves nothing is created under the fake HOME. Not yet proven.
 
+### Test-profile isolation: Main OS identity vs Host/Agent home
+
+Three contexts are distinct and must not be conflated in logs or manifests:
+
+1. **Native OS keystore context** (Main only): the real OS account HOME that
+   macOS Keychain / `safeStorage` need. A test profile never replaces, mocks or
+   bypasses it; unavailable encryption stays fail-closed.
+2. **Main application data** (`ZCODE_DESKTOP_USER_DATA_DIR`, `..._SESSION_DATA_DIR`,
+   `ZCODE_DATA_BASE_DIR`): explicit test-profile roots.
+3. **Host/Agent child home**: the existing `ZCODE_DESKTOP_HOME_DIR`. When set,
+   Main writes `HOME` and `USERPROFILE` of every Host (and scheduler) process to
+   that root, so Agent global hooks, settings, skills and session DB cannot read
+   the operator's personal home. Agents inherit it from the Host unchanged.
+
+Rules: the root must be absolute (else Main refuses to fork); an existing path is
+resolved with realpath, a not-yet-created path is kept normalized. Unset keeps
+production behavior (inherited HOME), with no data migration. No new env name is
+introduced, remote Hosts are unaffected, and Main's own process HOME is never
+rewritten by this seam. Acceptance: forwarding, default, and override tests in
+`hostProcessHomeEnv.test.ts`; a fresh runtime replay proves Host/Agent paths.
+
+### Ownership of extracted helpers (behavior-preserving, max-lines maintenance)
+
+- Main `lumiAccountOwner` stays the sole owner of the managed-run lease map
+  (`hostSessionId`, runtime capability snapshot/queue). `lumiManagedToolAdmission`
+  (tool decision, reviewed-identity resolution, tool result) holds no lease map
+  or credential: it reads the live lease and authorizes only through owner
+  callbacks (`lease`, `authorize`, `resolveIdentity`). Each request re-authorizes
+  the exact lease before the awaited call and re-checks lease identity after it;
+  a replaced/removed lease refuses the late reply. Runtime-capability publication
+  keeps its own atomic per-lease queue publisher, unchanged.
+- `LumiDeviceHostTransport` stays the sole device-credential owner. The
+  heartbeat/policy adapter (`deviceHeartbeatPolicy`) and shared field validators
+  (`deviceFields`) read the credential through a private callback, never cache or
+  export it, and reject a heartbeat response whose credential was rotated or
+  cleared while in flight. Public signatures and error codes are unchanged.
+
 ## Lumi-first startup entry (supersedes visible ZCode login)
 
 When the Lumi bridge exists, Lumi restore alone owns automatic login entry.

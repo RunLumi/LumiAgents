@@ -1,5 +1,28 @@
 import { requestPluginReferenceCatalog } from "#src/zcode-agent/pluginReferenceCatalogRequest.js";
 import {
+  zcodeManagedToolIdentityRequestSchema,
+  zcodeManagedToolIdentityResolutionSchema,
+  zcodeManagedRuntimeCapabilitiesRequestSchema,
+  zcodeManagedRuntimeCapabilitiesAckSchema,
+  type ZCodeManagedRuntimeCapabilitiesRequest,
+  type ZCodeManagedRuntimeCapabilitiesAck,
+  type ZCodeManagedToolIdentityRequest,
+  type ZCodeManagedToolIdentityResolution,
+} from "@zcode/shared";
+import {
+  zcodeManagedToolResultRequestParamsSchema,
+  zcodeManagedToolResultAckSchema,
+  type ZCodeManagedToolResultRequestParams,
+  type ZCodeManagedToolResultAck,
+} from "@zcode/shared";
+import {
+  zcodeManagedRunContextSchema,
+  zcodeManagedToolDecisionRequestParamsSchema,
+  zcodeManagedToolDecisionResultSchema,
+  type ZCodeManagedToolDecisionRequestParams,
+  type ZCodeManagedToolDecisionResult,
+} from "@zcode/shared";
+import {
   localTtftFactsSchema,
   sessionDebugSnapshotSchema,
   type LocalTtftFacts,
@@ -16,8 +39,14 @@ import type {
   ModelSelectionView,
   ProviderSource,
 } from "@zcode/provider";
-import { completeNewModelSelection } from "@zcode/provider";
+import {
+  completeNewModelSelection,
+  createLumiManagedCorrelationHeaders,
+  LUMI_MANAGED_PROVIDER_ID,
+  normalizeLumiModelAlias,
+} from "@zcode/provider";
 import type { OffPeakClientConfig } from "#src/coding-plan-subscription/codingPlanSubscription.js";
+import { registerManagedAliasOnClient } from "#src/zcode-agent/managedAliasRegistration.js";
 import {
   ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
   formatLogPrefix,
@@ -807,6 +836,7 @@ interface ZCodeAgentProviderReadinessSnapshot {
 
 function createProviderReadinessSnapshotFromSelectionView(
   view: ModelSelectionView,
+  managedSelection?: { providerId: string; modelId: string },
 ): ZCodeAgentProviderReadinessSnapshot {
   for (const provider of view.providers) {
     const model = provider.models[0];
@@ -818,6 +848,17 @@ function createProviderReadinessSnapshotFromSelectionView(
         ready: true,
         providerId: provider.providerId,
         modelId: model.modelId,
+      },
+    };
+  }
+  if (managedSelection) {
+    return {
+      providerCount: 1,
+      revision: `model-selection:${view.revision}:managed:${managedSelection.modelId}`,
+      readiness: {
+        ready: true,
+        providerId: managedSelection.providerId,
+        modelId: managedSelection.modelId,
       },
     };
   }
@@ -862,10 +903,36 @@ interface CreateZCodeAgentServiceOptions extends Omit<
   ZCodeAgentProcessManagerOptions,
   "idleTimeoutMs"
 > {
+  resolveManagedToolIdentity?: (
+    params: ZCodeManagedToolIdentityRequest,
+    workspaceIdentity: string,
+  ) => Promise<ZCodeManagedToolIdentityResolution>;
+  reportRuntimeCapabilities?: (
+    params: ZCodeManagedRuntimeCapabilitiesRequest,
+    workspaceIdentity: string,
+  ) => Promise<ZCodeManagedRuntimeCapabilitiesAck>;
+  reportManagedToolResult?: (
+    params: ZCodeManagedToolResultRequestParams,
+    workspaceIdentity: string,
+  ) => Promise<ZCodeManagedToolResultAck>;
   /** 仅供 MCP 状态探测进程使用，不能把空闲回收传给 chat。 */
   mcpStatusIdleTimeoutMs?: number;
   accountProviderConfigSource?: ProviderSource<AccountProviderConfigSnapshot>;
   accountRequestAuthService?: IAccountRequestAuthService;
+  /** Main-owned Lumi session resolver, called once per managed model request attempt. */
+  resolveManagedRequestAuth?: (
+    request: ZCodeProviderRuntimeHeadersRequestParams,
+  ) => Promise<AccountRequestAuthMaterial | undefined>;
+  requestManagedToolDecision?: (
+    params: ZCodeManagedToolDecisionRequestParams,
+    workspaceIdentity: string,
+  ) => Promise<ZCodeManagedToolDecisionResult>;
+  /** Add a server-approved Lumi alias to the Host-only in-memory provider projection. */
+  ensureManagedProviderAlias?: (modelAlias: string) => Promise<void>;
+  /** Resolve a newly selected alias against the full Registry, including hidden managed models. */
+  resolveManagedProviderModelSelection?: (modelAlias: string) => ModelSelection | undefined;
+  /** Readiness-only projection for an explicitly registered hidden managed alias. */
+  getManagedProviderReadiness?: () => { providerId: string; modelId: string } | undefined;
   /** Desktop Host 请求 Main 登记 Agent 已授权的精确本地视频路径。 */
   authorizeLocalMediaPreviewPath?: (path: string) => Promise<string>;
   modelSelectionReadinessSource?: ModelSelectionReadinessSource;
@@ -1258,6 +1325,18 @@ export function createZCodeAgentService(
   async function resolveAccountRequestAuth(
     request: ZCodeProviderRuntimeHeadersRequestParams,
   ): Promise<AccountRequestAuthMaterial | undefined> {
+    if (request.managedContext) {
+      if (request.providerId !== "lumi-managed") return undefined;
+      const auth = await options?.resolveManagedRequestAuth?.(request);
+      if (!auth) return undefined;
+      return {
+        ...auth,
+        headers: {
+          ...auth.headers,
+          ...createLumiManagedCorrelationHeaders(request.managedContext),
+        },
+      };
+    }
     if (!request.accountAccess || !accountRequestAuthService) {
       return undefined;
     }
@@ -1362,7 +1441,10 @@ export function createZCodeAgentService(
   let modelSelectionSubscription = modelSelectionReadinessSource?.onDidChange?.((view) => {
     void handleProviderReadinessChanged({
       reason: "model_selection_changed",
-      snapshot: createProviderReadinessSnapshotFromSelectionView(view),
+      snapshot: createProviderReadinessSnapshotFromSelectionView(
+        view,
+        options?.getManagedProviderReadiness?.(),
+      ),
     }).catch((error) => {
       logger.warn(undefined, "model selection readiness 热同步失败", {
         message: error instanceof Error ? error.message : String(error),
@@ -2213,6 +2295,119 @@ export function createZCodeAgentService(
           return;
         }
 
+        if (request.method === zcodeProtocolMethods.interactionResolveManagedToolIdentity) {
+          const parsed = zcodeManagedToolIdentityRequestSchema.safeParse(request.params);
+          if (!parsed.success || parsed.data.traceId !== request.trace?.traceId) {
+            void client.respondError(request.id, {
+              code: -32602,
+              message: "Invalid managed identity request",
+            });
+            return;
+          }
+          const identity = workspace.workspaceIdentity ?? workspace.workspacePath;
+          void (async () => {
+            try {
+              if (!options?.resolveManagedToolIdentity || !identity?.trim())
+                throw new Error("lumi_identity_unavailable");
+              await client.respond(
+                request.id,
+                zcodeManagedToolIdentityResolutionSchema.parse(
+                  await options.resolveManagedToolIdentity(parsed.data, identity),
+                ),
+              );
+            } catch {
+              await client.respondError(request.id, {
+                code: -32031,
+                message: "lumi_identity_refused",
+              });
+            }
+          })().catch(() => {});
+          return;
+        }
+        if (request.method === zcodeProtocolMethods.interactionReportRuntimeCapabilities) {
+          const parsed = zcodeManagedRuntimeCapabilitiesRequestSchema.safeParse(request.params);
+          if (!parsed.success || parsed.data.traceId !== request.trace?.traceId) {
+            void client.respondError(request.id, {
+              code: -32602,
+              message: "Invalid runtime capability report",
+            });
+            return;
+          }
+          const identity = workspace.workspaceIdentity ?? workspace.workspacePath;
+          void (async () => {
+            try {
+              if (!options?.reportRuntimeCapabilities || !identity?.trim())
+                throw new Error("lumi_runtime_capabilities_unavailable");
+              await client.respond(
+                request.id,
+                zcodeManagedRuntimeCapabilitiesAckSchema.parse(
+                  await options.reportRuntimeCapabilities(parsed.data, identity),
+                ),
+              );
+            } catch {
+              await client.respondError(request.id, {
+                code: -32031,
+                message: "lumi_runtime_capabilities_refused",
+              });
+            }
+          })().catch(() => {});
+          return;
+        }
+        if (request.method === zcodeProtocolMethods.interactionReportManagedToolResult) {
+          const parsed = zcodeManagedToolResultRequestParamsSchema.safeParse(request.params);
+          if (!parsed.success || parsed.data.traceId !== request.trace?.traceId) {
+            void client.respondError(request.id, {
+              code: -32602,
+              message: "Invalid managed tool result report",
+            });
+            return;
+          }
+          const identity = workspace.workspaceIdentity ?? workspace.workspacePath;
+          void (async () => {
+            try {
+              if (!options?.reportManagedToolResult || !identity?.trim())
+                throw new Error("lumi_managed_result_unavailable");
+              const ack = zcodeManagedToolResultAckSchema.parse(
+                await options.reportManagedToolResult(parsed.data, identity),
+              );
+              await client.respond(request.id, ack);
+            } catch {
+              await client.respondError(request.id, {
+                code: -32031,
+                message: "lumi_managed_result_refused",
+              });
+            }
+          })().catch(() => {});
+          return;
+        }
+        if (request.method === zcodeProtocolMethods.interactionRequestManagedToolDecision) {
+          const parsed = zcodeManagedToolDecisionRequestParamsSchema.safeParse(request.params);
+          if (!parsed.success || parsed.data.traceId !== request.trace?.traceId) {
+            void client.respondError(request.id, {
+              code: -32602,
+              message: "Invalid managed tool decision request",
+            });
+            return;
+          }
+          const identity = workspace.workspaceIdentity ?? workspace.workspacePath;
+          void (async () => {
+            try {
+              if (!options?.requestManagedToolDecision || !identity?.trim())
+                throw new Error("lumi_managed_tool_unavailable");
+              const result = zcodeManagedToolDecisionResultSchema.parse(
+                await options.requestManagedToolDecision(parsed.data, identity),
+              );
+              await client.respond(request.id, result);
+            } catch {
+              await client.respondError(request.id, {
+                code: -32031,
+                message: "lumi_managed_tool_refused",
+              });
+            }
+          })().catch(() => {});
+          return;
+        }
+
         if (request.method === zcodeProtocolMethods.interactionRequestUserInput) {
           const parsed = zcodeUserInputRequestParamsSchema.safeParse(request.params);
           if (!parsed.success) {
@@ -2273,6 +2468,21 @@ export function createZCodeAgentService(
             workspacePath: workspace.workspacePath,
           });
           const accountAccess = parsed.data.accountAccess;
+          if (parsed.data.managedContext) {
+            if (parsed.data.providerId !== "lumi-managed" || !options?.resolveManagedRequestAuth) {
+              pendingProviderRuntimeHeaders.delete(pendingKey);
+              void pending.client.respond(pending.protocolRequestId, {
+                headersApplied: false,
+                errorMessage: "Managed provider request auth is unavailable",
+              });
+              return;
+            }
+            void respondAccountRequestAuthWithoutInteraction({
+              key: pendingKey,
+              pending,
+            });
+            return;
+          }
           if (accountRequestAuthService && accountAccess) {
             // Account API Key / Team Runtime Key / Start Plan JWT 都不需要 Renderer 交互。
             // Host 按 Model 固定的 Account Access 自动应答，避免后台任务和无 pane 会话依赖 UI 订阅者。
@@ -2893,6 +3103,7 @@ export function createZCodeAgentService(
     if (modelSelectionReadinessSource) {
       return createProviderReadinessSnapshotFromSelectionView(
         await modelSelectionReadinessSource.getView(),
+        options?.getManagedProviderReadiness?.(),
       );
     }
     return undefined;
@@ -3032,6 +3243,19 @@ export function createZCodeAgentService(
       workspacePath: params.workspacePath,
     });
     return entry;
+  }
+
+  /** 每个 client（= 进程生命周期）只登记一次；重启后是新 client，会重新登记。 */
+  const managedAliasesByClient = new WeakMap<ZCodeProtocolClient, Set<string>>();
+  async function ensureManagedAliasOnClient(
+    client: ZCodeProtocolClient,
+    modelAlias: string,
+  ): Promise<void> {
+    const registered = managedAliasesByClient.get(client) ?? new Set<string>();
+    if (registered.has(modelAlias)) return;
+    await registerManagedAliasOnClient(client, modelAlias);
+    registered.add(modelAlias);
+    managedAliasesByClient.set(client, registered);
   }
 
   async function getClient(params: ZCodeAgentWorkspaceTarget) {
@@ -4409,6 +4633,27 @@ export function createZCodeAgentService(
       }
     },
 
+    async prepareManagedProviderAlias(params: {
+      modelAlias: string;
+      managedContext: import("@zcode/shared").ZCodeManagedRunContext;
+      workspace: ZCodeAgentWorkspaceTarget;
+    }): Promise<ModelSelection> {
+      if (
+        zcodeManagedRunContextSchema.parse(params.managedContext).executionMode !== "managed" ||
+        !options?.ensureManagedProviderAlias ||
+        !options.resolveManagedProviderModelSelection
+      )
+        throw new Error("lumi_managed_run_required");
+      const modelAlias = normalizeLumiModelAlias(params.modelAlias);
+      await options.ensureManagedProviderAlias(modelAlias);
+      const selection = options.resolveManagedProviderModelSelection(modelAlias);
+      if (!selection) throw new Error("lumi_managed_model_unavailable");
+      // 已在运行的 Agent 只在 spawn 时拿到别名；必须在 session/create 选中它之前，
+      // 把同一别名登记进该 workspace 自己持有的进程（不是全局、不是第一个别名）。
+      await ensureManagedAliasOnClient(await getClient(params.workspace), modelAlias);
+      return selection;
+    },
+
     async testModelConnectivity(params: ZCodeAgentTestModelConnectivityParams) {
       const client = await getClient(params);
       await ensureAccountProviderConfigSynced({
@@ -4429,7 +4674,19 @@ export function createZCodeAgentService(
 
     async sendPrompt(params: ZCodeAgentSendPromptParams) {
       const startedAt = Date.now();
+      if (params.modelSelection?.providerId === LUMI_MANAGED_PROVIDER_ID) {
+        if (
+          params.modelExecution?.managedContext?.executionMode !== "managed" ||
+          !options?.ensureManagedProviderAlias
+        )
+          throw new Error("lumi_managed_run_required");
+        await options.ensureManagedProviderAlias(params.modelSelection.modelId);
+      }
       const client = await getClient(params);
+      if (params.modelSelection?.providerId === LUMI_MANAGED_PROVIDER_ID) {
+        // 重启或恢复后的进程同样要在选中前登记；已登记的 client 直接跳过。
+        await ensureManagedAliasOnClient(client, params.modelSelection.modelId);
+      }
       const sessionTraceId = params.sessionTraceId?.trim() || getSessionTraceId(params);
       const logTraceId = sessionTraceId ?? params.inputId;
       const browserAmbientContext =

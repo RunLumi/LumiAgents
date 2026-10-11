@@ -1,6 +1,12 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
+import { randomUUID } from "node:crypto";
+import type { LumiManagedRunProjection, LumiManagedSessionProjection } from "@zcode/shared";
 import { id, instant } from "./deviceFields.js";
+import { LumiDevicePolicyHostTransport } from "./deviceHeartbeatPolicy.js";
 import { LumiAccountError } from "./errors.js";
+import { LumiManagedRunHostTransport } from "./managedRunTransport.js";
+import { LumiManagedToolHostTransport } from "./managedToolTransport.js";
+import { createLumiAutomationLeaseTransport } from "./automationLeaseTransport.js";
 import { pagePath, readCompletePages } from "./pagination.js";
 
 export interface DeviceEnrollmentInput {
@@ -20,6 +26,20 @@ export interface LumiDeviceProjection {
 export interface LumiDeviceCredential extends LumiDeviceProjection {
   token: string;
 }
+
+export type LumiRuntimeCapabilityReport = Partial<
+  Record<
+    | "browser_use"
+    | "computer_use"
+    | "remote_environment"
+    | "automation_eligible"
+    | "filesystem_write"
+    | "process_execution"
+    | "network_access"
+    | "mcp_execution",
+    boolean
+  >
+>;
 
 export interface LumiWorkspaceBinding {
   id: string;
@@ -42,6 +62,9 @@ export class LumiDeviceHostTransport {
         save(value: LumiDeviceCredential): Promise<void>;
       }
     | undefined;
+  readonly #managedRuns: LumiManagedRunHostTransport;
+  readonly #managedTools: LumiManagedToolHostTransport;
+  readonly #policy: LumiDevicePolicyHostTransport;
   constructor(
     origin: string,
     fetchImpl: typeof fetch = fetch,
@@ -64,8 +87,24 @@ export class LumiDeviceHostTransport {
     this.#origin = url.origin;
     this.#fetch = fetchImpl;
     this.#persistence = persistence;
+    this.#managedRuns = new LumiManagedRunHostTransport(
+      (path, method, body, headers) => this.#request(path, method, body, true, headers),
+      () => this.#credential,
+    );
+    this.#managedTools = new LumiManagedToolHostTransport(
+      (path, body, headers) => this.#request(path, "POST", body, true, headers),
+      () => this.#credential,
+    );
+    this.#policy = new LumiDevicePolicyHostTransport(
+      (path, method, body) => this.#request(path, method, body, true),
+      () => this.#credential,
+    );
   }
 
+  /** P06 lease routes over the device token. Refusals keep the server's stable reason. */
+  automationLeases() {
+    return createLumiAutomationLeaseTransport(this.#origin, this.#fetch, () => this.#credential);
+  }
   async listWorkspaceBindings(): Promise<LumiWorkspaceBinding[]> {
     // The route has no cursor and a hard ceiling of 100 rows; a full page fails closed (see pagination.ts).
     return readCompletePages<LumiWorkspaceBinding>({
@@ -144,6 +183,59 @@ export class LumiDeviceHostTransport {
     };
   }
 
+  async createManagedSession(
+    input: {
+      projectId: string;
+      agentDefinitionId: string;
+      workspaceBindingId: string;
+      title?: string;
+    },
+    idempotencyKey = randomUUID(),
+  ): Promise<LumiManagedSessionProjection> {
+    return this.#managedRuns.createSession(input, idempotencyKey);
+  }
+
+  async createManagedRun(
+    agentSessionId: string,
+    modelAlias: string,
+    idempotencyKey = randomUUID(),
+  ): Promise<LumiManagedRunProjection> {
+    return this.#managedRuns.createRun(agentSessionId, modelAlias, idempotencyKey);
+  }
+
+  async getManagedRun(runId: string): Promise<LumiManagedRunProjection> {
+    return this.#managedRuns.getRun(runId);
+  }
+  requestManagedToolDecision(input: import("@zcode/shared").ZCodeManagedToolDecisionRequestParams) {
+    return this.#managedTools.decide(input);
+  }
+  reportManagedToolResult(
+    input: Parameters<LumiManagedToolHostTransport["reportResult"]>[0],
+    status: "completed" | "failed" | "cancelled",
+  ) {
+    return this.#managedTools.reportResult(input, status);
+  }
+
+  async startManagedRun(run: LumiManagedRunProjection, idempotencyKey = randomUUID()) {
+    return this.#managedRuns.startRun(run, idempotencyKey);
+  }
+
+  async completeManagedRun(run: LumiManagedRunProjection, idempotencyKey = randomUUID()) {
+    return this.#managedRuns.completeRun(run, idempotencyKey);
+  }
+
+  async failManagedRun(
+    run: LumiManagedRunProjection,
+    failureCode: string,
+    idempotencyKey = randomUUID(),
+  ) {
+    return this.#managedRuns.failRun(run, failureCode, idempotencyKey);
+  }
+
+  async cancelManagedRun(run: LumiManagedRunProjection, idempotencyKey = randomUUID()) {
+    return this.#managedRuns.cancelRun(run, idempotencyKey);
+  }
+
   async restore(): Promise<boolean> {
     const value = await this.#persistence?.load();
     if (!value) return false;
@@ -163,8 +255,9 @@ export class LumiDeviceHostTransport {
     method: "GET" | "POST" | "DELETE",
     body?: unknown,
     authenticated = false,
+    extraHeaders: Record<string, string> = {},
   ) {
-    const headers: Record<string, string> = { Accept: "application/json" };
+    const headers: Record<string, string> = { Accept: "application/json", ...extraHeaders };
     if (body !== undefined) headers["Content-Type"] = "application/json";
     if (authenticated) {
       if (!this.#credential || Date.parse(this.#credential.tokenExpiresAt) <= Date.now())
@@ -239,22 +332,14 @@ export class LumiDeviceHostTransport {
     const { id, orgId, tokenExpiresAt, policyVersion } = this.#credential;
     return { id, orgId, tokenExpiresAt, policyVersion };
   }
-  async policy() {
-    const row = await this.#request("/api/v1/devices/policy", "GET", undefined, true);
-    if (!row || row.org_id !== this.#credential?.orgId || !Number.isSafeInteger(row.policy_version))
-      throw new LumiAccountError("lumi_policy_invalid");
-    instant(row.expires_at);
-    return row;
+  policy() {
+    return this.#policy.policy();
   }
-  async acknowledge(policyVersion: number): Promise<void> {
-    if (!Number.isSafeInteger(policyVersion) || policyVersion < 1)
-      throw new LumiAccountError("lumi_policy_invalid");
-    await this.#request(
-      "/api/v1/devices/policy/ack",
-      "POST",
-      { policy_version: policyVersion },
-      true,
-    );
+  acknowledge(policyVersion: number): Promise<void> {
+    return this.#policy.acknowledge(policyVersion);
+  }
+  heartbeat(appVersion: string, capabilities: LumiRuntimeCapabilityReport) {
+    return this.#policy.heartbeat(appVersion, capabilities);
   }
 
   async adoptRecoveredToken(value: {

@@ -12,9 +12,25 @@ import {
 } from "@zcode/provider-node";
 import { getAppConfigDir as resolveAppConfigDir } from "./paths.js";
 import {
+  completeNewModelSelection,
+  LumiManagedProviderConfigSource,
+  LUMI_MANAGED_PROVIDER_ALIASES_ENV,
+  LUMI_MANAGED_PROVIDER_ORIGIN_ENV,
+  LUMI_MANAGED_PROVIDER_ID,
+} from "@zcode/provider";
+import {
   buildLocalMediaPreviewUrl,
   isProviderProvisioningAccountCredentialKey,
   type ProviderProvisioningTrigger,
+  type ZCodeProviderRuntimeHeadersRequestParams,
+  type ZCodeManagedToolDecisionRequestParams,
+  type ZCodeManagedToolDecisionResult,
+  type ZCodeManagedToolResultRequestParams,
+  type ZCodeManagedToolResultAck,
+  type ZCodeManagedRuntimeCapabilitiesRequest,
+  type ZCodeManagedRuntimeCapabilitiesAck,
+  type ZCodeManagedToolIdentityRequest,
+  type ZCodeManagedToolIdentityResolution,
 } from "@zcode/shared";
 
 export {
@@ -253,6 +269,15 @@ export {
   CLAIM_STALE_MS,
   computeRetryAt,
 } from "./session/automationRepo.js";
+export {
+  AutomationManagedAdoptionError,
+  buildAutomationAdoptionCorrelation,
+} from "./session/automationManagedAdoption.js";
+export type {
+  AutomationManagedAdoption,
+  AutomationManagedAdoptionErrorCode,
+  AutomationManagedAdoptionState,
+} from "./session/automationManagedAdoption.js";
 export { AutomationService, InvalidCronExprError } from "./session/automationService.js";
 // 闲时任务与 automation 同库不同表；类型/常量全独立。
 export { OffPeakTaskRepo, OFF_PEAK_CLAIM_STALE_MS } from "./session/offPeakTaskRepo.js";
@@ -1298,6 +1323,33 @@ export function createLocalServices(options: {
   hostApiNetworkTransport?: HostApiNetworkTransport;
   /** Desktop Host 请求 Main 登记 Agent 已授权的精确本地视频路径。 */
   authorizeLocalMediaPreviewPath?: (path: string) => Promise<string>;
+  /** Main-owned Lumi account auth; called for each managed physical model request. */
+  resolveManagedRequestAuth?: (
+    request: ZCodeProviderRuntimeHeadersRequestParams,
+  ) => Promise<{ apiKey?: string; headers?: Record<string, string> } | undefined>;
+  requestManagedToolDecision?: (
+    params: ZCodeManagedToolDecisionRequestParams,
+    workspaceIdentity: string,
+  ) => Promise<ZCodeManagedToolDecisionResult>;
+  reportManagedToolResult?: (
+    params: ZCodeManagedToolResultRequestParams,
+    workspaceIdentity: string,
+  ) => Promise<ZCodeManagedToolResultAck>;
+  resolveManagedToolIdentity?: (
+    params: ZCodeManagedToolIdentityRequest,
+    workspaceIdentity: string,
+  ) => Promise<ZCodeManagedToolIdentityResolution>;
+  reportRuntimeCapabilities?: (
+    params: ZCodeManagedRuntimeCapabilitiesRequest,
+    workspaceIdentity: string,
+  ) => Promise<ZCodeManagedRuntimeCapabilitiesAck>;
+  /** Main private bridge receives P05 run settlement from host-observed task terminal events. */
+  onManagedRunTerminal?: (input: {
+    runId: string;
+    outcome: "succeeded" | "failed" | "stopped";
+  }) => Promise<void> | void;
+  /** Lumi API origin comes from Main's non-secret environment setting. */
+  lumiControlPlaneOrigin?: string;
   feedback?: Partial<
     Omit<CreateFeedbackServiceOptions, "apiClient" | "credentialService" | "oauthService">
   >;
@@ -1563,8 +1615,15 @@ export function createLocalServices(options: {
     // Repository 仅在新 Personal 配置不存在时导入，并保留旧文件以便回滚。
     readLegacyProviders: () => readLegacyZCodeConfigProviders(),
   });
+  const lumiManagedProviderSource = options?.resolveManagedRequestAuth
+    ? new LumiManagedProviderConfigSource(
+        providerConfigRuntime.configService,
+        options.lumiControlPlaneOrigin ?? "https://agents-cp.runlumi.app",
+      )
+    : undefined;
+  const providerConfigSource = lumiManagedProviderSource ?? providerConfigRuntime.configService;
   const accountProviderConfigSource = createAccountProviderConfigSource({
-    configSource: providerConfigRuntime.configService,
+    configSource: providerConfigSource,
     readSettings: readAccountProviderSettings,
     async loadCodingPlanApiKey(providerId, family, accountIdentity, forceRefresh) {
       if (isStartPlanModelProviderId(providerId)) return null;
@@ -1625,6 +1684,7 @@ export function createLocalServices(options: {
     | undefined;
   const providerRuntime = createProviderRuntimeFromConfigRuntime({
     configRuntime: providerConfigRuntime,
+    ...(lumiManagedProviderSource ? { registryConfigSource: lumiManagedProviderSource } : {}),
     accountSource: accountProviderConfigSource,
     modelSelectionConfiguredDefaultSource,
     disposeModelSelectionConfiguredDefaultSource: () =>
@@ -2091,6 +2151,35 @@ export function createLocalServices(options: {
       ? { accountProviderConfigSource: agentAccountProviderConfigSource }
       : {}),
     accountRequestAuthService,
+    ...(options?.resolveManagedToolIdentity
+      ? { resolveManagedToolIdentity: options.resolveManagedToolIdentity }
+      : {}),
+    ...(options?.reportRuntimeCapabilities
+      ? { reportRuntimeCapabilities: options.reportRuntimeCapabilities }
+      : {}),
+    ...(options?.reportManagedToolResult
+      ? { reportManagedToolResult: options.reportManagedToolResult }
+      : {}),
+    ...(options?.requestManagedToolDecision
+      ? { requestManagedToolDecision: options.requestManagedToolDecision }
+      : {}),
+    ...(options?.resolveManagedRequestAuth
+      ? { resolveManagedRequestAuth: options.resolveManagedRequestAuth }
+      : {}),
+    ...(lumiManagedProviderSource
+      ? {
+          ensureManagedProviderAlias: async (modelAlias: string) => {
+            await lumiManagedProviderSource.ensureAlias(modelAlias);
+            await providerRuntime.registryService.refresh("lumi-managed-alias");
+          },
+          resolveManagedProviderModelSelection: (modelAlias: string) =>
+            completeNewModelSelection(providerRuntime.registryService.getView(), {
+              providerId: LUMI_MANAGED_PROVIDER_ID,
+              modelId: modelAlias,
+            }),
+          getManagedProviderReadiness: () => lumiManagedProviderSource.getReadinessSelection(),
+        }
+      : {}),
     ...(modelSelectionReadinessSource ? { modelSelectionReadinessSource } : {}),
     authorizeLocalMediaPreviewPath: options?.authorizeLocalMediaPreviewPath,
     ...offPeakToolWiring,
@@ -2248,6 +2337,15 @@ export function createLocalServices(options: {
           zcodeBuiltinFilePath: await providerConfigRuntime.resolveZCodeBuiltinActiveFilePath(),
           personalFilePath: join(resolveAppConfigDir(), PERSONAL_PROVIDER_CONFIG_FILE_NAME),
         }),
+        ...(lumiManagedProviderSource
+          ? {
+              [LUMI_MANAGED_PROVIDER_ALIASES_ENV]: JSON.stringify(
+                lumiManagedProviderSource.getAliases(),
+              ),
+              [LUMI_MANAGED_PROVIDER_ORIGIN_ENV]:
+                options?.lumiControlPlaneOrigin ?? "https://agents-cp.runlumi.app",
+            }
+          : {}),
       };
     },
     ...(isDesktopAttachedRemote
@@ -2338,6 +2436,7 @@ export function createLocalServices(options: {
     taskIndexSyncer: zcodeTaskIndexSyncer,
     settingService,
     cuaProductMcpServerResolver,
+    onManagedRunTerminal: options?.onManagedRunTerminal,
   });
   const botRemoteWorkspaceService = createBotRemoteWorkspaceService({
     parentPort: options?.parentPort,
@@ -2826,5 +2925,57 @@ export type {
   DeviceEnrollmentInput,
 } from "./lumi-account/deviceTransport.js";
 export type { LumiDeviceCredential } from "./lumi-account/deviceTransport.js";
+export type { LumiRuntimeCapabilityReport } from "./lumi-account/deviceTransport.js";
 export type { LumiWorkspaceBinding } from "./lumi-account/deviceTransport.js";
 export type { LumiAdoptionRecord } from "./lumi-account/hostTransport.js";
+export {
+  LumiAutomationLeaseError,
+  LumiAutomationWireError,
+} from "./lumi-account/automationLeaseTransport.js";
+export type { LumiDueOccurrence } from "./lumi-account/automationLeaseTransport.js";
+export type {
+  AutomationImportPreview,
+  ManagedAutomationProjection,
+} from "./lumi-account/automationAdoptionTransport.js";
+export {
+  AutomationAdoptionError,
+  createAutomationAdoptionOwner,
+} from "./lumi-account/automationAdoptionOwner.js";
+export type {
+  AdoptionContextPort,
+  AdoptionLocalPort,
+  AdoptionServerPort,
+  AutomationAdoptionOwner,
+  AutomationAdoptionPreviewResult,
+  AutomationAttachCandidate,
+  AutomationAttachPreview,
+  AutomationAttachRefusal,
+  LocalAutomationMetadata,
+} from "./lumi-account/automationAdoptionOwner.js";
+export { createManagedOccurrenceDriver } from "./lumi-account/automationOccurrenceDriver.js";
+export type {
+  ManagedOccurrence,
+  ManagedOccurrenceDriver,
+  OccurrenceDriverPorts,
+  OccurrenceOutcomeCode,
+  SkippedOccurrence,
+} from "./lumi-account/automationOccurrenceDriver.js";
+export type { LumiAutomationLeaseHostTransport } from "./lumi-account/automationLeaseTransport.js";
+export { createJournaledLeasePort } from "./lumi-account/automationJournaledLeases.js";
+export type {
+  JournaledLeasePort,
+  OccurrenceJournalPort,
+} from "./lumi-account/automationJournaledLeases.js";
+export type {
+  AutomationManagedOccurrence,
+  AutomationManagedOccurrenceState,
+} from "./session/automationManagedOccurrence.js";
+export {
+  buildImportCandidate,
+  buildManagedAutomationCreateBody,
+  classifyLocalAutomation,
+} from "./lumi-account/automationAdoptionMapping.js";
+export type {
+  AdoptableLocalAutomation,
+  AutomationAdoptionClassification,
+} from "./lumi-account/automationAdoptionMapping.js";

@@ -1,5 +1,6 @@
 /* eslint-disable max-lines -- workspace 模型协议与兼容请求处理仍集中在本文件。 */
 import { createInMemorySessionEventStore } from "@zcode/adapters/storage";
+import { createLumiManagedToolDecisionPortAdapter } from "@zcode/core";
 import type { ModelSelection } from "@zcode/contracts";
 import {
   zcodeProviderTestModelConnectivityParamsSchema,
@@ -15,6 +16,7 @@ import {
 } from "./server-types.js";
 import { runSessionModelConfigMutation } from "../zcode-protocol-v4/model-config-mutation.js";
 import { createProviderRuntimeHeadersPort } from "./provider-runtime-headers.js";
+import { createManagedToolDecisionPort } from "./managed-tool-decision.js";
 
 export async function readWorkspacePresentation(
   context: ZCodeProtocolAgentServerContext,
@@ -77,6 +79,16 @@ export async function createWorkspaceZCodeApp(
     ...options,
     platform: context.deps.platform,
     providerRuntimeHeadersPort,
+    ...(!options.managedDecisionPort && !options.managedDecisionAdapter
+      ? {
+          managedDecisionAdapter: {
+            ...createLumiManagedToolDecisionPortAdapter(createManagedToolDecisionPort(context)),
+            requireResultReporting: true,
+            // 端口存在不是托管授权；只允许显式 per-turn context 进入托管门禁。
+            isManaged: () => false,
+          },
+        }
+      : {}),
     runtimeConfig: {
       ...options.runtimeConfig,
       // createZCodeApp 会把 workingDirectory 规范化为执行 cwd。把协议入口的

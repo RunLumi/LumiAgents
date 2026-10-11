@@ -184,3 +184,61 @@ test("workspace binding requires explicit confirmation and rejects injected auth
   assert.equal(result.ok, true);
   assert.equal(binds, 1);
 });
+
+test("managed run requires explicit confirmation and returns only server scope IDs", async () => {
+  const orgId = `org_${"a".repeat(32)}`;
+  const workspaceIdentity = "/local/private/workspace";
+  const context = {
+    organizationId: orgId,
+    projectId: `prj_${"b".repeat(32)}`,
+    deviceId: `dvc_${"c".repeat(32)}`,
+    agentSessionId: `rse_${"d".repeat(32)}`,
+    runId: `run_${"e".repeat(32)}`,
+    agentDefinitionId: `agd_${"f".repeat(32)}`,
+    agentDefinitionVersion: 2,
+    requestId: `req_${"1".repeat(32)}`,
+    executionMode: "managed" as const,
+    policySnapshotId: `pol_${"2".repeat(32)}`,
+    policyVersion: 3,
+  };
+  let starts = 0;
+  const owner = ownerWith({
+    beginManagedRun: async (input: {
+      orgId: string;
+      workspaceIdentity: string;
+      agentDefinitionId: string;
+      modelAlias: string;
+    }) => {
+      assert.equal(input.orgId, orgId);
+      assert.equal(input.workspaceIdentity, workspaceIdentity);
+      assert.equal(input.agentDefinitionId, context.agentDefinitionId);
+      assert.equal(input.modelAlias, "coding-default");
+      starts++;
+      return context;
+    },
+  });
+  const command = {
+    action: "begin-managed-run",
+    orgId,
+    workspaceIdentity,
+    agentDefinitionId: context.agentDefinitionId,
+    modelAlias: "coding-default",
+  };
+  assert.deepEqual(
+    await dispatchLumiAccountCommand({
+      trusted: true,
+      command,
+      getOwner: () => owner,
+    }),
+    { ok: false, code: "lumi_command_invalid" },
+  );
+  assert.equal(starts, 0);
+  const result = await dispatchLumiAccountCommand({
+    trusted: true,
+    command: { ...command, confirm: true },
+    getOwner: () => owner,
+  });
+  assert.deepEqual(result, { ok: true, managedContext: context });
+  assert.equal(JSON.stringify(result).includes("sessionToken"), false);
+  assert.equal(starts, 1);
+});

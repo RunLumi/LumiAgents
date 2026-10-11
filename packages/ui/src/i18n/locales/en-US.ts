@@ -1,6 +1,116 @@
 // Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /** English translations */
 const enUS: Record<string, string> = {
+  "lumiAutomation.menu.handOver": "Hand over to Lumi…",
+  "lumiAutomation.menu.return": "Return to this device…",
+  "lumiAutomation.menu.attach": "Attach to a Lumi automation…",
+  "lumiAutomation.badge.attached": "Attached to Lumi",
+  "lumiAutomation.attach.title": "Attach to a Lumi automation",
+  "lumiAutomation.attach.description":
+    "Choose a scheduled Lumi automation that already exists in this workspace’s project. This device’s original will then execute that schedule, and the original stops running on its own while attached. Nothing is created or changed in Lumi.",
+  "lumiAutomation.attach.destination": "Project",
+  "lumiAutomation.attach.destinationValue": "The project bound to this workspace",
+  "lumiAutomation.attach.choose": "Existing Lumi automations",
+  "lumiAutomation.attach.empty":
+    "This project has no Lumi automations yet. Create one in the control plane, or hand this automation over instead.",
+  "lumiAutomation.attach.truncated": "Only the first 50 automations are shown.",
+  "lumiAutomation.attach.version": "Version {version}",
+  "lumiAutomation.attach.unknownSchedule": "Schedule not shown",
+  "lumiAutomation.attach.sentTitle": "What is sent",
+  "lumiAutomation.attach.sent":
+    "Nothing. Attaching only reads the Lumi automation you chose and records the link on this device.",
+  "lumiAutomation.attach.localTitle": "What changes here",
+  "lumiAutomation.attach.local":
+    "The original, its instructions and its history are never deleted or changed. It stops running on its own while attached. Lumi holds no copy of the instructions: whichever device claims a scheduled run executes it with that device’s own original instructions, which go to the Lumi inference gateway. Other devices may have different instructions.",
+  "lumiAutomation.attach.acknowledge":
+    "I understand this device’s own instructions will run this schedule, and they may differ from instructions on my other devices.",
+  "lumiAutomation.attach.confirm": "Attach",
+  "lumiAutomation.attach.working": "Attaching…",
+  "lumiAutomation.attach.done": "Attached. This device can now run this Lumi automation.",
+  "lumiAutomation.attach.releaseDescription":
+    "“{title}” will run on its own schedule on this device again. The shared Lumi automation is not paused or deleted, and other devices keep running it.",
+  "lumiAutomation.attach.error.changed":
+    "That Lumi automation changed after you looked at it. Close this and choose again.",
+  "lumiAutomation.attach.refusal.automation_attach_inactive": "It is paused or finished.",
+  "lumiAutomation.attach.refusal.automation_attach_project_mismatch":
+    "It belongs to a different project.",
+  "lumiAutomation.attach.refusal.automation_attach_principal_mismatch":
+    "It runs as a different person.",
+  "lumiAutomation.attach.refusal.automation_attach_binding_mismatch":
+    "It is pinned to a different workspace.",
+  "lumiAutomation.attach.refusal.automation_attach_device_pinned":
+    "It is pinned to a specific device.",
+  "lumiAutomation.attach.refusal.automation_attach_off_peak":
+    "It uses off-peak scheduling, which this app does not run yet.",
+  "lumiAutomation.attach.refusal.automation_attach_already_attached":
+    "Another automation on this device is already attached to it.",
+  "lumiAutomation.menu.managed": "Runs on Lumi",
+  "lumiAutomation.badge.managed": "Managed by Lumi",
+  "lumiAutomation.badge.finishing": "Finishing hand-over",
+  "lumiAutomation.badge.returning": "Returning to this device",
+  "lumiAutomation.badge.review": "Check run history",
+  "lumiAutomation.review.hint":
+    "A run may have happened without a confirmed result. It is never retried automatically. Check the run history in the control plane before running it again.",
+  "lumiAutomation.dialog.title": "Hand over to Lumi",
+  "lumiAutomation.dialog.description":
+    "Lumi runs this automation on its schedule. The original stays on this device, unchanged, and stops running here while it is managed.",
+  "lumiAutomation.dialog.loading": "Checking what would be handed over…",
+  "lumiAutomation.dialog.org": "Organization",
+  "lumiAutomation.dialog.name": "Name",
+  "lumiAutomation.dialog.schedule": "Schedule",
+  "lumiAutomation.dialog.workspace": "Workspace",
+  "lumiAutomation.dialog.agent": "Agent",
+  "lumiAutomation.dialog.chooseAgent": "Choose an active agent",
+  "lumiAutomation.dialog.model": "Model",
+  "lumiAutomation.dialog.chooseModel": "Choose an available model",
+  "lumiAutomation.dialog.optionsLoading": "Loading agents and models…",
+  "lumiAutomation.dialog.sentTitle": "What is sent now",
+  "lumiAutomation.dialog.sent":
+    "Name, schedule, workspace reference, agent and model. The instructions are not uploaded. When a run happens, its instructions go to the Lumi inference gateway like any managed run.",
+  "lumiAutomation.dialog.localTitle": "What stays here",
+  "lumiAutomation.dialog.local":
+    "The original, its instructions and its history are never deleted or changed. You can return it to this device at any time.",
+  "lumiAutomation.dialog.olderBuilds":
+    "Update any other Lumi or ZCode app that shares this data folder before you continue.",
+  "lumiAutomation.dialog.conflicts": "Resolve these first",
+  "lumiAutomation.dialog.notAdoptable": "This automation stays on this device",
+  "lumiAutomation.dialog.confirm": "Hand over",
+  "lumiAutomation.dialog.cancel": "Cancel",
+  "lumiAutomation.dialog.close": "Close",
+  "lumiAutomation.dialog.working": "Handing over…",
+  "lumiAutomation.dialog.done": "Handed over. This automation now runs on Lumi.",
+  "lumiAutomation.release.title": "Return to this device",
+  "lumiAutomation.release.description":
+    "Lumi pauses and deletes the managed copy of “{title}”. The original then resumes on its own schedule on this device.",
+  "lumiAutomation.release.confirm": "Return to this device",
+  "lumiAutomation.release.failed":
+    "Returning is not confirmed yet. The original stays paused here; try again.",
+  "lumiAutomation.error.generic":
+    "That did not work. Check the state shown on the automation card before trying again.",
+  "lumiAutomation.error.changed":
+    "This automation changed after you reviewed it. Close this and review it again.",
+  "lumiAutomation.error.accountChanged": "Your Lumi session changed. Sign in again, then retry.",
+  "lumiAutomation.error.pendingRecovery":
+    "The hand-over did not finish. The original stays paused here. Retry to finish, or return it to this device.",
+  "lumiAutomation.error.blocked": "Your organization's policy does not allow this automation yet.",
+  "lumiAutomation.error.notAdoptable": "This automation cannot be handed over.",
+  "lumiAutomation.error.busy": "This automation is running right now. Try again when it finishes.",
+  "lumiAutomation.error.releasePending":
+    "Returning is not confirmed yet. The original stays paused here; try again.",
+  "lumiAutomation.error.workspace":
+    "Bring this workspace to managed policy first (Settings → Lumi account).",
+  "lumiAutomation.error.org": "Your organization is not available. Check your membership.",
+  "lumiAutomation.reason.unsupported_schedule_rule":
+    "It uses a custom schedule Lumi cannot run yet.",
+  "lumiAutomation.reason.unsupported_schedule_expression":
+    "Its schedule is not a five-field cron expression.",
+  "lumiAutomation.reason.unsupported_bounded_runs": "It has a run limit or an end date.",
+  "lumiAutomation.reason.unsupported_session_binding": "It is tied to one conversation.",
+  "lumiAutomation.reason.unsupported_external_delivery": "It delivers its results through a bot.",
+  "lumiAutomation.reason.unsupported_remote_workspace": "Its workspace is remote.",
+  "lumiAutomation.reason.unsupported_not_active": "It is paused or finished.",
+  "lumiAutomation.reason.unsupported_one_time_elapsed": "Its one-time run time has passed.",
+  "lumiAutomation.reason.automation_adoption_not_found": "It no longer exists.",
   "lumiDevice.title": "Managed device",
   "lumiDevice.noOrg": "Create or join an organization in the control plane to enroll this device.",
   "lumiDevice.org": "Organization",
@@ -110,6 +220,17 @@ const enUS: Record<string, string> = {
   "lumiWorkspace.stage.workspace_bound": "Workspace bound",
   "lumiWorkspace.stage.managed_policy": "Managed policy",
   "lumiWorkspace.stage.history_sync": "History sync unavailable",
+  "lumiWorkspace.managedRun.disclosure":
+    "This prompt is sent to the selected organization-managed model. Usage is recorded against this organization run.",
+  "lumiWorkspace.managedRun.agent": "Organization agent",
+  "lumiWorkspace.managedRun.chooseAgent": "Choose an active agent",
+  "lumiWorkspace.managedRun.model": "Managed model",
+  "lumiWorkspace.managedRun.chooseModel": "Choose an available model",
+  "lumiWorkspace.managedRun.prompt": "Prompt",
+  "lumiWorkspace.managedRun.loading": "Loading managed options…",
+  "lumiWorkspace.managedRun.start": "Run with managed policy",
+  "lumiWorkspace.managedRun.started": "Managed run started in the task list.",
+  "lumiWorkspace.managedRun.error": "Managed run could not start.",
 
   "startPlan.recommendation.subagentDescription":
     "Your Start Plan has quota available for {model}. Switch this subagent’s model to the Start Plan?",
@@ -972,8 +1093,8 @@ const enUS: Record<string, string> = {
   "welcome.login": "Login",
   "welcome.loggingIn": "Logging in...",
   "welcome.loginFailed": "Login failed",
-  "login.title": "Welcome to ZCode",
-  "login.description": "Connect your account to start using ZCode",
+  "login.title": "Welcome to Lumi Agents",
+  "login.description": "Sign in to Lumi to get started, or keep working locally",
   "login.oauth.activeProviderHint":
     "Current active provider: {provider}. Signing in again replaces the current identity.",
   "login.oauth.loadingProviders": "Loading account providers...",

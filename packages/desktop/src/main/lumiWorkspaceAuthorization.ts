@@ -37,7 +37,7 @@ export async function authorizeManagedWorkspaceScope(input: {
   return {
     orgId: input.orgId,
     projectId: adoption.projectId,
-    /** Server-side adoption record id; the import preview verifies it (P08). */
+    /** Server-side adoption record id; automation import preview verifies it (P08). */
     adoptionStateId: adoption.adoptionStateId,
     deviceId: binding.deviceId,
     workspaceBindingId: binding.id,

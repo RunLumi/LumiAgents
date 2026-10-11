@@ -29,6 +29,26 @@ import {
 } from "@zcode/shared";
 import { getTasksIndexDatabasePath } from "#src/paths.js";
 import { runTasksDatabaseMigrations } from "#src/session/tasksDatabase/migrations.js";
+import {
+  NOT_MANAGED_ADOPTED_SQL,
+  beginManagedAdoption,
+  beginManagedAttach,
+  beginManagedRelease,
+  completeManagedRelease,
+  getManagedAdoption,
+  getManagedAdoptionByManagedId,
+  listManagedAdoptions,
+  recordManagedAutomationCreated,
+  type AutomationManagedAdoption,
+  type AutomationManagedAdoptionState,
+} from "#src/session/automationManagedAdoption.js";
+import {
+  listManagedOccurrences,
+  markInterruptedManagedOccurrences,
+  recordManagedOccurrence,
+  type AutomationManagedOccurrence,
+  type AutomationManagedOccurrenceState,
+} from "#src/session/automationManagedOccurrence.js";
 
 const require = createRequire(import.meta.url);
 const { DatabaseSync } = require("node:sqlite") as typeof import("node:sqlite");
@@ -445,6 +465,15 @@ export class AutomationRepo {
     }
   }
 
+  /**
+   * 原始列是否有值，不经过解析。接管判定必须 fail-closed：历史/损坏的回推配置
+   * 在 getBotDeliveryTarget 里会被当作未配置，但它仍可能向外部渠道投递内容。
+   */
+  async hasBotDeliveryTargetRaw(automationId: string): Promise<boolean> {
+    await this.ensureReady();
+    return this.getRow(automationId)?.bot_delivery_target != null;
+  }
+
   async hasTaskBinding(scope: {
     workspacePath: string;
     workspaceIdentity?: string;
@@ -497,7 +526,8 @@ export class AutomationRepo {
     await this.ensureReady();
     const existing = this.getRow(automationId, workspaceKey);
     if (!existing) return null;
-    const now = Date.now();
+    // 修复：同毫秒编辑或时钟回拨也必须使 adoption 预览版本失效。
+    const now = Math.max(Date.now(), existing.updated_at + 1);
     const next: AutomationRow = {
       ...existing,
       title: params.title ?? existing.title,
@@ -566,7 +596,7 @@ export class AutomationRepo {
         `UPDATE automations
         SET enabled = @enabled,
             lifecycle_status = @lifecycle_status,
-            updated_at = @now
+            updated_at = MAX(@now, updated_at + 1)
         WHERE automation_id = @id
           AND (@workspace_key IS NULL OR workspace_key = @workspace_key)`,
       )
@@ -600,7 +630,7 @@ export class AutomationRepo {
             claimed_at = NULL,
             next_run_at = @next_run_at,
             last_error = NULL,
-            updated_at = @now
+            updated_at = MAX(@now, updated_at + 1)
         WHERE automation_id = @id
           AND (@workspace_key IS NULL OR workspace_key = @workspace_key)`,
       )
@@ -630,7 +660,8 @@ export class AutomationRepo {
       db.prepare(
         `UPDATE automations
         SET running = 0, claimed_at = NULL
-        WHERE running = 1 AND claimed_at IS NOT NULL AND claimed_at <= @stale`,
+        WHERE running = 1 AND claimed_at IS NOT NULL AND claimed_at <= @stale
+          AND ${NOT_MANAGED_ADOPTED_SQL}`,
       ).run({ stale: options.now - CLAIM_STALE_MS });
 
       const row = this.getRow(automationId, workspaceKey);
@@ -645,6 +676,7 @@ export class AutomationRepo {
           SET running = 1, claimed_at = @now, updated_at = @now
           WHERE automation_id = @id
             AND running = 0
+            AND ${NOT_MANAGED_ADOPTED_SQL}
             AND (@workspace_key IS NULL OR workspace_key = @workspace_key)`,
         )
         .run({
@@ -721,13 +753,15 @@ export class AutomationRepo {
         `UPDATE automations
         SET lifecycle_status = 'completed', enabled = 0, next_run_at = NULL,
             retry_at = NULL, running = 0, claimed_at = NULL, updated_at = @now
-        WHERE enabled = 1 AND end_at IS NOT NULL AND end_at < @now`,
+        WHERE enabled = 1 AND end_at IS NOT NULL AND end_at < @now
+          AND ${NOT_MANAGED_ADOPTED_SQL}`,
       ).run({ now });
       // 先回收僵尸认领（持有者崩溃，running=1 但 claimed_at 过期）。
       db.prepare(
         `UPDATE automations
         SET running = 0, claimed_at = NULL
-        WHERE running = 1 AND claimed_at IS NOT NULL AND claimed_at <= @stale`,
+        WHERE running = 1 AND claimed_at IS NOT NULL AND claimed_at <= @stale
+          AND ${NOT_MANAGED_ADOPTED_SQL}`,
       ).run({ stale: now - CLAIM_STALE_MS });
       // 认领条件：enabled 且未在途。
       // - 有 retry_at（transient 退避中）：只按 retry_at 到期认领，忽略 next_run_at——
@@ -738,6 +772,7 @@ export class AutomationRepo {
         .prepare(
           `SELECT * FROM automations
           WHERE enabled = 1 AND running = 0
+            AND ${NOT_MANAGED_ADOPTED_SQL}
             AND (
               (retry_at IS NOT NULL AND retry_at <= @now)
               OR (retry_at IS NULL AND next_run_at IS NOT NULL AND next_run_at <= @now)
@@ -784,7 +819,8 @@ export class AutomationRepo {
       db.prepare(
         `UPDATE automations
         SET running = 0, claimed_at = NULL
-        WHERE running = 1 AND claimed_at IS NOT NULL AND claimed_at <= @stale`,
+        WHERE running = 1 AND claimed_at IS NOT NULL AND claimed_at <= @stale
+          AND ${NOT_MANAGED_ADOPTED_SQL}`,
       ).run({ stale: now - CLAIM_STALE_MS });
 
       const rows = db
@@ -842,6 +878,9 @@ export class AutomationRepo {
           WHERE r.trigger = 'manual'
             AND r.dispatch_status = 'claimed'
             AND a.running = 0
+            AND NOT EXISTS (
+              SELECT 1 FROM automation_managed_adoptions m WHERE m.local_automation_id = a.automation_id
+            )
             AND (r.attempts = 0 OR r.updated_at <= @stale)
           ORDER BY r.created_at ASC`,
         )
@@ -1425,6 +1464,97 @@ export class AutomationRepo {
       .prepare(`DELETE FROM automation_runs WHERE created_at < ?`)
       .run(Date.now() - maxAgeMs);
     return Number(res.changes ?? 0);
+  }
+
+  // ---- 托管接管标记（可逆抑制；spec 07）----
+  // 只读写 automation_managed_adoptions；从不改写 automations/automation_runs 原行。
+
+  async getManagedAdoption(localAutomationId: string): Promise<AutomationManagedAdoption | null> {
+    await this.ensureReady();
+    return getManagedAdoption(this.getDatabase(), localAutomationId);
+  }
+
+  async getManagedAdoptionByManagedId(
+    orgId: string,
+    managedAutomationId: string,
+  ): Promise<AutomationManagedAdoption | null> {
+    await this.ensureReady();
+    return getManagedAdoptionByManagedId(this.getDatabase(), orgId, managedAutomationId);
+  }
+
+  async listManagedAdoptions(filter?: {
+    orgId?: string;
+    state?: AutomationManagedAdoptionState;
+  }): Promise<AutomationManagedAdoption[]> {
+    await this.ensureReady();
+    return listManagedAdoptions(this.getDatabase(), filter);
+  }
+
+  async beginManagedAdoption(input: {
+    localAutomationId: string;
+    orgId: string;
+    idempotencyKey: string;
+    expectedRevision?: number;
+  }): Promise<AutomationManagedAdoption> {
+    await this.ensureReady();
+    return beginManagedAdoption(this.getDatabase(), { ...input, now: Date.now() });
+  }
+
+  async beginManagedAttach(input: {
+    localAutomationId: string;
+    orgId: string;
+    managedAutomationId: string;
+    idempotencyKey: string;
+    expectedRevision?: number;
+  }): Promise<AutomationManagedAdoption> {
+    await this.ensureReady();
+    return beginManagedAttach(this.getDatabase(), { ...input, now: Date.now() });
+  }
+
+  async recordManagedAutomationCreated(input: {
+    localAutomationId: string;
+    managedAutomationId: string;
+  }): Promise<AutomationManagedAdoption> {
+    await this.ensureReady();
+    return recordManagedAutomationCreated(this.getDatabase(), { ...input, now: Date.now() });
+  }
+
+  async beginManagedRelease(localAutomationId: string): Promise<AutomationManagedAdoption> {
+    await this.ensureReady();
+    return beginManagedRelease(this.getDatabase(), { localAutomationId, now: Date.now() });
+  }
+
+  async completeManagedRelease(localAutomationId: string): Promise<boolean> {
+    await this.ensureReady();
+    return completeManagedRelease(this.getDatabase(), localAutomationId);
+  }
+
+  // ---- 托管 occurrence 进度日志（spec 07；只记进度，不含令牌/prompt）----
+
+  async recordManagedOccurrence(input: {
+    occurrenceId: string;
+    orgId: string;
+    localAutomationId: string;
+    managedAutomationId: string;
+    state: AutomationManagedOccurrenceState;
+    runId?: string;
+    reason?: string;
+  }): Promise<AutomationManagedOccurrence> {
+    await this.ensureReady();
+    return recordManagedOccurrence(this.getDatabase(), { ...input, now: Date.now() });
+  }
+
+  async listManagedOccurrences(filter?: {
+    orgId?: string;
+    state?: AutomationManagedOccurrenceState;
+  }): Promise<AutomationManagedOccurrence[]> {
+    await this.ensureReady();
+    return listManagedOccurrences(this.getDatabase(), filter);
+  }
+
+  async markInterruptedManagedOccurrences(reason: string): Promise<AutomationManagedOccurrence[]> {
+    await this.ensureReady();
+    return markInterruptedManagedOccurrences(this.getDatabase(), { reason, now: Date.now() });
   }
 
   private writeRow(row: AutomationRow): void {

@@ -103,7 +103,8 @@ device owner) **before** the workspace owner's call-time capture, so a switch du
 was invisible, and login transitions only bumped after `completeSignIn` resolved.
 
 Fix, one owner and no second session store: new Electron-free `lumiSessionFence.ts` holds the
-existing session generation plus a per-workspace selected-org epoch. Production
+existing session generation (still feeding automation via `fence.generation`) plus a per-workspace
+selected-org epoch. Production
 `lumiAccountOwner.ts` is now a composition of its exported functions:
 
 - `admitWorkspaceRead`: `read-workspace` selects the org synchronously before any await; an actual
@@ -178,7 +179,8 @@ plus the earlier credential admission test.
 
 Lint exceptions: the two `max-lines` disables added to `lumiAccountOwner.ts` and `hostTransport.ts`
 were removed, not kept. Instead, small existing-logic extractions with unchanged behaviour: the
-server-state read → `lumiWorkspaceServerState.ts` (type `WorkspaceServerState` already existed);
+server-state read → `lumiWorkspaceServerState.ts`; managed-run sign-out teardown →
+`lumiManagedRunTeardown.ts` (type `WorkspaceServerState` already existed);
 the four adoption delegates in `hostTransport.ts` use a one-line `AdoptionInput` alias. No other
 exception was added or touched.
 
@@ -191,7 +193,7 @@ Verification limits, stated plainly:
   switch would not advance it. `LumiWorkspaceSection` re-reads and its stale-submit path returns
   before issuing its own re-read; that UI behaviour is not asserted by a test here.
 - `listProjects` and the device commands are not given this epoch (outside the scope of existing
-  workspace mutating commands).
+  workspace mutating commands); automation keeps consuming `fence.generation` unchanged.
 - The fake server is in-memory; ordering of a real D1/Worker commit versus the client fence is
   unproven. The server may have committed a stale-scope write; that is intentionally surfaced as a
   refusal, and reconciliation relies on the next read.

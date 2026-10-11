@@ -1,13 +1,19 @@
-/* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
 import type {
   LumiDeviceStateProjection,
-  LumiAccountCommand,
   LumiAccountProjection,
   LumiAccountResult,
   LumiSignInProjection,
   LumiProjectProjection,
   LumiWorkspaceProjection,
+  LumiManagedAgentProjection,
+  LumiManagedModelProjection,
 } from "@zcode/shared";
+/* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
+import type { LumiAccountCommand } from "@zcode/shared";
+import {
+  dispatchLumiAutomationCommand,
+  type AutomationCommandOwner,
+} from "./lumiAutomationCommands.js";
 import { isCredentialChoiceCommand } from "./lumiWorkspaceValidation.js";
 
 type WorkspaceReadCommand = Extract<LumiAccountCommand, { action: "read-workspace" }>;
@@ -19,7 +25,7 @@ type WorkspaceCredentialModeCommand = Extract<
   { action: "set-workspace-credential-mode" }
 >;
 
-interface AccountOwner {
+interface AccountOwner extends AutomationCommandOwner {
   beginSignIn(name: string): Promise<LumiSignInProjection>;
   completeSignIn(): Promise<void>;
   cancelSignIn(): void;
@@ -31,6 +37,20 @@ interface AccountOwner {
   syncDevicePolicy?(orgId: string): Promise<unknown>;
   refreshDevice?(orgId: string): Promise<LumiDeviceStateProjection>;
   recoverDevice?(orgId: string): Promise<LumiDeviceStateProjection>;
+  beginManagedRun?(input: {
+    orgId: string;
+    workspaceIdentity: string;
+    agentDefinitionId: string;
+    modelAlias: string;
+  }): Promise<import("@zcode/shared").ZCodeManagedRunContext>;
+  listManagedOptions?(
+    orgId: string,
+    projectId: string,
+  ): Promise<{
+    agents: LumiManagedAgentProjection[];
+    models: LumiManagedModelProjection[];
+  }>;
+  abortManagedRunBeforeAuth?(runId: string): Promise<void>;
   listProjects?(orgId: string): Promise<LumiProjectProjection[]>;
   readWorkspace?(command: WorkspaceReadCommand): Promise<LumiWorkspaceProjection>;
   bindWorkspace?(command: WorkspaceBindCommand): Promise<LumiWorkspaceProjection>;
@@ -92,6 +112,8 @@ export async function dispatchLumiAccountCommand(options: {
   if (!options.trusted) return { ok: false, code: "lumi_sender_denied" };
   if (options.command && typeof options.command === "object") {
     const command = options.command as Record<string, unknown>;
+    const automationResult = await dispatchLumiAutomationCommand(command, options.getOwner);
+    if (automationResult) return automationResult;
     if (command.action === "list-projects") {
       if (
         typeof command.orgId !== "string" ||
@@ -104,6 +126,81 @@ export async function dispatchLumiAccountCommand(options: {
         return projects ? { ok: true, projects } : { ok: false, code: "lumi_command_unsupported" };
       } catch (error) {
         return { ok: false, code: safeError(error, "lumi_workspace_action_failed") };
+      }
+    }
+    if (command.action === "begin-managed-run") {
+      if (
+        command.confirm !== true ||
+        typeof command.orgId !== "string" ||
+        !/^org_[0-9a-f]{32}$/.test(command.orgId) ||
+        typeof command.workspaceIdentity !== "string" ||
+        !command.workspaceIdentity.trim() ||
+        command.workspaceIdentity.length > 4096 ||
+        hasControlCharacters(command.workspaceIdentity) ||
+        typeof command.agentDefinitionId !== "string" ||
+        !/^agd_[0-9a-f]{32}$/.test(command.agentDefinitionId) ||
+        typeof command.modelAlias !== "string" ||
+        !/^[a-z0-9][a-z0-9._-]{0,127}$/.test(command.modelAlias) ||
+        Object.keys(command).some(
+          (key) =>
+            ![
+              "action",
+              "orgId",
+              "workspaceIdentity",
+              "agentDefinitionId",
+              "modelAlias",
+              "confirm",
+            ].includes(key),
+        )
+      )
+        return { ok: false, code: "lumi_command_invalid" };
+      try {
+        const context = await options.getOwner().beginManagedRun?.({
+          orgId: command.orgId,
+          workspaceIdentity: command.workspaceIdentity,
+          agentDefinitionId: command.agentDefinitionId,
+          modelAlias: command.modelAlias,
+        });
+        return context
+          ? { ok: true, managedContext: context }
+          : { ok: false, code: "lumi_command_unsupported" };
+      } catch (error) {
+        return { ok: false, code: safeError(error, "lumi_managed_run_failed") };
+      }
+    }
+    if (command.action === "list-managed-options") {
+      if (
+        typeof command.orgId !== "string" ||
+        !/^org_[0-9a-f]{32}$/.test(command.orgId) ||
+        typeof command.projectId !== "string" ||
+        !/^prj_[0-9a-f]{32}$/.test(command.projectId) ||
+        Object.keys(command).some((key) => !["action", "orgId", "projectId"].includes(key))
+      )
+        return { ok: false, code: "lumi_command_invalid" };
+      try {
+        const managedOptions = await options
+          .getOwner()
+          .listManagedOptions?.(command.orgId, command.projectId);
+        return managedOptions
+          ? { ok: true, ...managedOptions }
+          : { ok: false, code: "lumi_command_unsupported" };
+      } catch (error) {
+        return { ok: false, code: safeError(error, "lumi_managed_options_failed") };
+      }
+    }
+    if (command.action === "abort-managed-run") {
+      if (
+        command.confirm !== true ||
+        typeof command.runId !== "string" ||
+        !/^run_[0-9a-f]{32}$/.test(command.runId) ||
+        Object.keys(command).some((key) => !["action", "runId", "confirm"].includes(key))
+      )
+        return { ok: false, code: "lumi_command_invalid" };
+      try {
+        await options.getOwner().abortManagedRunBeforeAuth?.(command.runId);
+        return { ok: true };
+      } catch (error) {
+        return { ok: false, code: safeError(error, "lumi_managed_run_abort_failed") };
       }
     }
     if (

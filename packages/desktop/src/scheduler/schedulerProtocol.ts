@@ -31,6 +31,11 @@ export type SchedulerToMainMessage =
       workspaceIdentity?: string;
     }
   | {
+      // 本地存在已接管（managed）的原任务：请 Main 轮询一次服务端 due。不带任何 id/凭据；
+      // scheduler 自己不认领、不结算托管 occurrence（spec 07）。
+      type: "managed-poll-request";
+    }
+  | {
       type: "scheduler-log";
       level: "info" | "warn" | "error";
       message: string;

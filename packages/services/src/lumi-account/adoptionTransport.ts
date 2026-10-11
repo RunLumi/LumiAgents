@@ -1,7 +1,10 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
+import { randomUUID } from "node:crypto";
 import {
   credentialModeRequiresManaged,
   P08_CREDENTIAL_MODES,
+  type LumiManagedAgentProjection,
+  type LumiManagedModelProjection,
   type LumiProjectProjection,
   type LumiWorkspaceStage,
   type P08CredentialMode,
@@ -118,6 +121,96 @@ export class LumiAdoptionHostTransport {
 
   constructor(request: AdoptionRequest) {
     this.#request = request;
+  }
+
+  async listAgents(orgId: string, projectId: string): Promise<LumiManagedAgentProjection[]> {
+    if (!/^org_[0-9a-f]{32}$/.test(orgId) || !/^prj_[0-9a-f]{32}$/.test(projectId))
+      throw new LumiAccountError("lumi_managed_agent_invalid");
+    const response = await this.#request(
+      `/api/v1/orgs/${orgId}/agents?project_id=${encodeURIComponent(projectId)}&limit=100`,
+      "GET",
+    );
+    const row = (await response.json()) as Record<string, unknown>;
+    if (!Array.isArray(row.items) || row.items.length > 100 || row.has_more === true)
+      throw new LumiAccountError("lumi_response_invalid");
+    return row.items.map((item: Record<string, unknown>) => {
+      if (
+        !item ||
+        typeof item.id !== "string" ||
+        !/^agd_[0-9a-f]{32}$/.test(item.id) ||
+        item.org_id !== orgId ||
+        (item.project_id !== null && item.project_id !== projectId) ||
+        typeof item.name !== "string" ||
+        !item.name ||
+        item.name.length > 128 ||
+        typeof item.version !== "number" ||
+        !Number.isSafeInteger(item.version) ||
+        !["active", "disabled", "archived"].includes(String(item.lifecycle)) ||
+        (item.default_model_alias !== null &&
+          (typeof item.default_model_alias !== "string" ||
+            !/^[a-z0-9][a-z0-9._-]{0,127}$/.test(item.default_model_alias)))
+      )
+        throw new LumiAccountError("lumi_response_invalid");
+      return {
+        id: item.id,
+        orgId,
+        projectId: item.project_id as string | null,
+        name: item.name,
+        version: item.version,
+        defaultModelAlias: item.default_model_alias as string | null,
+        lifecycle: item.lifecycle as LumiManagedAgentProjection["lifecycle"],
+      };
+    });
+  }
+
+  async listManagedModels(orgId: string): Promise<LumiManagedModelProjection[]> {
+    if (!/^org_[0-9a-f]{32}$/.test(orgId)) throw new LumiAccountError("lumi_managed_model_invalid");
+    const response = await this.#request("/api/v1/inference/models?limit=100", "GET", undefined, {
+      "X-Org-ID": orgId,
+    });
+    const row = (await response.json()) as Record<string, unknown>;
+    if (!Array.isArray(row.items) || row.items.length > 100 || row.has_more === true)
+      throw new LumiAccountError("lumi_response_invalid");
+    return row.items.map((item: Record<string, unknown>) => {
+      if (
+        !item ||
+        typeof item.alias !== "string" ||
+        !/^[a-z0-9][a-z0-9._-]{0,127}$/.test(item.alias) ||
+        typeof item.display_name !== "string" ||
+        !item.display_name ||
+        item.display_name.length > 128 ||
+        typeof item.available !== "boolean" ||
+        !["active", "disabled"].includes(String(item.lifecycle))
+      )
+        throw new LumiAccountError("lumi_response_invalid");
+      return {
+        alias: item.alias,
+        displayName: item.display_name,
+        available: item.available,
+        lifecycle: item.lifecycle as LumiManagedModelProjection["lifecycle"],
+      };
+    });
+  }
+
+  async closeManagedSession(orgId: string, agentSessionId: string): Promise<void> {
+    if (!/^org_[0-9a-f]{32}$/.test(orgId) || !/^rse_[0-9a-f]{32}$/.test(agentSessionId))
+      throw new LumiAccountError("lumi_managed_session_invalid");
+    const response = await this.#request(`/api/v1/orgs/${orgId}/sessions/${agentSessionId}`, "GET");
+    const current = (await response.json()) as Record<string, unknown>;
+    if (
+      current.id !== agentSessionId ||
+      current.org_id !== orgId ||
+      !["active", "closed", "archived"].includes(String(current.lifecycle)) ||
+      !Number.isSafeInteger(current.version)
+    )
+      throw new LumiAccountError("lumi_response_invalid");
+    if (current.lifecycle !== "active") return;
+    await this.#request(
+      `/api/v1/orgs/${orgId}/sessions/${agentSessionId}/close`,
+      "POST",
+      { version: current.version },
+      { "Idempotency-Key": randomUUID() },
+    );
   }
 
   async listProjects(orgId: string): Promise<LumiProjectProjection[]> {

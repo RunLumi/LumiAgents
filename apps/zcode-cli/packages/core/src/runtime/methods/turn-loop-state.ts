@@ -94,6 +94,8 @@ export interface RegularTurnLoopState {
   modelResponse: string;
   /** 本轮固定使用的可调用模型；配置变化只影响以后创建的 Loop。 */
   model: Model;
+  /** Submission-scoped P05 authority, inherited by every tool step in this turn. */
+  managedContext?: import("../../tool/executor/managed-decision.js").LumiManagedExecutionContext;
   /** execution 表示当前 Active Model 不能被同 loop 的 guide 改写。 */
   modelSelectionScope?: "execution";
   /** Core Server 的前台 child Selection override；优先于 profile 与父模型继承。 */

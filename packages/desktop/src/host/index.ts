@@ -14,6 +14,8 @@
  * 3. 后续远端 connect / scoped attachment 都由同一 Host 处理
  */
 import { createHostDatabaseStartup } from "./hostDatabaseStartup.js";
+import { createLumiManagedToolBridge } from "./lumiManagedToolBridge.js";
+import { createManagedAutomationRunner } from "./managedAutomationRun.js";
 import { randomUUID } from "node:crypto";
 import {
   MessagePortProtocol,
@@ -73,6 +75,7 @@ import {
 import {
   HostMessageTypes,
   HostResponseTypes,
+  type ZCodeProviderRuntimeHeadersRequestParams,
   ZCODE_VERSION,
   formatLogPrefix,
   formatZCodeHostProcessName,
@@ -83,6 +86,7 @@ import {
   isRemoteWorkspaceIdentity,
   resolveWorkspaceKey,
   formatModelPickerValue,
+  generateTraceId,
   type ZCodePromptAttachment,
   type ZCodeStreamEvent,
   type ZCodeTaskMeta,
@@ -207,6 +211,46 @@ const pendingLocalMediaPreviewPathAuthorizations = new Map<
   string,
   PendingLocalMediaPreviewPathAuthorization
 >();
+const pendingLumiManagedRequestAuth = new Map<
+  string,
+  { resolve(value: { apiKey: string }): void; reject(error: Error): void; timer: NodeJS.Timeout }
+>();
+const lumiManagedToolBridge = createLumiManagedToolBridge((message) => {
+  if (!parentPort) throw new Error("lumi_managed_tool_unavailable");
+  parentPort.postMessage(message);
+});
+process.once("exit", () => lumiManagedToolBridge.dispose());
+
+function resolveLumiManagedRequestAuth(request: ZCodeProviderRuntimeHeadersRequestParams) {
+  if (!parentPort) return Promise.reject(new Error("lumi_managed_auth_unavailable"));
+  const workspaceIdentity = request.workspace.workspaceIdentity ?? request.workspace.workspacePath;
+  if (!workspaceIdentity?.trim() || !request.managedContext)
+    return Promise.reject(new Error("lumi_managed_auth_refused"));
+  const requestId = randomUUID();
+  return new Promise<{ apiKey: string }>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      pendingLumiManagedRequestAuth.delete(requestId);
+      reject(new Error("lumi_managed_auth_timeout"));
+    }, 20_000);
+    timer.unref();
+    pendingLumiManagedRequestAuth.set(requestId, { resolve, reject, timer });
+    try {
+      parentPort.postMessage({
+        type: HostResponseTypes.LumiManagedRequestAuthRequest,
+        requestId,
+        sessionId: request.sessionId,
+        workspaceIdentity,
+        providerId: request.providerId,
+        modelId: request.modelSelection.modelId,
+        managedContext: request.managedContext,
+      });
+    } catch {
+      clearTimeout(timer);
+      pendingLumiManagedRequestAuth.delete(requestId);
+      reject(new Error("lumi_managed_auth_unavailable"));
+    }
+  });
+}
 
 function authorizeLocalMediaPreviewPath(path: string): Promise<string> {
   if (!parentPort) {
@@ -720,6 +764,21 @@ function resolveAutomationTargetServices(request: {
   }
   return activeServices;
 }
+
+/**
+ * 托管（P06）automation occurrence 的派发：与交互式托管运行同一条服务路径，
+ * 不经过本地 cron 的 dispatchCronRun（那条路径会回写保留原任务的 run 台账）。
+ */
+const managedAutomationRunner = createManagedAutomationRunner({
+  resolve(workspace) {
+    const services = resolveAutomationTargetServices(workspace);
+    const agent = services.getOptional(IZCodeAgentService);
+    const tasks = services.getOptional(IZCodeTaskService);
+    if (!agent || !tasks) throw new Error("managed automation services unavailable");
+    return { agent, tasks };
+  },
+  traceId: generateTraceId,
+});
 
 function cronRunSubscriptionKey(taskId: string, traceId: TraceId): string {
   return `${taskId}\u0000${traceId}`;
@@ -2301,6 +2360,24 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
 
   const msg = result.data;
   const port = e.ports[0];
+  if (
+    msg.type === HostMessageTypes.LumiManagedToolDecisionResult ||
+    msg.type === HostMessageTypes.LumiManagedToolReportResult ||
+    msg.type === HostMessageTypes.LumiManagedToolIdentityResult ||
+    msg.type === HostMessageTypes.LumiRuntimeCapabilitiesResult
+  ) {
+    lumiManagedToolBridge.accept(msg);
+    return;
+  }
+  if (msg.type === HostMessageTypes.LumiManagedRequestAuthResult) {
+    const pending = pendingLumiManagedRequestAuth.get(msg.requestId);
+    if (!pending) return;
+    pendingLumiManagedRequestAuth.delete(msg.requestId);
+    clearTimeout(pending.timer);
+    if (msg.ok && msg.apiKey) pending.resolve({ apiKey: msg.apiKey });
+    else pending.reject(new Error(msg.errorCode ?? "lumi_managed_auth_refused"));
+    return;
+  }
   if (msg.type === HostMessageTypes.DatabaseStartupControl) {
     if (msg.control.action === "snapshot") databaseStartup?.coordinator.publish();
     else if (msg.control.action === "retry")
@@ -2355,6 +2432,39 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
     } else {
       pending.reject(new Error(msg.error ?? "本地视频预览路径授权失败"));
     }
+    return;
+  }
+
+  if (msg.type === HostMessageTypes.LumiManagedAutomationRun) {
+    if (databaseStartup?.coordinator.snapshot.phase !== "ready") {
+      parentPort.postMessage({
+        type: HostResponseTypes.LumiManagedAutomationRunResult,
+        requestId: msg.requestId,
+        ok: false,
+        errorCode: "lumi_managed_automation_services_unavailable",
+      });
+      return;
+    }
+    void managedAutomationRunner.run(msg).then((result) => {
+      parentPort.postMessage({
+        type: HostResponseTypes.LumiManagedAutomationRunResult,
+        requestId: msg.requestId,
+        ...result,
+      });
+    });
+    return;
+  }
+
+  if (msg.type === HostMessageTypes.LumiManagedAutomationCancel) {
+    // 不受数据库就绪闸门限制：停止一个 run 不能因为启动阶段而被拒绝；未知 run 由 runner 拒绝。
+    void managedAutomationRunner.cancel(msg.runId).then((result) => {
+      parentPort.postMessage({
+        type: HostResponseTypes.LumiManagedAutomationCancelResult,
+        requestId: msg.requestId,
+        runId: msg.runId,
+        ...result,
+      });
+    });
     return;
   }
 
@@ -2841,6 +2951,22 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
               prepareLegacyAccountConnections,
               hostApiNetworkTransport,
               authorizeLocalMediaPreviewPath,
+              resolveManagedRequestAuth: resolveLumiManagedRequestAuth,
+              requestManagedToolDecision: (params, identity) =>
+                lumiManagedToolBridge.request(params, identity),
+              reportManagedToolResult: (params, identity) =>
+                lumiManagedToolBridge.report(params, identity),
+              resolveManagedToolIdentity: (params, identity) =>
+                lumiManagedToolBridge.resolve(params, identity),
+              reportRuntimeCapabilities: (params, identity) =>
+                lumiManagedToolBridge.reportCapabilities(params, identity),
+              lumiControlPlaneOrigin: msg.lumiControlPlaneOrigin,
+              onManagedRunTerminal: (input) => {
+                parentPort?.postMessage({
+                  type: HostResponseTypes.LumiManagedRunTerminalOutcome,
+                  ...input,
+                });
+              },
               runtimeProcessEnvPatch: msg.runtimeProcessEnvPatch,
               agentRuntimeContext: {
                 getDeviceMid: () => msg.deviceMid,

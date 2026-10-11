@@ -11,11 +11,11 @@ import { Button } from "@/components/ui/button.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { isLumiErrorRetryable, lumiErrorCopyId } from "../lumi/lumiErrorCopy.js";
+import { LumiManagedRunSection } from "./LumiManagedRunSection.js";
 import { LumiWorkspaceCredentialChoice } from "./LumiWorkspaceCredentialChoice.js";
 
 // Workspace buttons carry long labels; wrap them so a 320px layout never clips or overflows.
 const WRAPPING_BUTTON = "h-auto min-h-8 w-full justify-start whitespace-normal py-1.5 text-left";
-
 const nextStage: Partial<
   Record<LumiWorkspaceStage, Exclude<LumiWorkspaceStage, "local_unmanaged" | "history_sync">>
 > = {
@@ -35,6 +35,7 @@ export function LumiWorkspaceSection(props: {
   workspaceIdentity?: string;
   environmentType: LumiWorkspaceEnvironment;
   refreshKey?: number;
+  onManagedRunStarted?: () => void;
 }) {
   const platform = usePlatform();
   const { lumiAccount } = platform;
@@ -278,6 +279,15 @@ export function LumiWorkspaceSection(props: {
               confirm: true,
             })
           }
+        />
+      ) : null}
+      {workspace?.stage === "managed_policy" && workspace.ownership === "org_managed" ? (
+        <LumiManagedRunSection
+          orgId={selectedOrgId}
+          workspace={workspace}
+          workspacePath={props.workspacePath}
+          workspaceIdentity={props.workspaceIdentity}
+          onRunStarted={props.onManagedRunStarted}
         />
       ) : null}
       {busy ? (
