@@ -8,7 +8,13 @@ import type {
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { Button } from "@/components/ui/button.js";
-export function LumiDeviceSection({ account }: { account: LumiAccountProjection }) {
+export function LumiDeviceSection({
+  account,
+  onDeviceChanged,
+}: {
+  account: LumiAccountProjection;
+  onDeviceChanged?: () => void;
+}) {
   const { lumiAccount } = usePlatform(),
     { intl } = useZCodeIntl();
   const text = (id: string) => intl.formatMessage({ id: `lumiDevice.${id}` });
@@ -58,8 +64,10 @@ export function LumiDeviceSection({ account }: { account: LumiAccountProjection 
     try {
       const result = await lumiAccount.request(command);
       if (current !== seq.current) return;
-      if (result.ok) setDevice(result.device);
-      else setError(true);
+      if (result.ok) {
+        setDevice(result.device);
+        onDeviceChanged?.();
+      } else setError(true);
     } catch {
       if (current === seq.current) setError(true);
     } finally {

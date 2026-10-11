@@ -54,6 +54,16 @@ export type ManagedToolPolicyState =
  */
 export type ManagedRunContext = Readonly<ZCodeManagedRunContext>;
 
+/** Bounded availability booleans; never names, schemas, arguments, paths or grants. */
+export interface ManagedRuntimeCapabilities {
+  readonly filesystem_write: boolean;
+  readonly process_execution: boolean;
+  readonly network_access: boolean;
+  readonly mcp_execution: boolean;
+  readonly browser_use: boolean;
+  readonly computer_use: boolean;
+}
+
 /** Host-issued tool identity. The control-plane catalog remains authoritative. */
 export interface ManagedToolIdentity {
   readonly toolId: string;
@@ -138,9 +148,30 @@ export type ManagedToolDecisionHandler = (
  * token or an authorization decision.
  */
 export interface ManagedToolDecisionPort {
+  resolveIdentity?: (
+    request: Pick<
+      ManagedToolDecisionRequest,
+      "context" | "trace" | "traceId" | "sessionId" | "tool"
+    >,
+    options?: ManagedToolDecisionRequestOptions,
+  ) => Promise<ManagedToolIdentity | undefined>;
+  /**
+   * Publish the session ToolRegistry's availability booleans before a privileged
+   * managed call. Support is never a grant; a refusal denies the call.
+   */
+  reportRuntimeCapabilities?: (
+    request: Pick<ManagedToolDecisionRequest, "context" | "trace" | "traceId" | "sessionId"> & {
+      readonly capabilities: ManagedRuntimeCapabilities;
+    },
+    options?: ManagedToolDecisionRequestOptions,
+  ) => Promise<void>;
   requestDecision: ManagedToolDecisionHandler;
   /** Compatibility alias for adapters that call the operation `decide`. */
   decide?: ManagedToolDecisionHandler;
+  reportResult?: (
+    request: ManagedToolDecisionRequest,
+    status: "completed" | "failed" | "cancelled",
+  ) => Promise<void>;
 }
 
 /** A resolver-only shape for local adapters that do not own a transport port. */

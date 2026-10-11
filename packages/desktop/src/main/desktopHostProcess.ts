@@ -25,6 +25,7 @@ import {
   HostMessageTypes,
   HostResponseTypes,
   hostResponseMessageSchema,
+  type ZCodeManagedRunContext,
   InternalChannels,
   LAUNCH_MARKS_QUERY_KEY,
   RUNTIME_ZCODE_DEBUG,
@@ -81,6 +82,8 @@ export interface HostInitMessage {
   agentSpawnFallbackCwd?: string;
   /** Main 解析后的 ZCode Built-in Provider Config 路径；Host/Services 不感知 Electron 安装布局。 */
   zcodeBuiltinProviderConfigFilePath: string;
+  /** Non-secret Lumi API origin; credential custody remains exclusively in Main. */
+  lumiControlPlaneOrigin?: string;
   /** Main 提前异步采集并过滤的本机 runtime 环境；只允许传给 InitLocal。 */
   runtimeProcessEnvPatch?: Record<string, string>;
 }
@@ -245,6 +248,52 @@ export function spawnHostProcess(
     }) => Promise<{ ok: boolean; [k: string]: unknown }>;
     /** Host 已完成附件授权后，由 Main 将本地视频 realpath 加入精确协议授权集合。 */
     authorizeLocalMediaPreviewPath?: (path: string) => Promise<string>;
+    /** Resolve one Main-owned managed inference credential for one exact active run. */
+    resolveLumiManagedRequestAuth?: (input: {
+      sessionId: string;
+      workspaceIdentity: string;
+      providerId: "lumi-managed";
+      modelId: string;
+      managedContext: ZCodeManagedRunContext;
+    }) => Promise<{ apiKey: string } | undefined>;
+    requestLumiManagedToolDecision?: (input: {
+      workspaceIdentity: string;
+      params: import("@zcode/shared").ZCodeManagedToolDecisionRequestParams;
+    }) => Promise<import("@zcode/shared").ZCodeManagedToolDecisionResult>;
+    reportLumiManagedToolResult?: (input: {
+      workspaceIdentity: string;
+      params: import("@zcode/shared").ZCodeManagedToolResultRequestParams;
+    }) => Promise<import("@zcode/shared").ZCodeManagedToolResultAck>;
+    resolveLumiManagedToolIdentity?: (input: {
+      workspaceIdentity: string;
+      params: import("@zcode/shared").ZCodeManagedToolIdentityRequest;
+    }) => Promise<import("@zcode/shared").ZCodeManagedToolIdentityResolution>;
+    reportLumiRuntimeCapabilities?: (input: {
+      workspaceIdentity: string;
+      params: import("@zcode/shared").ZCodeManagedRuntimeCapabilitiesRequest;
+    }) => Promise<import("@zcode/shared").ZCodeManagedRuntimeCapabilitiesAck>;
+    /** Settle only run IDs held by Main after a host-observed terminal event. */
+    onLumiManagedRunTerminal?: (input: {
+      runId: string;
+      outcome: "succeeded" | "failed" | "stopped";
+    }) => Promise<void> | void;
+    /** Host's answer to one Main-issued managed automation run (task created / refusal code). */
+    onLumiManagedAutomationRunResult?: (input: {
+      type: "lumi-managed-automation-run-result";
+      requestId: string;
+      ok: boolean;
+      taskId?: string;
+      errorCode?: string;
+    }) => void;
+    /** Host's ACK of one Main-issued managed automation cancel (stopped / prevented / refusal). */
+    onLumiManagedAutomationCancelResult?: (input: {
+      type: "lumi-managed-automation-cancel-result";
+      requestId: string;
+      runId: string;
+      ok: boolean;
+      outcome?: "stopped" | "prevented" | "already_cancelled";
+      errorCode?: string;
+    }) => void;
   },
   options?: SpawnHostProcessOptions,
 ): ElectronUtilityProcess {
@@ -320,6 +369,159 @@ export function spawnHostProcess(
 
     if (result.data.type === HostResponseTypes.NetworkTelemetryBatch) {
       ingestHostNetworkObservations(result.data.observations);
+      return;
+    }
+
+    if (result.data.type === HostResponseTypes.LumiManagedRequestAuthRequest) {
+      const request = result.data;
+      const resolver = dependencies.resolveLumiManagedRequestAuth;
+      const refuse = (errorCode = "lumi_managed_auth_refused") => {
+        child.postMessage({
+          type: HostMessageTypes.LumiManagedRequestAuthResult,
+          requestId: request.requestId,
+          ok: false,
+          errorCode,
+        });
+      };
+      if (!resolver) {
+        refuse("lumi_managed_auth_unavailable");
+        return;
+      }
+      void resolver(request)
+        .then((auth) => {
+          if (!auth || !/^[0-9a-f]{64}$/.test(auth.apiKey)) {
+            refuse();
+            return;
+          }
+          child.postMessage({
+            type: HostMessageTypes.LumiManagedRequestAuthResult,
+            requestId: request.requestId,
+            ok: true,
+            apiKey: auth.apiKey,
+          });
+        })
+        .catch((error: unknown) => {
+          const message = error instanceof Error ? error.message : "";
+          const errorCode = /^lumi_[a-z_]{1,80}$/.test(message)
+            ? message
+            : "lumi_managed_auth_refused";
+          refuse(errorCode);
+        });
+      return;
+    }
+
+    if (result.data.type === HostResponseTypes.LumiManagedToolDecisionRequest) {
+      const request = result.data;
+      void (async () => {
+        try {
+          if (!dependencies.requestLumiManagedToolDecision)
+            throw new Error("lumi_managed_tool_unavailable");
+          const decision = await dependencies.requestLumiManagedToolDecision(request);
+          child.postMessage({
+            type: HostMessageTypes.LumiManagedToolDecisionResult,
+            requestId: request.requestId,
+            ok: true,
+            result: decision,
+          });
+        } catch {
+          child.postMessage({
+            type: HostMessageTypes.LumiManagedToolDecisionResult,
+            requestId: request.requestId,
+            ok: false,
+            errorCode: "lumi_managed_tool_refused",
+          });
+        }
+      })();
+      return;
+    }
+
+    if (result.data.type === HostResponseTypes.LumiManagedToolIdentityRequest) {
+      const request = result.data;
+      void (async () => {
+        try {
+          if (!dependencies.resolveLumiManagedToolIdentity)
+            throw new Error("lumi_identity_unavailable");
+          const resolution = await dependencies.resolveLumiManagedToolIdentity(request);
+          child.postMessage({
+            type: HostMessageTypes.LumiManagedToolIdentityResult,
+            requestId: request.requestId,
+            ok: true,
+            resolution,
+          });
+        } catch {
+          child.postMessage({
+            type: HostMessageTypes.LumiManagedToolIdentityResult,
+            requestId: request.requestId,
+            ok: false,
+            errorCode: "lumi_identity_refused",
+          });
+        }
+      })();
+      return;
+    }
+    if (result.data.type === HostResponseTypes.LumiRuntimeCapabilitiesRequest) {
+      const request = result.data;
+      void (async () => {
+        try {
+          if (!dependencies.reportLumiRuntimeCapabilities)
+            throw new Error("lumi_runtime_capabilities_unavailable");
+          const ack = await dependencies.reportLumiRuntimeCapabilities(request);
+          child.postMessage({
+            type: HostMessageTypes.LumiRuntimeCapabilitiesResult,
+            requestId: request.requestId,
+            ok: true,
+            ack,
+          });
+        } catch {
+          child.postMessage({
+            type: HostMessageTypes.LumiRuntimeCapabilitiesResult,
+            requestId: request.requestId,
+            ok: false,
+            errorCode: "lumi_runtime_capabilities_refused",
+          });
+        }
+      })();
+      return;
+    }
+    if (result.data.type === HostResponseTypes.LumiManagedToolReportRequest) {
+      const request = result.data;
+      void (async () => {
+        try {
+          if (!dependencies.reportLumiManagedToolResult)
+            throw new Error("lumi_managed_result_unavailable");
+          const ack = await dependencies.reportLumiManagedToolResult(request);
+          child.postMessage({
+            type: HostMessageTypes.LumiManagedToolReportResult,
+            requestId: request.requestId,
+            ok: true,
+            ack,
+          });
+        } catch {
+          child.postMessage({
+            type: HostMessageTypes.LumiManagedToolReportResult,
+            requestId: request.requestId,
+            ok: false,
+            errorCode: "lumi_managed_result_refused",
+          });
+        }
+      })();
+      return;
+    }
+    if (result.data.type === HostResponseTypes.LumiManagedAutomationRunResult) {
+      dependencies.onLumiManagedAutomationRunResult?.(result.data);
+      return;
+    }
+    if (result.data.type === HostResponseTypes.LumiManagedAutomationCancelResult) {
+      dependencies.onLumiManagedAutomationCancelResult?.(result.data);
+      return;
+    }
+    if (result.data.type === HostResponseTypes.LumiManagedRunTerminalOutcome) {
+      const terminal = result.data;
+      void Promise.resolve(dependencies.onLumiManagedRunTerminal?.(terminal)).catch(() => {
+        dependencies.logger.warn("Lumi managed run terminal settlement failed", {
+          runId: terminal.runId,
+        });
+      });
       return;
     }
 
@@ -565,7 +767,6 @@ export function spawnHostProcess(
       });
       return;
     }
-
 
     if (result.data.type === HostResponseTypes.BotRemoteWorkspaceReconnectRequest) {
       const request = result.data;

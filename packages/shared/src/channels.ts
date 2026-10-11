@@ -564,6 +564,16 @@ export const HostMessageTypes = {
   /** main → host：资源管理器请求 Host 采样其后代进程（Agent / MCP / 终端）的 CPU 与内存 */
   ResourceUsageSnapshotRequest: "resource-usage-snapshot-request",
   ResourceUsageSnapshotCancel: "resource-usage-snapshot-cancel",
+  /** main → host: result of one Main-owned managed inference auth request. */
+  LumiManagedRequestAuthResult: "lumi-managed-request-auth-result",
+  LumiManagedToolDecisionResult: "lumi-managed-tool-decision-result",
+  LumiManagedToolReportResult: "lumi-managed-tool-report-result",
+  LumiManagedToolIdentityResult: "lumi-managed-tool-identity-result",
+  LumiRuntimeCapabilitiesResult: "lumi-runtime-capabilities-result",
+  /** main → host: run one managed automation occurrence (prompt + server-issued context, no credential). */
+  LumiManagedAutomationRun: "lumi-managed-automation-run",
+  /** main → host: stop one managed automation run's work after Main lost its lease (run id only). */
+  LumiManagedAutomationCancel: "lumi-managed-automation-cancel",
 } as const;
 
 /** host process → main process 的反馈消息类型 */
@@ -660,6 +670,18 @@ export const HostResponseTypes = {
   ProviderProvisioningSourceChanged: "provider-provisioning-source-changed",
   /** host → main：一次 Remote Environment 同步执行完毕。 */
   ProviderProvisioningExecutionResult: "provider-provisioning-execution-result",
+  /** host → main: resolve Main-owned Lumi auth for one physical model request. */
+  LumiManagedRequestAuthRequest: "lumi-managed-request-auth-request",
+  LumiManagedToolDecisionRequest: "lumi-managed-tool-decision-request",
+  LumiManagedToolReportRequest: "lumi-managed-tool-report-request",
+  LumiManagedToolIdentityRequest: "lumi-managed-tool-identity-request",
+  LumiRuntimeCapabilitiesRequest: "lumi-runtime-capabilities-request",
+  /** host → main: actual ZCode task turn reached a terminal state for a P05 run. */
+  LumiManagedRunTerminalOutcome: "lumi-managed-run-terminal-outcome",
+  /** host → main: the managed automation task was created and its prompt accepted (or refused). */
+  LumiManagedAutomationRunResult: "lumi-managed-automation-run-result",
+  /** host → main: ACK of one managed automation cancel (stopped / prevented / stable refusal). */
+  LumiManagedAutomationCancelResult: "lumi-managed-automation-cancel-result",
 } as const;
 
 // ============================================================================

@@ -1,6 +1,10 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
 import { generateKeyPairSync, createHash, randomUUID, sign, createPrivateKey } from "node:crypto";
-import { LumiDeviceHostTransport, type LumiAccountHostTransport } from "@zcode/services/node";
+import {
+  LumiDeviceHostTransport,
+  type LumiAccountHostTransport,
+  type LumiRuntimeCapabilityReport,
+} from "@zcode/services/node";
 import type { LumiDeviceRecord } from "./lumiDeviceVault.js";
 interface Vault {
   load(): Promise<LumiDeviceRecord | null>;
@@ -14,6 +18,8 @@ export function createLumiDeviceOwner(options: {
   account: LumiAccountHostTransport;
   vault: Vault;
   appVersion: string;
+  /** Main-owned runtime snapshot provider; never supplied by renderer commands. */
+  readRuntimeCapabilities?: () => Promise<LumiRuntimeCapabilityReport>;
 }) {
   let record: LumiDeviceRecord | null = null;
   let loaded = false;
@@ -59,6 +65,19 @@ export function createLumiDeviceOwner(options: {
       orgId: options.orgId,
       device: device.projection(),
     };
+  }
+  // Canonical form of the last report the control plane accepted for the held credential.
+  let lastReported: string | null = null;
+  async function reportRuntime(onlyIfChanged = false) {
+    // No provider means availability is unknown, never optimistically true.
+    const report = (await options.readRuntimeCapabilities?.()) ?? {};
+    const canonical = JSON.stringify(
+      Object.entries(report).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+    );
+    if (onlyIfChanged && canonical === lastReported) return;
+    lastReported = null;
+    await device.heartbeat(options.appVersion, report);
+    lastReported = canonical;
   }
   return {
     read: () =>
@@ -121,9 +140,116 @@ export function createLumiDeviceOwner(options: {
           createPrivateKey(record.privateKeyPem),
         ).toString("hex");
         await device.complete(enrollmentId, signature);
+        await reportRuntime();
         const policy = await device.policy();
         await device.acknowledge(policy.policy_version as number);
         return projection();
+      }),
+
+    /**
+     * Main-only P06 lease transport. The object holds no token: it reads the held credential on
+     * every request, and its results never reach the renderer, the scheduler process or Host.
+     */
+    automationLeases: () =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        return device.automationLeases();
+      }),
+
+    listWorkspaceBindings: () =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        return device.listWorkspaceBindings();
+      }),
+
+    createManagedSession: (input: {
+      projectId: string;
+      agentDefinitionId: string;
+      workspaceBindingId: string;
+      title?: string;
+    }) =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        return device.createManagedSession(input);
+      }),
+
+    createManagedRun: (agentSessionId: string, modelAlias: string) =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        return device.createManagedRun(agentSessionId, modelAlias);
+      }),
+
+    getManagedRun: (runId: string) =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        return device.getManagedRun(runId);
+      }),
+
+    requestManagedToolDecision: (
+      input: import("@zcode/shared").ZCodeManagedToolDecisionRequestParams,
+    ) =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        return device.requestManagedToolDecision(input);
+      }),
+
+    reportManagedToolResult: (input: import("@zcode/shared").ZCodeManagedToolResultRequestParams) =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        await device.reportManagedToolResult(input, input.status);
+      }),
+    startManagedRun: (run: Awaited<ReturnType<typeof device.getManagedRun>>) =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        return device.startManagedRun(run);
+      }),
+
+    completeManagedRun: (run: Awaited<ReturnType<typeof device.getManagedRun>>) =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        return device.completeManagedRun(run);
+      }),
+
+    failManagedRun: (run: Awaited<ReturnType<typeof device.getManagedRun>>, failureCode: string) =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        return device.failManagedRun(run, failureCode);
+      }),
+
+    cancelManagedRun: (run: Awaited<ReturnType<typeof device.getManagedRun>>) =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        return device.cancelManagedRun(run);
+      }),
+
+    createWorkspaceBinding: (input: {
+      projectId: string;
+      workspaceIdentity: string;
+      displayName: string;
+      environmentType: "local" | "ssh" | "wsl" | "docker" | "remote";
+    }) =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        return device.createWorkspaceBinding(input);
+      }),
+
+    deleteWorkspaceBinding: (bindingId: string) =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        await device.deleteWorkspaceBinding(bindingId);
       }),
 
     recover: () =>
@@ -148,6 +274,7 @@ export function createLumiDeviceOwner(options: {
           { challenge: challenge.challenge, signature, appVersion: options.appVersion },
         );
         await device.adoptRecoveredToken(renewed);
+        await reportRuntime();
         const policy = await device.policy();
         await device.acknowledge(policy.policy_version as number);
         return projection();
@@ -156,11 +283,30 @@ export function createLumiDeviceOwner(options: {
       serialized(async () => {
         await load();
         if (!record?.credential) throw new Error("lumi_device_missing");
+        await reportRuntime();
         const policy = await device.policy();
         await device.acknowledge(policy.policy_version as number);
         return {
           device: projection(),
           policy: { id: policy.id, version: policy.policy_version, expiresAt: policy.expires_at },
+        };
+      }),
+    /** Publish the Main-validated runtime snapshot; heartbeat only, never policy ACK. */
+    refreshRuntimeCapabilities: () =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        await reportRuntime(true);
+      }),
+    readCurrentPolicy: () =>
+      serialized(async () => {
+        await load();
+        if (!record?.credential) throw new Error("lumi_device_missing");
+        const policy = await device.policy();
+        return {
+          id: policy.id as string,
+          version: policy.policy_version as number,
+          expiresAt: policy.expires_at as string,
         };
       }),
     refresh: () =>

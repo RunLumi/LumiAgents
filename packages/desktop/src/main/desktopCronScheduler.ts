@@ -42,6 +42,11 @@ interface CronSchedulerDeps {
   resolveDispatchHost: () => ElectronUtilityProcess | null;
   /** 闲时任务执行中计数变化（keep-awake：main 据此 + 设置切 powerSaveBlocker）。 */
   onOffPeakActiveCountChanged?: (count: number) => void;
+  /**
+   * scheduler 通知「本地有已接管的原任务，请轮询一次服务端 due」。Main 的托管 runtime 持有全部
+   * 凭据并自行做 single-flight；scheduler 不带 id、不等待结果。未注入则忽略（保持纯本地行为）。
+   */
+  onManagedPollRequested?: () => void;
 }
 
 export interface CronSchedulerHandle {
@@ -93,6 +98,17 @@ export function spawnCronScheduler(deps: CronSchedulerDeps): CronSchedulerHandle
 
     if (msg.type === "offpeak-active-count") {
       deps.onOffPeakActiveCountChanged?.(msg.count);
+      return;
+    }
+
+    if (msg.type === "managed-poll-request") {
+      if (isDisposing) return;
+      try {
+        deps.onManagedPollRequested?.();
+      } catch (error) {
+        // 托管轮询的任何失败都不能影响本地 cron/闲时派发。
+        deps.logger.warn("[cron-scheduler] managed poll hook failed:", error);
+      }
       return;
     }
 

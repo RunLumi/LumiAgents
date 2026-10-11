@@ -405,6 +405,7 @@ export interface ProviderRuntimeHeadersPort {
     accountAccess?: ZCodeProviderAccountAccess;
     abortSignal?: AbortSignal;
     modelId: string;
+    managedContext?: LumiManagedExecutionContext;
     providerId: string;
     reason: "model-request";
     sessionId: SessionId;
@@ -434,6 +435,8 @@ export interface ModelExecutionContext {
   memoryExtraction?: "skip";
   selectionScope: "execution";
   requestDependencies?: ModelRequestDependencies;
+  /** Server-issued, non-secret P05 scope for this one managed turn. */
+  managedContext?: LumiManagedExecutionContext;
   subagents?: {
     foregroundModel: "submission";
     background: "deny";

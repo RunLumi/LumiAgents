@@ -39,6 +39,50 @@ export function getDataBaseDir(): string {
   return defaultDataBaseDir;
 }
 
+type BootstrapEnv = Readonly<Record<string, string | undefined>>;
+
+/** 调用方显式配置的数据根（ZCODE_DATA_BASE_DIR）；未配置返回 null。 */
+function readExplicitDataBaseDir(env: BootstrapEnv): string | null {
+  return env.ZCODE_DATA_BASE_DIR?.trim() || null;
+}
+
+/**
+ * bootstrap 设置（setting.json）所在的 home。
+ * 显式 ZCODE_DATA_BASE_DIR 的实例拥有自己的状态根，bootstrap 不得再读取 OS home 里的设置，
+ * 否则 OS home 的 dataBaseDir 会把显式根改写到别处。未显式配置时保持安装版行为：
+ * ZCODE_DESKTOP_HOME_DIR > HOME > USERPROFILE > homedir()。
+ * 仅解析路径，不改变 Main 自身的 HOME（原生 keychain 依赖它）。
+ */
+export function getBootstrapHomeDir(env: BootstrapEnv = process.env): string {
+  return (
+    readExplicitDataBaseDir(env) ||
+    env.ZCODE_DESKTOP_HOME_DIR?.trim() ||
+    env.HOME?.trim() ||
+    env.USERPROFILE?.trim() ||
+    homedir()
+  );
+}
+
+/** {bootstrapHome}/.zcode/v2/setting.json：early bootstrap、硬件加速、启动工作区与 SettingService 共用。 */
+export function getBootstrapSettingsFile(env: BootstrapEnv = process.env): string {
+  return join(getBootstrapHomeDir(env), ".zcode", "v2", "setting.json");
+}
+
+/**
+ * 应用 setting.json 里的自定义数据根。显式 ZCODE_DATA_BASE_DIR 优先，
+ * 此时忽略设置值并返回 false，保证配置根在 early bootstrap 与 whenReady 之后都不被改写。
+ */
+export function applyConfiguredDataBaseDir(
+  dir: string | null | undefined,
+  env: BootstrapEnv = process.env,
+): boolean {
+  if (readExplicitDataBaseDir(env)) return false;
+  const trimmed = dir?.trim();
+  if (!trimmed) return false;
+  setDataBaseDir(trimmed);
+  return true;
+}
+
 /** {dataBaseDir}/.zcode */
 export function getZCodeDataRootDir(): string {
   return join(getDataBaseDir(), ".zcode");

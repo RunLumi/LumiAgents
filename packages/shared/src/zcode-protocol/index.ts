@@ -27,6 +27,7 @@ import { modelSelectionSchema } from "../model-selection.js";
 import { completeModelPropertiesDataSchema } from "../model-config.js";
 import { accountProviderUnavailableReasonSchema } from "../account-provider-state.js";
 import { modelExecutionSchema } from "../model-execution.js";
+import { zcodeManagedRunContextSchema } from "./managed-run-context.js";
 import { APP_USAGE_RANGES, appUsageSnapshotSchema } from "../usage-stats.js";
 import { zcodeAutomationBotDeliveryTargetSchema } from "../bots.js";
 // browser-use 命令/结果契约单一来源：agent 构造、协议校验和 main executor 共用同一 schema。
@@ -2178,6 +2179,29 @@ export const zcodeProviderUpdateAccountConfigResultSchema = z
 export type ZCodeProviderUpdateAccountConfigResult = z.infer<
   typeof zcodeProviderUpdateAccountConfigResultSchema
 >;
+/**
+ * Private, process-scoped: add one stable Lumi model alias to the Agent's own
+ * in-memory managed provider source. The child uses its startup origin; the payload
+ * carries no origin, credential, header, provider config or run context, and the
+ * registration grants no backend authority.
+ */
+export const zcodeProviderRegisterManagedAliasParamsSchema = z
+  .object({
+    modelAlias: z.string().regex(/^[a-z0-9][a-z0-9._-]{0,127}$/),
+  })
+  .strict();
+export const zcodeProviderRegisterManagedAliasResultSchema = z
+  .object({
+    modelAlias: z.string().regex(/^[a-z0-9][a-z0-9._-]{0,127}$/),
+    status: z.enum(["registered", "unchanged"]),
+  })
+  .strict();
+export type ZCodeProviderRegisterManagedAliasParams = z.infer<
+  typeof zcodeProviderRegisterManagedAliasParamsSchema
+>;
+export type ZCodeProviderRegisterManagedAliasResult = z.infer<
+  typeof zcodeProviderRegisterManagedAliasResultSchema
+>;
 export const zcodeInteractionPreferencesSchema = z
   .object({
     askUserQuestionAutoResolutionEnabled: z.boolean(),
@@ -2299,6 +2323,10 @@ export type ZCodePermissionRequestParams = z.infer<typeof zcodePermissionRequest
 // checked so the existing TraceContext.traceId remains the observability identity.
 
 export const ZCODE_MANAGED_TOOL_DECISION_METHOD = "interaction/requestManagedToolDecision" as const;
+export const ZCODE_MANAGED_TOOL_RESULT_METHOD = "interaction/reportManagedToolResult" as const;
+export const ZCODE_MANAGED_TOOL_IDENTITY_METHOD = "interaction/resolveManagedToolIdentity" as const;
+export const ZCODE_MANAGED_RUNTIME_CAPABILITIES_METHOD =
+  "interaction/reportRuntimeCapabilities" as const;
 
 const zcodeManagedOpaqueIdSchema = (prefix: string) =>
   z.string().regex(new RegExp(`^${prefix}_[0-9a-f]{32}$`));
@@ -2341,13 +2369,6 @@ const zcodeManagedProtocolTraceSchema = z
   .strict();
 
 const zcodeManagedVisibleIdSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .max(256)
-  .regex(/^[\x21-\x7e]+$/);
-
-const zcodeManagedExternalIdSchema = z
   .string()
   .trim()
   .min(1)
@@ -2410,24 +2431,8 @@ const zcodeManagedRiskClassSchema = z.enum([
   "destructive",
 ]);
 
-export const zcodeManagedRunContextSchema = z
-  .object({
-    organizationId: zcodeManagedOpaqueIdSchema("org"),
-    projectId: zcodeManagedOpaqueIdSchema("prj"),
-    deviceId: zcodeManagedOpaqueIdSchema("dvc"),
-    agentSessionId: zcodeManagedOpaqueIdSchema("rse"),
-    runId: zcodeManagedOpaqueIdSchema("run"),
-    agentDefinitionId: zcodeManagedOpaqueIdSchema("agd"),
-    agentDefinitionVersion: z.number().int().positive(),
-    // P04/P05 correlation ID; it is distinct from the JSON-RPC envelope id.
-    requestId: zcodeManagedOpaqueIdSchema("req"),
-    externalId: zcodeManagedExternalIdSchema.optional(),
-    executionMode: z.enum(["managed", "local_only"]),
-    policySnapshotId: zcodeManagedOpaqueIdSchema("pol").optional(),
-    policyVersion: z.number().int().nonnegative().optional(),
-  })
-  .strict();
-export type ZCodeManagedRunContext = z.infer<typeof zcodeManagedRunContextSchema>;
+export { zcodeManagedRunContextSchema };
+export type { ZCodeManagedRunContext } from "./managed-run-context.js";
 
 export const zcodeManagedToolIdentitySchema = z
   .object({
@@ -2447,6 +2452,60 @@ export const zcodeManagedToolIdentitySchema = z
   })
   .strict();
 export type ZCodeManagedToolIdentity = z.infer<typeof zcodeManagedToolIdentitySchema>;
+export const zcodeManagedToolIdentityRequestSchema = z
+  .object({
+    context: zcodeManagedRunContextSchema,
+    traceId: zcodeManagedVisibleIdSchema,
+    sessionId: zcodeManagedVisibleIdSchema,
+    tool: zcodeManagedToolIdentitySchema,
+  })
+  .strict()
+  .refine((value) => value.context.executionMode === "managed", {
+    message: "identity resolution requires managed context",
+  });
+export type ZCodeManagedToolIdentityRequest = z.infer<typeof zcodeManagedToolIdentityRequestSchema>;
+export const zcodeManagedToolIdentityResolutionSchema = z
+  .object({
+    runId: zcodeManagedOpaqueIdSchema("run"),
+    identity: zcodeManagedToolIdentitySchema.nullable(),
+  })
+  .strict();
+export type ZCodeManagedToolIdentityResolution = z.infer<
+  typeof zcodeManagedToolIdentityResolutionSchema
+>;
+
+/** Availability booleans derived from the session ToolRegistry; never a grant. */
+export const zcodeManagedRuntimeCapabilitiesSchema = z
+  .object({
+    filesystem_write: z.boolean(),
+    process_execution: z.boolean(),
+    network_access: z.boolean(),
+    mcp_execution: z.boolean(),
+    browser_use: z.boolean(),
+    computer_use: z.boolean(),
+  })
+  .strict();
+export type ZCodeManagedRuntimeCapabilities = z.infer<typeof zcodeManagedRuntimeCapabilitiesSchema>;
+export const zcodeManagedRuntimeCapabilitiesRequestSchema = z
+  .object({
+    context: zcodeManagedRunContextSchema,
+    traceId: zcodeManagedVisibleIdSchema,
+    sessionId: zcodeManagedVisibleIdSchema,
+    capabilities: zcodeManagedRuntimeCapabilitiesSchema,
+  })
+  .strict()
+  .refine((value) => value.context.executionMode === "managed", {
+    message: "runtime capability report requires managed context",
+  });
+export type ZCodeManagedRuntimeCapabilitiesRequest = z.infer<
+  typeof zcodeManagedRuntimeCapabilitiesRequestSchema
+>;
+export const zcodeManagedRuntimeCapabilitiesAckSchema = z
+  .object({ runId: zcodeManagedOpaqueIdSchema("run"), recorded: z.literal(true) })
+  .strict();
+export type ZCodeManagedRuntimeCapabilitiesAck = z.infer<
+  typeof zcodeManagedRuntimeCapabilitiesAckSchema
+>;
 
 export const zcodeManagedToolDecisionRequestParamsSchema = z
   .object({
@@ -2581,6 +2640,32 @@ export type ZCodeManagedToolDecisionResult = z.infer<typeof zcodeManagedToolDeci
 export const zcodeManagedToolDecisionResponseSchema = zcodeManagedToolDecisionResultSchema;
 export type ZCodeManagedToolDecisionResponse = ZCodeManagedToolDecisionResult;
 
+export const zcodeManagedToolResultStatusSchema = z.enum(["completed", "failed", "cancelled"]);
+export const zcodeManagedToolResultRequestParamsSchema = z
+  .object({
+    context: zcodeManagedRunContextSchema,
+    traceId: zcodeManagedVisibleIdSchema,
+    sessionId: zcodeManagedVisibleIdSchema,
+    toolCallId: zcodeManagedOpaqueIdSchema("tcl"),
+    status: zcodeManagedToolResultStatusSchema,
+  })
+  .strict()
+  .refine((value) => value.context.executionMode === "managed", {
+    message: "managed result requires managed context",
+  });
+export type ZCodeManagedToolResultRequestParams = z.infer<
+  typeof zcodeManagedToolResultRequestParamsSchema
+>;
+export const zcodeManagedToolResultAckSchema = z
+  .object({
+    recorded: z.literal(true),
+    runId: zcodeManagedOpaqueIdSchema("run"),
+    toolCallId: zcodeManagedOpaqueIdSchema("tcl"),
+    status: zcodeManagedToolResultStatusSchema,
+  })
+  .strict();
+export type ZCodeManagedToolResultAck = z.infer<typeof zcodeManagedToolResultAckSchema>;
+
 /**
  * Strict JSON-RPC envelope for the managed tool decision reverse request.
  * Unlike the generic protocol envelope, trace is mandatory for this method;
@@ -2701,6 +2786,7 @@ export const zcodeProviderRuntimeHeadersRequestParamsSchema = z
     modelSelection: modelSelectionSchema,
     providerId: nonEmptyString,
     accountAccess: zcodeProviderAccountAccessSchema.optional(),
+    managedContext: zcodeManagedRunContextSchema.optional(),
     reason: zcodeProviderRuntimeHeadersRequestReasonSchema,
   })
   .strict();
@@ -3914,6 +4000,8 @@ export const zcodeProtocolMethods = {
   workspaceHookTrustGrant: "workspace/hooks/trustGrant",
   // 进程级 Account Provider Config 与 workspace 运行目录分离。
   providerUpdateAccountConfig: "provider/updateAccountConfig",
+  // Lumi managed: live alias registration into the same process's in-memory source.
+  providerRegisterManagedAlias: "provider/registerManagedAlias",
   workspaceUpdateInteractionPreferences: "workspace/updateInteractionPreferences",
   workspaceUpdateModelIoPreferences: "workspace/updateModelIoPreferences",
   // Off-Peak 工具面门禁是 workspace 级事实（灰度 + 本地/远程），由 host 在 agent 就绪时同步；
@@ -3974,6 +4062,9 @@ export const zcodeProtocolMethods = {
   // Agent → host reverse request. The host owns the runtime device token and
   // calls the P05 control-plane broker; the token never crosses this method.
   interactionRequestManagedToolDecision: ZCODE_MANAGED_TOOL_DECISION_METHOD,
+  interactionReportManagedToolResult: ZCODE_MANAGED_TOOL_RESULT_METHOD,
+  interactionResolveManagedToolIdentity: ZCODE_MANAGED_TOOL_IDENTITY_METHOD,
+  interactionReportRuntimeCapabilities: ZCODE_MANAGED_RUNTIME_CAPABILITIES_METHOD,
   interactionRequestUserInput: "interaction/requestUserInput",
   interactionRequestProviderRuntimeHeaders: "interaction/requestProviderRuntimeHeaders",
   interactionRequestOfficialMcpAuthHeaders: "interaction/requestOfficialMcpAuthHeaders",
@@ -4008,6 +4099,18 @@ export const zcodeProtocolSessionMethodContracts = {
   [zcodeProtocolMethods.interactionRequestManagedToolDecision]: {
     params: zcodeManagedToolDecisionRequestParamsSchema,
     result: zcodeManagedToolDecisionResultSchema,
+  },
+  [zcodeProtocolMethods.interactionReportManagedToolResult]: {
+    params: zcodeManagedToolResultRequestParamsSchema,
+    result: zcodeManagedToolResultAckSchema,
+  },
+  [zcodeProtocolMethods.interactionResolveManagedToolIdentity]: {
+    params: zcodeManagedToolIdentityRequestSchema,
+    result: zcodeManagedToolIdentityResolutionSchema,
+  },
+  [zcodeProtocolMethods.interactionReportRuntimeCapabilities]: {
+    params: zcodeManagedRuntimeCapabilitiesRequestSchema,
+    result: zcodeManagedRuntimeCapabilitiesAckSchema,
   },
 } as const satisfies Partial<
   Record<ZCodeProtocolMethod, { params: z.ZodTypeAny; result: z.ZodTypeAny }>

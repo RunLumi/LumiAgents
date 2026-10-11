@@ -63,10 +63,10 @@ import { resolveEmbeddedSearchBranchCapability } from "../../embedded-search/cap
 import { resolveToolEntryModelContract } from "../model-contract.js";
 import {
   createLumiManagedToolDecisionPortAdapter,
-  createManagedDecisionDeniedError,
-  enforceManagedToolDecision,
   isManagedToolDecisionDeniedError,
 } from "./managed-decision.js";
+import { executeManagedToolHandler } from "./managed-handler.js";
+import { summarizeRuntimeCapabilities } from "./runtime-capabilities.js";
 
 export async function executeToolCall(
   deps: ToolExecutorDeps,
@@ -455,21 +455,24 @@ async function executeToolCallImpl(
       handlerInput: unknown,
       handlerContext: ToolExecutionContext,
     ): Promise<unknown> => {
-      const managedGate = await enforceManagedToolDecision({
-        adapter: managedDecisionAdapter,
-        context: deps.managedContext ?? options?.managedContext,
-        entry,
-        toolCall: canonicalToolCall,
-        input: handlerInput,
-        traceContext,
-        sessionId: deps.sessionId,
-        turnId,
-        signal: handlerContext.abortSignal,
-      });
-      if (!managedGate.allowed) {
-        throw createManagedDecisionDeniedError(managedGate.reasonCode);
-      }
-      return entry.handler(handlerInput, handlerContext);
+      return executeManagedToolHandler(
+        {
+          adapter: managedDecisionAdapter,
+          context: deps.managedContext ?? options?.managedContext,
+          entry,
+          toolCall: canonicalToolCall,
+          input: handlerInput,
+          traceContext,
+          sessionId: deps.sessionId,
+          turnId,
+          signal: handlerContext.abortSignal,
+          readRuntimeCapabilities: () => summarizeRuntimeCapabilities(deps.registry),
+        },
+        entry.handler,
+        handlerInput,
+        handlerContext,
+        deadline,
+      );
     };
 
     const output = await executeWithTimeout(

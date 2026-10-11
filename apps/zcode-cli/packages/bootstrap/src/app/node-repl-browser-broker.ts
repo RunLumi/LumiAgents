@@ -1,3 +1,4 @@
+/* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
 import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { rm } from "node:fs/promises";
 import { createServer, type Server, type Socket } from "node:net";
@@ -88,9 +89,13 @@ export function injectNodeReplBrowserBroker(
 
 function createSocketPath(platform: NodeJS.Platform | string): string {
   const id = randomUUID();
-  return platform === "win32"
-    ? `\\\\.\\pipe\\zcode-node-repl-${id}`
-    : join(tmpdir(), `znr-${id}.sock`);
+  if (platform === "win32") return `\\\\.\\pipe\\zcode-node-repl-${id}`;
+  const name = `znr-${id}.sock`;
+  const preferred = join(tmpdir(), name);
+  // sockaddr_un has a byte-sized native path limit. A long custom TMPDIR must
+  // not prevent the entire Agent from starting. Keep the unpredictable path
+  // and independent bearer-token handshake; only its temporary parent changes.
+  return Buffer.byteLength(preferred, "utf8") < 100 ? preferred : join("/tmp", name);
 }
 
 async function handleSocket(

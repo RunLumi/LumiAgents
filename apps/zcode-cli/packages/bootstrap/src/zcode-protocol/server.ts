@@ -84,6 +84,7 @@ import {
 import { listMcpServers } from "./mcp.js";
 import { updateInteractionPreferences } from "./interaction-preferences.js";
 import { updateAccountProviderConfig } from "./account-provider-config.js";
+import { registerManagedProviderAlias } from "./managed-provider-alias.js";
 import { updateModelIoPreferences } from "./model-io-preferences.js";
 import { updateOffPeakToolPolicy } from "./off-peak-tool-policy.js";
 import { updateDynamicWorkflowPolicy } from "./dynamic-workflow-policy.js";
@@ -625,6 +626,8 @@ export class ZCodeProtocolAgentServer {
       }
       case zcodeProtocolMethods.providerUpdateAccountConfig:
         return await updateAccountProviderConfig(this.context, request.params);
+      case zcodeProtocolMethods.providerRegisterManagedAlias:
+        return await registerManagedProviderAlias(this.context, request.params);
       case zcodeProtocolMethods.workspaceUpdateInteractionPreferences:
         return await updateInteractionPreferences(this.context, request.params);
       case zcodeProtocolMethods.workspaceUpdateModelIoPreferences:

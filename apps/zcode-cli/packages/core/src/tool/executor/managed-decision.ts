@@ -6,6 +6,7 @@ import {
   createCoreError,
   isCoreError,
   type ManagedRunContext as ContractManagedRunContext,
+  type ManagedRuntimeCapabilities,
   type ManagedToolDecision as ContractManagedToolDecision,
   type ManagedToolDecisionPort as ContractManagedToolDecisionPort,
   type ManagedToolDecisionRequest as ContractManagedToolDecisionRequest,
@@ -104,9 +105,28 @@ type ContextProvider = () => MaybePromise<LumiManagedExecutionContext | undefine
  * upgrades that boundary and performs the strict result checks.
  */
 export interface LocalManagedToolDecisionPort {
+  resolveIdentity?: (
+    request: Pick<
+      LumiManagedToolDecisionRequest,
+      "context" | "trace" | "traceId" | "sessionId" | "tool"
+    >,
+    options?: { signal?: AbortSignal },
+  ) => MaybePromise<ManagedToolIdentity | undefined>;
+  reportRuntimeCapabilities?: RuntimeCapabilitiesReporter;
   requestDecision: DecisionHandler;
   decide?: DecisionHandler;
+  reportResult?: (
+    request: LumiManagedToolDecisionRequest,
+    status: "completed" | "failed" | "cancelled",
+  ) => MaybePromise<void>;
 }
+
+type RuntimeCapabilitiesReporter = (
+  request: Pick<LumiManagedToolDecisionRequest, "context" | "trace" | "traceId" | "sessionId"> & {
+    capabilities: ManagedRuntimeCapabilities;
+  },
+  options?: { signal?: AbortSignal },
+) => MaybePromise<void>;
 
 export type LumiManagedToolDecisionPort =
   | LocalManagedToolDecisionPort
@@ -119,11 +139,15 @@ export type LumiManagedToolDecisionPort =
  * accepts a terminal decision.
  */
 export interface LumiManagedToolDecisionAdapter {
+  resolveIdentity?: LocalManagedToolDecisionPort["resolveIdentity"];
+  reportRuntimeCapabilities?: RuntimeCapabilitiesReporter;
   mode?: LumiManagedExecutionMode;
   context?: LumiManagedExecutionContext | ContextProvider;
   getContext?: ContextProvider;
   isManaged?: () => MaybePromise<boolean>;
   requireBoundResult?: boolean;
+  requireResultReporting?: boolean;
+  reportResult?: LocalManagedToolDecisionPort["reportResult"];
   decide?: DecisionHandler;
   requestDecision?: DecisionHandler;
   evaluate?: DecisionHandler;
@@ -142,11 +166,15 @@ export type ManagedToolDecisionAdapter = LumiManagedToolDecisionAdapter;
 export type ManagedToolDecisionPort = LumiManagedToolDecisionPort;
 
 export interface LumiManagedToolDecisionAdapterOptions {
+  resolveIdentity?: LocalManagedToolDecisionPort["resolveIdentity"];
+  reportRuntimeCapabilities?: RuntimeCapabilitiesReporter;
   mode?: LumiManagedExecutionMode;
   context?: LumiManagedExecutionContext | ContextProvider;
   getContext?: ContextProvider;
   isManaged?: () => MaybePromise<boolean>;
   requireBoundResult?: boolean;
+  requireResultReporting?: boolean;
+  reportResult?: LocalManagedToolDecisionPort["reportResult"];
   decide?: DecisionHandler;
   requestDecision?: DecisionHandler;
   evaluate?: DecisionHandler;
@@ -164,11 +192,19 @@ export interface ManagedToolGateInput {
   sessionId: SessionId;
   turnId?: TurnId;
   signal?: AbortSignal;
+  /** Snapshot of the session ToolRegistry; evaluated only for privileged managed calls. */
+  readRuntimeCapabilities?: () => ManagedRuntimeCapabilities;
 }
 
 export type ManagedToolGateResult =
   | { allowed: true; managed: false }
-  | { allowed: true; managed: true; response: LumiManagedToolDecisionResponse }
+  | {
+      allowed: true;
+      managed: true;
+      response: LumiManagedToolDecisionResponse;
+      argumentsHash: string;
+      reportResult?: (status: "completed" | "failed" | "cancelled") => Promise<void>;
+    }
   | { allowed: false; managed: true; reasonCode: string };
 
 export function createLumiManagedToolDecisionAdapter(
@@ -176,10 +212,16 @@ export function createLumiManagedToolDecisionAdapter(
 ): LumiManagedToolDecisionAdapter {
   return {
     ...(options.mode ? { mode: options.mode } : {}),
+    ...(options.resolveIdentity ? { resolveIdentity: options.resolveIdentity } : {}),
+    ...(options.reportRuntimeCapabilities
+      ? { reportRuntimeCapabilities: options.reportRuntimeCapabilities }
+      : {}),
     ...(options.context ? { context: options.context } : {}),
     ...(options.getContext ? { getContext: options.getContext } : {}),
     ...(options.isManaged ? { isManaged: options.isManaged } : {}),
     ...(options.requireBoundResult ? { requireBoundResult: true } : {}),
+    ...(options.requireResultReporting ? { requireResultReporting: true } : {}),
+    ...(options.reportResult ? { reportResult: options.reportResult } : {}),
     ...(options.decide ? { decide: options.decide } : {}),
     ...(options.requestDecision ? { requestDecision: options.requestDecision } : {}),
     ...(options.evaluate ? { evaluate: options.evaluate } : {}),
@@ -217,6 +259,8 @@ function toContractManagedRequest(
   };
 }
 
+const capabilityReports = new WeakMap<object, Map<string, string>>();
+
 export function createLumiManagedToolDecisionPortAdapter(
   port: LumiManagedToolDecisionPort,
 ): LumiManagedToolDecisionAdapter {
@@ -240,9 +284,72 @@ export function createLumiManagedToolDecisionPortAdapter(
     return result as unknown as LumiManagedToolDecisionResponse;
   };
 
+  // Re-report to the Host only when a run's snapshot changed. Keyed by the port
+  // because the executor builds a fresh adapter from the same port for each call.
+  const reportedCapabilities = capabilityReports.get(port) ?? new Map<string, string>();
+  capabilityReports.set(port, reportedCapabilities);
   return {
     requireBoundResult: true,
     requestDecision,
+    ...(port.reportRuntimeCapabilities
+      ? {
+          reportRuntimeCapabilities: async (
+            request: Pick<
+              LumiManagedToolDecisionRequest,
+              "context" | "trace" | "traceId" | "sessionId"
+            > & { capabilities: ManagedRuntimeCapabilities },
+            options?: { signal?: AbortSignal },
+          ) => {
+            if (!isContractManagedExecutionContext(request.context))
+              throw new Error("managed_context_unavailable");
+            const runId = request.context.runId;
+            const canonical = JSON.stringify(request.capabilities);
+            if (reportedCapabilities.get(runId) === canonical) return;
+            reportedCapabilities.delete(runId);
+            await port.reportRuntimeCapabilities?.(
+              { ...request, context: request.context },
+              options,
+            );
+            reportedCapabilities.set(runId, canonical);
+          },
+        }
+      : {}),
+    ...(port.resolveIdentity
+      ? {
+          resolveIdentity: async (
+            request: Pick<
+              LumiManagedToolDecisionRequest,
+              "context" | "trace" | "traceId" | "sessionId" | "tool"
+            >,
+            options?: { signal?: AbortSignal },
+          ) => {
+            if (!isContractManagedExecutionContext(request.context))
+              throw new Error("managed_context_unavailable");
+            const resolver = port.resolveIdentity as (
+              input: Pick<
+                ContractManagedToolDecisionRequest,
+                "context" | "trace" | "traceId" | "sessionId" | "tool"
+              >,
+              options?: { signal?: AbortSignal },
+            ) => MaybePromise<ManagedToolIdentity | undefined>;
+            return resolver.call(port, { ...request, context: request.context }, options);
+          },
+        }
+      : {}),
+    ...(port.reportResult
+      ? {
+          reportResult: async (
+            request: LumiManagedToolDecisionRequest,
+            status: "completed" | "failed" | "cancelled",
+          ) => {
+            const reporter = port.reportResult as (
+              request: ContractManagedToolDecisionRequest,
+              status: "completed" | "failed" | "cancelled",
+            ) => MaybePromise<void>;
+            await reporter.call(port, toContractManagedRequest(request), status);
+          },
+        }
+      : {}),
     ...(port.decide
       ? {
           decide: async (
@@ -310,23 +417,85 @@ export async function enforceManagedToolDecision(
     return deny("managed_context_unavailable");
   }
 
-  const identity = resolveManagedToolIdentity(input.entry);
+  let identity = resolveManagedToolIdentity(input.entry);
   if (!isManagedIdentityValid(identity)) return deny("tool_identity_invalid");
+  if (input.adapter?.reportRuntimeCapabilities && isPrivilegedManagedIdentity(identity)) {
+    // Fail closed: the control plane must hold the live registry snapshot before admission.
+    if (!input.readRuntimeCapabilities) return deny("runtime_capabilities_unavailable");
+    try {
+      await input.adapter.reportRuntimeCapabilities(
+        {
+          context,
+          trace: input.traceContext,
+          traceId: input.traceContext.traceId,
+          sessionId: input.sessionId,
+          capabilities: input.readRuntimeCapabilities(),
+        },
+        { signal: input.signal },
+      );
+    } catch {
+      return deny("runtime_capabilities_unavailable");
+    }
+    if (input.signal?.aborted) return deny("managed_decision_unavailable");
+  }
+  if (input.adapter?.resolveIdentity) {
+    const local = identity;
+    try {
+      const resolved = await input.adapter.resolveIdentity(
+        {
+          context,
+          trace: input.traceContext,
+          traceId: input.traceContext.traceId,
+          sessionId: input.sessionId,
+          tool: local,
+        },
+        { signal: input.signal },
+      );
+      if (!resolved)
+        return deny(local.source === "custom" ? "mcp_tool_requires_review" : "tool_not_found");
+      if (
+        !isManagedIdentityValid(resolved) ||
+        resolved.catalogued !== true ||
+        resolved.name !== local.name ||
+        resolved.fingerprint !== local.fingerprint ||
+        resolved.source !== local.source ||
+        resolved.riskClass !== local.riskClass ||
+        JSON.stringify([...resolved.capabilityIds].sort()) !==
+          JSON.stringify([...local.capabilityIds].sort()) ||
+        resolved.mcpRegistrationId !== local.mcpRegistrationId
+      )
+        return deny("tool_catalog_mismatch");
+      identity = resolved;
+    } catch {
+      return deny("tool_catalog_unavailable");
+    }
+    if (input.signal?.aborted) return deny("managed_decision_unavailable");
+  }
   if (identity.catalogued !== true && isPrivilegedManagedIdentity(identity)) {
     return deny(identity.source === "custom" ? "mcp_tool_requires_review" : "tool_not_found");
   }
 
   const decisionHandler = resolveDecisionHandler(input.adapter);
   if (!decisionHandler) return deny("managed_decision_unavailable");
+  if (input.adapter?.requireResultReporting && !input.adapter.reportResult)
+    return deny("managed_result_reporting_unavailable");
 
   const policy = await resolvePolicy(input.adapter, context, input.signal, requireBoundResult);
   if (!policy.ok) return deny(policy.reasonCode);
   if (input.signal?.aborted) return deny("managed_decision_unavailable");
 
-  const argumentsSummary = createManagedArgumentsSummary(input.input);
+  let argumentsSummary: string;
+  try {
+    argumentsSummary = createManagedArgumentsSummary(input.input);
+  } catch {
+    return deny("managed_arguments_invalid");
+  }
   const request: LumiManagedToolDecisionRequest = {
     context,
-    toolCallId: createManagedToolCallId(input.toolCall.id),
+    toolCallId: createManagedToolCallId(
+      input.toolCall.id,
+      isContractManagedExecutionContext(context) ? context.runId : undefined,
+    ),
     localToolCallId: input.toolCall.id,
     trace: input.traceContext,
     tool: identity,
@@ -350,12 +519,43 @@ export async function enforceManagedToolDecision(
     return deny("managed_decision_unavailable");
   }
 
-  return validateManagedResponse(
+  const verdict = validateManagedResponse(
     normalizeManagedResponse(response),
     request,
     requireBoundResult,
     approvalWasResolved,
   );
+  if (!verdict.allowed) return verdict;
+  const reporter = input.adapter?.reportResult;
+  const stopAfterPermit = async (
+    reason: string,
+    status: "failed" | "cancelled",
+  ): Promise<ManagedToolGateResult> => {
+    try {
+      await reporter?.call(input.adapter, request, status);
+    } catch {
+      return deny("managed_result_reporting_failed");
+    }
+    return deny(reason);
+  };
+  // 迟到许可已经可能赢得后端 claim；取消仍不能执行 handler，但必须有界报告取消。
+  if (input.signal?.aborted) return stopAfterPermit("managed_decision_unavailable", "cancelled");
+  // 批准期间持有的对象也可能被 hook/adapter 修改；必须绑定 handler 即将使用的完整输入。
+  try {
+    if (createManagedArgumentsSummary(input.input) !== argumentsSummary)
+      return stopAfterPermit("arguments_changed", "failed");
+  } catch {
+    return stopAfterPermit("arguments_changed", "failed");
+  }
+  if (verdict.allowed && verdict.managed && reporter) {
+    return {
+      ...verdict,
+      reportResult: async (status) => {
+        await reporter.call(input.adapter, request, status);
+      },
+    };
+  }
+  return verdict;
 }
 
 export async function resolveLumiManagedExecutionContext(
@@ -595,7 +795,7 @@ function validateManagedResponse(
   if (response.source !== undefined && response.source !== request.tool.source) {
     return deny("tool_identity_mismatch");
   }
-  return { allowed: true, managed: true, response };
+  return { allowed: true, managed: true, response, argumentsHash: request.argumentsHash };
 }
 
 function deny(reasonCode: unknown): ManagedToolGateResult {

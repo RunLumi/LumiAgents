@@ -17,7 +17,8 @@ export { resolveProjectMemoryRoot } from "./memory/project-root.js";
 // Tool components
 export { ToolScheduler, defaultToolScheduler, READ_ONLY_TOOLS } from "./tool/scheduler.js";
 export type { ToolSchedule, ToolScheduleItem, ToolDependency } from "./tool/scheduler.js";
-export { createToolRegistry, ToolRegistry, ToolRegistryImpl } from "./tool/registry.js";
+// ToolRegistry 是接口；隔离转译的 bundler 无法跨文件推断，必须显式 type export。
+export { createToolRegistry, type ToolRegistry, ToolRegistryImpl } from "./tool/registry.js";
 export { createToolExecutor, ToolExecutorImpl } from "./tool/executor.js";
 export type { ToolExecutor, ToolExecutorOptions } from "./tool/executor.js";
 export {
@@ -119,6 +120,7 @@ export {
   normalizeManagedSource,
   resolveManagedToolIdentity,
   stableSerialize,
+  summarizeRuntimeCapabilities,
 } from "./tool/executor.js";
 
 // Hooks

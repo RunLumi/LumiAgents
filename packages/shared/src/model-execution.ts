@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zcodeManagedRunContextSchema } from "./zcode-protocol/managed-run-context.js";
 
 /** 文本与附件发送共用执行约束，凭据只属于单次执行，不进入 Session 配置。 */
 export const modelExecutionSchema = z
@@ -12,6 +13,8 @@ export const modelExecutionSchema = z
       })
       .strict()
       .optional(),
+    /** Non-secret P05 IDs for this one execution; never persisted as session config. */
+    managedContext: zcodeManagedRunContextSchema.optional(),
     subagents: z
       .object({
         foregroundModel: z.literal("submission"),

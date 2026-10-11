@@ -17,6 +17,7 @@ export function createTurnModel(
   options: {
     selection?: ModelSelection;
     requestDependencies?: import("@zcode/contracts").ModelRequestDependencies;
+    managedContext?: import("../../tool/executor/managed-decision.js").LumiManagedExecutionContext;
   } = {},
 ): Model {
   const selection = options.selection ?? runtime.getSessionModelSelection();
@@ -29,6 +30,7 @@ export function createTurnModel(
       abortSignal: request.abortSignal,
       model,
       traceContext: getCurrentModelInvocationContext()?.traceContext ?? runtime.rootTraceContext,
+      managedContext: options.managedContext,
     }),
   }));
 }
@@ -49,10 +51,16 @@ export async function applySubmissionExecutionState(
   let model = preparedModel;
 
   if (selection) {
-    model ??= createTurnModel(runtime, {
-      selection,
-      requestDependencies: modelExecution?.requestDependencies,
-    });
+    // The early admitted model is built before the submission's execution-only context exists.
+    // Rebuild it here when execution-scoped material (request auth or managed P05 scope) is
+    // present; otherwise the first physical provider request silently loses that material.
+    if (!model || modelExecution?.selectionScope === "execution") {
+      model = createTurnModel(runtime, {
+        selection,
+        requestDependencies: modelExecution?.requestDependencies,
+        managedContext: modelExecution?.managedContext,
+      });
+    }
     if (modelExecution?.selectionScope !== "execution") {
       const appliedSelection = cloneModelSelection(selection);
       runtime.setSessionModelSelection(appliedSelection);

@@ -2,6 +2,8 @@
 // Interface contracts exports
 // ============================================================
 
+export { toToolJsonSchema } from "./tools/json-schema.js";
+
 // Interfaces
 export * from "./interfaces/shared.js";
 export * from "./interfaces/execution.port.js";
