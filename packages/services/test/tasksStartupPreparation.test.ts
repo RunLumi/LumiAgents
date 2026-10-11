@@ -1,3 +1,5 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+// Lumi：任务库多三条 Lumi 迁移（0004–0006 托管 automation adoption/guard/attach）与两张表，清单与计数随之更新。
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -94,8 +96,8 @@ it("SILENTDB-01/02: reports maintenance separately and no migration for a prepar
       expect.objectContaining({
         migration: {
           kind: "initialize",
-          executedCount: 3,
-          committedCount: 3,
+          executedCount: 6,
+          committedCount: 6,
           lastAppliedMigrationId: null,
         },
       }),
@@ -104,7 +106,7 @@ it("SILENTDB-01/02: reports maintenance separately and no migration for a prepar
     await prepareTasksIndexStorage(path, (phase, migration) => second.push({ phase, migration }));
     expect(second.some((s) => s.phase === "migrating")).toBe(false);
     expect(second.at(-1)).toMatchObject({
-      migration: { lastAppliedMigrationId: "0003_official_glm_selection" },
+      migration: { lastAppliedMigrationId: "0006_automation_managed_attach" },
     });
     expect(second.some((s) => s.phase === "maintaining")).toBe(true);
     expect(second).toContainEqual(
@@ -135,8 +137,8 @@ it("retains committed facts if closing the migration connection fails", async ()
     expect(states.at(-1)).toMatchObject({
       migration: {
         kind: "initialize",
-        executedCount: 3,
-        committedCount: 3,
+        executedCount: 6,
+        committedCount: 6,
         lastAppliedMigrationId: null,
       },
     });
@@ -188,7 +190,8 @@ it("keeps the pre-upgrade task ledger ID after committing the remaining migratio
         kind: "upgrade",
         executedCount: 1,
         committedCount: 1,
-        lastAppliedMigrationId: "0002_provider_selection",
+        // 删掉 0003 后账本里最新的是 Lumi 的 0006。
+        lastAppliedMigrationId: "0006_automation_managed_attach",
       },
     });
   } finally {

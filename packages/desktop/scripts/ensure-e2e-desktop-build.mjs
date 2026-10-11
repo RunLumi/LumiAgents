@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { execFileSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import {
@@ -72,6 +73,8 @@ export const E2E_DESKTOP_BUILD_ENV_NAMES = [
   "CI",
   "CI_COMMIT_BRANCH",
   "CI_COMMIT_TAG",
+  // Lumi：build-metadata.mjs 用 MAS_MARKETING_VERSION 覆盖应用版本，变化时必须使 E2E 构建缓存失效。
+  "MAS_MARKETING_VERSION",
   "NODE_ENV",
   "OSS_PATH_PREFIX",
   "VITE_CODING_PLAN_WEBVIEW_ORIGIN",

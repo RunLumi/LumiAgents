@@ -190,9 +190,12 @@ function resolveWebThemePreference(defaultTheme: Theme = WEB_REMOTE_CONTROL_DEFA
 // 首屏都应用 theme-lumi，后续 useTheme hook 收口到同一结果。
 {
   const root = document.documentElement;
-  root.classList.remove("dark", "theme-zai-light", "theme-zai-dark");
-  root.classList.add("theme-lumi");
-  root.style.colorScheme = "light";
+  // toggle(…, force) 与 remove/add 语义相同，且兼容只实现 toggle 的测试桩。
+  root.classList.toggle("dark", false);
+  root.classList.toggle("theme-zai-light", false);
+  root.classList.toggle("theme-zai-dark", false);
+  root.classList.toggle("theme-lumi", true);
+  if (root.style) root.style.colorScheme = "light";
 }
 
 async function resolveFeedbackUrl(): Promise<string | undefined> {

@@ -1,3 +1,5 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+// Lumi：任务库多三条 Lumi 迁移（0004–0006 托管 automation adoption/guard/attach）与两张表，清单与计数随之更新。
 import { DatabaseSync } from "node:sqlite";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -26,6 +28,8 @@ describe("DB109 App 库统一迁移", () => {
       .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
       .all();
     expect(tables.map((row) => row.name)).toEqual([
+      "automation_managed_adoptions",
+      "automation_managed_occurrences",
       "automation_runs",
       "automations",
       "off_peak_tasks",
@@ -37,7 +41,7 @@ describe("DB109 App 库统一迁移", () => {
       "tasks_schema_migration",
     ]);
     const ledger = db.prepare("SELECT * FROM tasks_schema_migration").all();
-    expect(ledger).toHaveLength(3);
+    expect(ledger).toHaveLength(6);
     runTasksDatabaseMigrations(db);
     expect(db.prepare("SELECT * FROM tasks_schema_migration").all()).toEqual(ledger);
   });
@@ -257,7 +261,7 @@ describe("DB109 App 库统一迁移", () => {
       Atomics.store(new Int32Array(gate), 0, 1);
       Atomics.notify(new Int32Array(gate), 0);
       expect(await Promise.all(exits)).toEqual([[0], [0]]);
-      expect(db.prepare("SELECT * FROM tasks_schema_migration").all()).toHaveLength(3);
+      expect(db.prepare("SELECT * FROM tasks_schema_migration").all()).toHaveLength(6);
       expect(db.prepare("SELECT * FROM migration_probe").all()).toHaveLength(1);
       expect(db.prepare("PRAGMA integrity_check").get()?.integrity_check).toBe("ok");
     } finally {
