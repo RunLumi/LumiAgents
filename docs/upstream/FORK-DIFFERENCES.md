@@ -72,15 +72,15 @@ in `styles.css`** (`.dark`, `.theme-zai-dark`) but made unreachable.
 
 ## Brand assets (original, generated)
 
-| File                                                                                             | Change                                                                                          | Reason                                      |
-| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| `brand/lumi-mark.svg`, `brand/lumi-app-icon.svg`, `brand/README.md`                              | **new** original interim folded-L geometry (two planes + 45° channel)                           | Replace upstream ZCode artwork              |
-| `scripts/build-lumi-brand-assets.mjs`                                                            | **new** reproducible pipeline: SVG → PNG set, `.icns`, `.ico` for desktop + `public/logo/icons` | Deterministic, reviewable, no manual export |
-| `packages/desktop/build/icon*`, `build/icons/*`, `public/logo/icons/*`, `public/icon_512@2x.png` | regenerated from `brand/` (upstream artwork replaced)                                           | Platform icons                              |
-| `packages/ui/src/components/ui/LumiBrandMark.tsx`                                                | **new** inline mark; replaces `ZCodeAboutLogo.tsx`                                              | Product logo in UI                          |
-| `packages/ui/src/assets/Z.svg`, `packages/ui/src/components/ui/ZCodeAboutLogo.tsx`               | **deleted** (upstream ZCode artwork)                                                            | Remove upstream product identity            |
-| `packages/ui/src/v4/ConversationDraftEmptyState.tsx`                                             | watermark uses the Lumi folded-L outline; upstream dark-only `<img>` variant removed            | Theme/branding                              |
-| `packages/desktop/src/main/aboutWindow.ts`                                                       | inline About logo → Lumi mark; dark `color-scheme`/black icon chip → DESIGN.md paper/white      | Branding + light-only theme                 |
+| File                                                                                             | Change                                                                                                   | Reason                                      |
+| ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `brand/lumi-mark.svg`, `brand/lumi-app-icon.svg`, `brand/README.md`                              | official Lumi folded-L mark from RunLumi/brand.runlumi `cb8e83c`; app icon follows the official launcher | Replace upstream ZCode artwork              |
+| `scripts/build-lumi-brand-assets.mjs`                                                            | **new** reproducible pipeline: SVG → PNG set, `.icns`, `.ico` for desktop + `public/logo/icons`          | Deterministic, reviewable, no manual export |
+| `packages/desktop/build/icon*`, `build/icons/*`, `public/logo/icons/*`, `public/icon_512@2x.png` | regenerated from `brand/` (upstream artwork replaced)                                                    | Platform icons                              |
+| `packages/ui/src/components/ui/LumiBrandMark.tsx`                                                | **new** inline mark; replaces `ZCodeAboutLogo.tsx`                                                       | Product logo in UI                          |
+| `packages/ui/src/assets/Z.svg`, `packages/ui/src/components/ui/ZCodeAboutLogo.tsx`               | **deleted** (upstream ZCode artwork)                                                                     | Remove upstream product identity            |
+| `packages/ui/src/v4/ConversationDraftEmptyState.tsx`                                             | watermark uses the Lumi folded-L outline; upstream dark-only `<img>` variant removed                     | Theme/branding                              |
+| `packages/desktop/src/main/aboutWindow.ts`                                                       | inline About logo → Lumi mark; dark `color-scheme`/black icon chip → DESIGN.md paper/white               | Branding + light-only theme                 |
 
 ## Licensing, attribution, and modification notices
 
@@ -189,9 +189,11 @@ tool/approval/scheduler implementation: private client admission now obtains the
 backend's once-only claim before releasing allow; reviewed catalog mapping,
 approval waiting/automatic result reporting and actual Electron effects remain owed.
 
-- **Official brand artwork.** `brand/*` is an **interim original mark** authored for this
-  fork, not an approved final brand. Replace with the official folded-L set and re-run
-  `pnpm lumi:brand-assets`.
+- **Official brand artwork.** Resolved 2026-10-11: `brand/*`, `LumiBrandMark`, the About
+  window and the welcome/onboarding tiles use the official Lumi mark from
+  [RunLumi/brand.runlumi](https://github.com/RunLumi/brand.runlumi) (`cb8e83c`), and
+  platform icons are regenerated with `pnpm lumi:brand-assets`. Open: the copyright licence
+  of the official artwork inside this Apache-2.0 repository is the brand owner's decision.
 - **DMG background artwork.** Resolved in the 2026-09 compliance repair: the inherited
   `dmg_background(.@2x).png` files are deleted and direct-download DMGs use Lumi's
   warm-paper `backgroundColor` without a custom image.

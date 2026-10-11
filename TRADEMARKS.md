@@ -21,9 +21,10 @@ code or artwork.
 
 - **"Lumi Agents"** — the product name of this fork (display name, desktop
   identity `app.lumi.agents`, READMEs, UI strings).
-- **The folded-L logo** — original interim artwork generated in `brand/` for this
-  fork (see [docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md) §3); it
-  deliberately replaces upstream ZCode promotional graphics and is not derived
+- **The folded-L logo** — the official Lumi mark from
+  [RunLumi/brand.runlumi](https://github.com/RunLumi/brand.runlumi), reproduced in
+  `brand/` for this fork (see [docs/licensing/COMPLIANCE.md](docs/licensing/COMPLIANCE.md) §3);
+  it deliberately replaces upstream ZCode promotional graphics and is not derived
   from them.
 
 Upstream relationship: this project is an independent fork of

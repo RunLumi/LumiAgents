@@ -81,13 +81,18 @@ export const EXPECTATIONS = [
   // ── 品牌资产：上游 ZCode 图形不得回归 ──
   {
     file: "packages/ui/src/components/ui/LumiBrandMark.tsx",
-    description: "UI 使用原创 Lumi 折叠 L 标记",
-    mustInclude: [/M56 32H120V160L56 224Z/, /M120 176L128 168H232V232H64Z/],
+    description: "UI 使用 Lumi 官方折叠 L 标记（RunLumi/brand.runlumi）",
+    mustInclude: [
+      /M99\.4558 0C99\.4558 99\.4558/,
+      /M126\.71 298\.302C189\.935/,
+      /#019EDD/,
+      /#0162A4/,
+    ],
   },
   {
     file: "packages/desktop/src/main/aboutWindow.ts",
-    description: "About 自绘窗口使用 Lumi 折叠 L，而不是上游 ZCode 图形",
-    mustInclude: [/M56 32H120V160L56 224Z/],
+    description: "About 自绘窗口使用 Lumi 官方折叠 L，而不是上游 ZCode 图形",
+    mustInclude: [/M99\.4558 0C99\.4558 99\.4558/],
     mustExclude: [/M134\.4 0\.130152L116\.48 25\.6022/, /color-scheme: light dark/],
   },
   {

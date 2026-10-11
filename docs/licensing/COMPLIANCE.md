@@ -95,7 +95,7 @@ node scripts/lumi-modified-files.mjs check
   - `package.json` 等 JSON（`json-no-comments`）：新增 `lumi:…` 脚本；声明落在
     `MODIFICATIONS.md` + 根 `NOTICE.md`，并由清单校验存在性。
   - 位图/容器格式（`binary-generated`）：由
-    `scripts/build-lumi-brand-assets.mjs` 从 `brand/` 原创 SVG 确定性生成，不含上游字节；
+    `scripts/build-lumi-brand-assets.mjs` 从 `brand/` 的 Lumi 品牌 SVG 确定性生成，不含上游字节；
     当前 `NOTICE_EXCEPTIONS` 登记 **28** 个此类生成资产。其余无法内联声明的 JSON/生成清单
     以 `json-no-comments` 机制登记。具体数量以 `scripts/lumi-modified-files.mjs` 为单一事实源。
 - 继承的 `packages/desktop/build/dmg_background*.png` 已删除，不再属于声明例外或法务 blocker。
@@ -372,7 +372,7 @@ PR #20 被 merge 为 main commit
 - **自动更新/遥测**：默认关闭是安全状态；只有启用相应 Lumi 服务时需要额外发布/隐私审查。
 - **Geist 字体**：当前未随包分发，使用系统 fallback；未来若内嵌再核对字体许可。
 - **ZCode 数据目录、`zcode://`、`@zcode/*`、`ZCODE_*`**：兼容性标识，不属于产品归属错误。
-- **Interim brand mark**：是否换最终视觉是品牌决定；版权/trademark 边界见 `TRADEMARKS.md`。
+- **官方品牌图形**：2026-10-11 起 `brand/` 使用 RunLumi/brand.runlumi 的官方 Lumi 标记；该图形在本 Apache-2.0 仓库内的版权许可状态待品牌所有者决定；trademark 边界见 `TRADEMARKS.md`。
 
 **停止条件：** 第 1–2 项未完成前，不能说 repository governance 已 fail-closed；
 第 3–4 项未完成前，不能把机器检查描述为商业/法律尽调完成；正式 installer 还需满足第 5 项。
@@ -393,7 +393,7 @@ PR #20 被 merge 为 main commit
 | 上游（ZCode/Z.AI 及其贡献者）   | Apache-2.0 导入的全部代码            | **已核验**：Apache-2.0 授权随分发持续有效（LICENSE 原文保留）；上游不提供 Lumi 的合同承诺                                                                                                                                           |
 | 社区/项目贡献                   | 按 DCO + Apache-2.0 接受的新公共代码 | DCO 门禁已就绪；pre-cutoff unsigned history 仅以 frozen exact-SHA legacy exceptions 记录；post-cutoff `fa48…` 必须由同一作者作 signed retrospective attestation，不扩大 legacy cutoff                                               |
 | Fork 工程（本分支已完成的工作） | 品牌/遥测替换/打包/合规脚本等        | 截至 legacy cutoff 有 19 个非 merge fork 提交：Git 记录中 14 个作者为 `j <hong@cloudjetkpi.com>`、5 个为 `Stream Entry <978862+streamentry@users.noreply.github.com>`；其中 14 个无 DCO。**Git 作者字段不等于 Cloudjet 权利链证据** |
-| 品牌资产                        | `brand/` 折叠 L 过渡标记             | 项目自产；**未注册商标**，无排他权利声明（TRADEMARKS.md）                                                                                                                                                                           |
+| 品牌资产                        | `brand/` 官方 Lumi 折叠 L 标记       | 项目自产；**未注册商标**，无排他权利声明（TRADEMARKS.md）                                                                                                                                                                           |
 | 商业层（未建）                  | 托管/企业功能                        | **不存在**；必须独立私有仓库 + 独立权利链，本仓库无任何代码被划走                                                                                                                                                                   |
 
 ### 10.2 未决项（所有者/法务行动清单）
