@@ -62,7 +62,9 @@ Accordingly:
 ## Brand rights
 
 Copyright and trademark rights are separate. Covered Lumi artwork files published
-under Apache-2.0 receive the copyright permissions of that license. Apache-2.0
+under Apache-2.0 receive the copyright permissions of that license. The official Lumi
+logo files (listed in [brand/README.md](brand/README.md)) are not covered: they are the
+property of CLOUDJET SOLUTIONS PTE. LTD., all rights reserved. Apache-2.0
 section 6 does not grant trademark permission to use the Lumi Agents name or
 folded-L mark as a source identifier in a way that implies official origin or
 endorsement. See [TRADEMARKS.md](TRADEMARKS.md).

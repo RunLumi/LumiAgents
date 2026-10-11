@@ -5,8 +5,9 @@
     (adaptive/ic_launcher_foreground.png at cb8e83c182c9ce2a2efb44a63df28e4fba331616): the white folded-L mark on a
     #0162A4 → #00396C diagonal gradient, with the same mark size and position
     (about half the icon height). Mark geometry is the unchanged official lumi-logo.svg.
-    Licence of this official artwork inside this repository is pending the brand
-    owner's decision (see brand/README.md); trademark boundary: TRADEMARKS.md.
+    © CLOUDJET SOLUTIONS PTE. LTD. All rights reserved. This artwork is NOT licensed
+    under Apache-2.0 or any other licence in this repository; see brand/README.md
+    and TRADEMARKS.md.
   -->
   <defs>
     <linearGradient id="lumi-app-icon-bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">

@@ -8,6 +8,9 @@ import { cn } from "@/components/lib/utils.js";
  * `tone="mono"` 对应官方单色版（lumi-white-logo / lumi-black-logo）：两平面同色，取 currentColor，
  * 用于品牌蓝底等深色底上的白色标记。
  *
+ * 版权：Lumi 标志是 CLOUDJET SOLUTIONS PTE. LTD. 的财产，保留所有权利，不按 Apache-2.0 授权
+ * （见 brand/README.md）。分支/修改版须移除或替换为自有图形。
+ *
  * 替换原因：上游 ZCodeAboutLogo 使用的是 ZCode 图形，属于上游产品品牌，不能作为 Lumi 标识。
  */
 export function LumiBrandMark({

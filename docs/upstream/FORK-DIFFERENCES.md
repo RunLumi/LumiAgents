@@ -192,8 +192,9 @@ approval waiting/automatic result reporting and actual Electron effects remain o
 - **Official brand artwork.** Resolved 2026-10-11: `brand/*`, `LumiBrandMark`, the About
   window and the welcome/onboarding tiles use the official Lumi mark from
   [RunLumi/brand.runlumi](https://github.com/RunLumi/brand.runlumi) (`cb8e83c`), and
-  platform icons are regenerated with `pnpm lumi:brand-assets`. Open: the copyright licence
-  of the official artwork inside this Apache-2.0 repository is the brand owner's decision.
+  platform icons are regenerated with `pnpm lumi:brand-assets`. The logo artwork is the
+  property of CLOUDJET SOLUTIONS PTE. LTD., all rights reserved, and is not Apache-licensed
+  (see `brand/README.md`).
 - **DMG background artwork.** Resolved in the 2026-09 compliance repair: the inherited
   `dmg_background(.@2x).png` files are deleted and direct-download DMGs use Lumi's
   warm-paper `backgroundColor` without a custom image.
