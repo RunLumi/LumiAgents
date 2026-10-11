@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { LoaderIcon, TriangleAlertIcon } from "lucide-react";
 import {
   type OAuthProviderMeta,
+  TID_LOGIN_CONTINUE_LOCAL,
   TID_LOGIN_USE_API_KEY_BUTTON,
   TID_OAUTH_CANCEL,
   TID_OAUTH_ERROR,
@@ -314,6 +315,7 @@ export function LoginPanel({ active, onComplete }: LoginPanelProps) {
                 variant="ghost"
                 className="h-10 w-full text-ui-base"
                 size="lg"
+                data-testid={TID_LOGIN_CONTINUE_LOCAL}
                 onClick={() => void onComplete("skip")}
               >
                 {intl.formatMessage({ id: "lumiEntry.local" })}
