@@ -32,6 +32,24 @@
       "targetAuthorEmail": "hong@cloudjetkpi.com",
       "targetSubject": "add Mac App Store release pipeline",
       "statement": "I certify under Developer Certificate of Origin 1.1 that I had the right to submit the contribution contained in the exact target commit under this project's license."
+    },
+    {
+      "targetSha": "9dc43d63a5109331d67b2b8d5bd128d0ee786459",
+      "targetAuthorEmail": "978862+streamentry@users.noreply.github.com",
+      "targetSubject": "feat: add managed agent control-loop seams (#29)",
+      "statement": "I certify under Developer Certificate of Origin 1.1 that I had the right to submit the contribution contained in the exact target commit under this project's license."
+    },
+    {
+      "targetSha": "4e9f1327129111d33aaeb45f8faf1e5d6da64518",
+      "targetAuthorEmail": "978862+streamentry@users.noreply.github.com",
+      "targetSubject": "fix(macos): stop MAS crash on macOS 27 (#34)",
+      "statement": "I certify under Developer Certificate of Origin 1.1 that I had the right to submit the contribution contained in the exact target commit under this project's license."
+    },
+    {
+      "targetSha": "12e34302b0206d28a3d3cea88100135f52547d9a",
+      "targetAuthorEmail": "978862+streamentry@users.noreply.github.com",
+      "targetSubject": "fix(macos): sign MAS application identifier (#35)",
+      "statement": "I certify under Developer Certificate of Origin 1.1 that I had the right to submit the contribution contained in the exact target commit under this project's license."
     }
   ]
 }
