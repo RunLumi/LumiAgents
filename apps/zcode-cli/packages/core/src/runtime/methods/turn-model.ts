@@ -69,20 +69,17 @@ export async function applySubmissionExecutionState(
   let model = preparedModel;
 
   if (selection) {
-    // The early admitted model is built before the submission's execution-only context exists.
-    // Rebuild it here when execution-scoped material (request auth or managed P05 scope) is
-    // present; otherwise the first physical provider request silently loses that material.
-    if (!model || modelExecution?.selectionScope === "execution") {
-      model = createTurnModel(runtime, {
+    // 上游 v3.15.1 起 admitted Model 在创建时就带上执行作用域材料（request auth 与 Lumi 托管
+    // P05 上下文，见 turn.ts），这里只在没有 preparedModel 时创建，不再重建。
+    model ??= createTurnModel(runtime, {
+      selection,
+      requestDependencies: modelExecution?.requestDependencies,
+      managedContext: modelExecution?.managedContext,
+      retryBudget: resolveExecutionModelRetryBudget({
         selection,
-        requestDependencies: modelExecution?.requestDependencies,
-        managedContext: modelExecution?.managedContext,
-        retryBudget: resolveExecutionModelRetryBudget({
-          selection,
-          selectionFallback: modelExecution?.selectionFallback,
-        }),
-      });
-    }
+        selectionFallback: modelExecution?.selectionFallback,
+      }),
+    });
     if (modelExecution?.selectionScope !== "execution") {
       const appliedSelection = cloneModelSelection(selection);
       runtime.setSessionModelSelection(appliedSelection);

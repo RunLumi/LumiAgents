@@ -1,3 +1,5 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+// Lumi：会话库多一条 Lumi 迁移 0023_p08_local_adoption（P08 本地 adoption），迁移清单与计数随之更新。
 import { fork } from "node:child_process";
 import { mkdtemp, rm } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
@@ -385,7 +387,7 @@ describe("SQLite session store", () => {
   it("keeps the existing in-memory session store path working", () => {
     const store = createSqliteSessionStore({ dbPath: ":memory:" });
     try {
-      expect(store.debugMigrationIds()).toHaveLength(22);
+      expect(store.debugMigrationIds()).toHaveLength(23);
     } finally {
       store.close();
     }
@@ -511,6 +513,7 @@ describe("SQLite session store", () => {
       "0020_provider_model_selection",
         "0021_official_glm_selection",
         "0022_backfilled_session_reasoning",
+        "0023_p08_local_adoption",
     ];
 
     try {
@@ -547,6 +550,7 @@ describe("SQLite session store", () => {
         "0.16.5",
         "0.16.5",
         "0.16.5",
+        "0.16.9",
       ]);
       const modelUsageColumns = db.prepare("pragma table_info(model_usage)").all() as Array<{
         name: string;
@@ -588,7 +592,7 @@ describe("SQLite session store", () => {
         ]),
       );
       expect(attempts.flat().filter((result) => !result.ok)).toEqual([]);
-      expect(attempts.flat().every((result) => result.migrationIds?.length === 22)).toBe(true);
+      expect(attempts.flat().every((result) => result.migrationIds?.length === 23)).toBe(true);
     },
     CONCURRENT_STARTUP_TEST_TIMEOUT_MS,
   );
@@ -811,6 +815,7 @@ describe("SQLite session store", () => {
         "0020_provider_model_selection",
         "0021_official_glm_selection",
         "0022_backfilled_session_reasoning",
+        "0023_p08_local_adoption",
       ]);
       store.close();
     } finally {

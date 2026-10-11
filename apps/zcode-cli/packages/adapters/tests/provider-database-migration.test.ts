@@ -1,3 +1,5 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+// Lumi：会话库多一条 Lumi 迁移 0023_p08_local_adoption（P08 本地 adoption），迁移清单与计数随之更新。
 import { createHash } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -156,7 +158,7 @@ describe("DB109 会话库正式数据迁移", () => {
     const sessionBefore = db.prepare("SELECT * FROM session").get();
     store = createSqliteSessionStore({ dbPath: path });
     expect(store.debugMigrationIds()).toContain(migrationId);
-    expect(store.debugMigrationIds().at(-1)).toBe("0022_backfilled_session_reasoning");
+    expect(store.debugMigrationIds().at(-1)).toBe("0023_p08_local_adoption");
     expect(raw("session_entry", "selection")).toEqual({
       ...oldEntry,
       modelSelection: currentSelection,

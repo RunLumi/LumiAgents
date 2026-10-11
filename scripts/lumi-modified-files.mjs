@@ -127,6 +127,9 @@ export const MODIFIED_FILES = [
   { path: "packages/web/src/webRemoteControlThemeSeed.ts", comment: "line" },
   { path: "packages/ui/src/highspeed/HighspeedShareNoticeCard.tsx", comment: "line" },
   { path: "scripts/third-party-npm-platform.mjs", comment: "line" },
+  { path: "apps/zcode-cli/packages/adapters/tests/session-store.test.ts", comment: "line" },
+  { path: "apps/zcode-cli/packages/adapters/tests/provider-database-migration.test.ts", comment: "line" },
+  { path: "apps/zcode-cli/packages/node-repl-host/test/bundle-boundary.test.ts", comment: "line" },
   { path: "packages/web/test/webRemoteControlThemeSeed.test.ts", comment: "line" },
   // shebang 必须是脚本第一行，声明只能插在其后，否则脚本不再可执行。
   // shebang 必须是脚本第一行，声明只能插在其后，否则脚本不再可执行。

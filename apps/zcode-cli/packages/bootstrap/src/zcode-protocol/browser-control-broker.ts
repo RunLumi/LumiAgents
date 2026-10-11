@@ -183,8 +183,9 @@ export function createProtocolBrowserControlBroker(
       // 或过期的 browser 动作已经进了 host 队列，与 "checked before use" 冲突。
       // cancelRequest 是对已通过校验的请求的取消，不重复要求 policy。
       if (command.method !== "cancelRequest") {
-        const record = requireSession(context, sessionId);
-        const workspaceIdentity = record.workspace.workspaceIdentity?.trim() || undefined;
+        // 子会话（dwf / core Agent 子代理）不是登记的会话：workspace 沿用 buildBrowserRequestContext
+        // 已按父会话解析并校验过的结果，不再按子会话 id 重查（否则子代理的浏览器请求被误拒）。
+        const workspaceIdentity = requestContext.workspaceIdentity;
         // `@zcode/contracts` mirrors the browser command shape to avoid a zod v3/v4
         // cross-package coupling; round-trip tests keep it in sync with @zcode/shared.
         const argumentsSummary = summarizeBrowserPolicyCommand(command as BrowserCommand);
@@ -197,7 +198,7 @@ export function createProtocolBrowserControlBroker(
             sessionId,
             ...(requestContext.turnId ? { turnId: requestContext.turnId } : {}),
             workspaceKey: requestContext.workspaceKey,
-            workspacePath: record.workspace.workspacePath,
+            workspacePath: requestContext.workspacePath,
             ...(workspaceIdentity ? { workspaceIdentity } : {}),
             ...(requestContext.remoteSessionId
               ? { remoteSessionId: requestContext.remoteSessionId }

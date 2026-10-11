@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
@@ -54,8 +55,21 @@ describe("node_repl MCP bundle boundary", () => {
     const sharedInputs = inputs.filter((path) => path.startsWith(sharedRoot));
     expect(sharedInputs.length).toBeGreaterThan(0);
     // 同一个总入口即使只取常量，也会初始化其它领域的 schema；Worker 会重复承担这份开销。
+    // Lumi P05：CUA/浏览器动作的托管策略判定经 `@zcode/shared/managed-policy` 窄入口进入，
+    // 只允许这几个精确文件，其余共享模块仍不得进入 bundle。
+    const lumiManagedPolicyInputs = new Set(
+      [
+        "managed-policy.ts",
+        "p05-browser-computer-policy.ts",
+        "managed-policy-authorization.ts",
+        "managed-policy-fingerprint.ts",
+      ].map((file) => `${sharedRoot}${file}`),
+    );
     expect(
-      sharedInputs.find((path) => !path.startsWith(`${sharedRoot}browser-use/`)),
+      sharedInputs.find(
+        (path) =>
+          !path.startsWith(`${sharedRoot}browser-use/`) && !lumiManagedPolicyInputs.has(path),
+      ),
     ).toBeUndefined();
   });
 });

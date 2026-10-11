@@ -24,7 +24,8 @@
     "./workspace-hook-review-monotonicity": "./src/workspace-hook-review-monotonicity.ts",
     "./workspace-hook-trust-store-file": "./src/workspace-hook-trust-store-file.ts",
     "./gen-ui": "./src/gen-ui/index.ts",
-    "./request-security": "./src/request-security-edition/index.ts"
+    "./request-security": "./src/request-security-edition/index.ts",
+    "./managed-policy": "./src/managed-policy.ts"
   },
   "scripts": {
     "lint": "oxlint",

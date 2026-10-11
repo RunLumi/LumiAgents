@@ -432,7 +432,7 @@
     "docs/knip/docs/src/styles/theme-light.css": "e2e85900fd43b5b563f56b9ce7e2a09f07d7420a78e80f0133efffeb8fce2aa0",
     "docs/knip/docs/src/util/post.ts": "6d7c45bd29035a73f1b67d24524760c7e317f367d32216de2c9a240dda7a40d1",
     "docs/knip/docs/tsconfig.json": "662b1f10a5e572b49a45669e4be9ee46c22f987dcf277c204948777b367df1cd",
-    "package.json": "7d1ff951b3e19eeaa1456c4ba28c54e00f4e59800adb86e55fece622245b5010",
+    "package.json": "7f878034666d65fa99d181b8e78f1643c13a9543a6e9708e402d636373df2850",
     "packages/client/package.json": "e76f441549130dc3e5e68072a36b6cb9044e19a6625f1e813f19a4def2b1b689",
     "packages/desktop/package.json": "34ceceeb390da07cebea040fb81a3cef533fe0925456491867adf68b9af2c05f",
     "packages/desktop/src/renderer/public/material-icons/3d.svg": "9527b849f0fba57ca7640e2717b3a19cb5f5e046712cbbd8b75d73af338c68fb",
@@ -1610,7 +1610,7 @@
     "packages/server/package.json": "0a6119239c88af79bc766e3c023eb4437105a0d35b03ecca1137d1e688e60a90",
     "packages/services/package.json": "d37da5cbc5458eb1f20768c5c8473aef428a3b609a4c7d389b179aa1a9293de3",
     "packages/share-ui/package.json": "bf4e08759bc010d24d2559aa82a538832bee7c749c07c230158ee8d810cfdf41",
-    "packages/shared/package.json": "c11d49fc3d0f22483b3e9859c54c53a5c080a7f4a1a2fc1e6e535ec41ca95023",
+    "packages/shared/package.json": "78e38fd28963096ad4620e68999288924677ef87d694501df9049ecb5c954af2",
     "packages/shared/src/zcode-protocol-v4/wire-codec.ts": "ac2494a3acc795c809c94ee9393f50271a9c2a0fd33813459e5ab93842ceef75",
     "packages/stream-animate/package.json": "31cb25ed87e64dbcd695bbc932729ac30499107d45f747b96a5c3de832afdc28",
     "packages/ui/package.json": "981f0047fa0bc00d20368fc4f7af9500d8906f3d825ff9cf00dfe95e17d61c5e",
@@ -1726,7 +1726,7 @@
     "packages/ui/src/components/ui/tooltip.tsx": "301dbf3a6f8b1bc496f9bdc6fbc5fe6202ed373182897f39cd1ecd19b00fdfbe",
     "packages/ui/src/components/ui/usePdfZoomOverlay.ts": "c8c91b003ce2fded32c7a2369dc6eac43aa4b9dc9c830a0f5ceccb21d366b610",
     "packages/ui/src/lib/builtinSkillI18n.ts": "f16952aa99cd281f02fa5af170d7cf4653559b82a50c27de2157aed74ce9bc96",
-    "packages/ui/src/styles.css": "d098bf9b3ab2bfbc896dcb03b98e6bbd5b5c3e0fd7774747774aab4b8079edcb",
+    "packages/ui/src/styles.css": "e9efdcf07fedfe3cd2498255cc59335830c2aef38c44a755393e732c14a4322d",
     "packages/web-share/package.json": "4865c14968b96d355c45c2edf612443f79d6d05cfbe433a28374e19b1b0c9d88",
     "packages/web/package.json": "0810e762bf1d6641d5f73ab642b81953e183e53fd963a1d405ffc65b206e5ce6",
     "packages/web/public/material-icons/3d.svg": "9527b849f0fba57ca7640e2717b3a19cb5f5e046712cbbd8b75d73af338c68fb",
@@ -3004,7 +3004,7 @@
     "third-party/native-search/licenses/f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af.txt": "f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af",
     "third-party/native-search/licenses/f9c375a1be4a41f7b70301dd83c91cb89e41567478859b77eef375a52d782505.txt": "f9c375a1be4a41f7b70301dd83c91cb89e41567478859b77eef375a52d782505",
     "third-party/native-search/sources.json": "8402f524e85c55ed781c6189784361eed7b7dc1cb8cda2004875de182d65627f",
-    "third-party/npm-overrides.json": "d1701f2cdbd9f7f6388e1ad2ce195ad34074916cabc79ac3df852689fed037d0",
+    "third-party/npm-overrides.json": "858ebdb7e54388d394184a9b409e98df4d2b81955acea8fec4e9869945f6763c",
     "third-party/runtime/node-22.16.0-LICENSE.txt": "1ae62e2015784ba438db7b04ebd33f3c4ff3efdb824c111c4ececd99945fd52d",
     "third-party/runtime/node-24.14.0-LICENSE.txt": "4573185d56580da2b890ba34a85a409257640f1c5632eade4300137266194d18",
     "third-party/runtime/sources.json": "b27bc8d81aeb71108e523602364ffbb6a1b19c2d5d47733fd43094b769006741",
@@ -20177,7 +20177,7 @@
         },
         {
           "file": "packages/ui/src/styles.css",
-          "sha256": "d098bf9b3ab2bfbc896dcb03b98e6bbd5b5c3e0fd7774747774aab4b8079edcb"
+          "sha256": "e9efdcf07fedfe3cd2498255cc59335830c2aef38c44a755393e732c14a4322d"
         }
       ]
     },

@@ -13,7 +13,7 @@ import {
   type ManagedPolicyContext,
   type ManagedPolicyFailureCode,
   type ManagedPolicyRequest,
-} from "@zcode/shared";
+} from "@zcode/shared/managed-policy";
 import type { NodeReplCuaBrokerConnection } from "./cua-bridge.js";
 
 const MAX_REQUEST_BYTES = 1024 * 1024;
