@@ -1,3 +1,4 @@
+import { requestVerificationTimeoutMessage } from "@zcode/shared";
 import { randomUUID } from "node:crypto";
 import {
   zcodeProtocolMethods,
@@ -42,6 +43,12 @@ export function createProviderRuntimeHeadersPort(
             providerId: input.providerId,
             ...(input.managedContext ? { managedContext: input.managedContext } : {}),
             ...(input.accountAccess ? { accountAccess: input.accountAccess } : {}),
+            ...(input.expectedAccountScope
+              ? { expectedAccountScope: input.expectedAccountScope }
+              : {}),
+            ...(input.rejectedProjectTokenFingerprint
+              ? { rejectedProjectTokenFingerprint: input.rejectedProjectTokenFingerprint }
+              : {}),
             reason: input.reason,
           },
           zcodeProviderRuntimeHeadersResponseSchema,
@@ -67,7 +74,7 @@ export function createProviderRuntimeHeadersPort(
         if (timedOut) {
           const timeoutError = new ProtocolRequestError(
             CLIENT_REQUEST_TIMEOUT_CODE,
-            "Provider runtime headers request timed out. Please send your message again.",
+            requestVerificationTimeoutMessage,
             error.data,
           );
           timeoutError.cause = error;
@@ -84,6 +91,9 @@ export function createProviderRuntimeHeadersPort(
             "Provider runtime headers were not applied before model request attempt.",
           {
             providerId: input.providerId,
+            ...(input.rejectedProjectTokenFingerprint
+              ? { rejectedProjectTokenFingerprint: input.rejectedProjectTokenFingerprint }
+              : {}),
             reason: input.reason,
             workspaceKey: workspace.workspaceKey,
           },

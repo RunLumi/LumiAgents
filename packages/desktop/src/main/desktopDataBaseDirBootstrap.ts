@@ -2,7 +2,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { applyConfiguredDataBaseDir, getBootstrapSettingsFile } from "@zcode/services/node";
 
-function extractBootstrapDataBaseDir(rawValue: unknown): string | null {
+export function extractBootstrapDataBaseDir(rawValue: unknown): string | null {
   if (!rawValue || typeof rawValue !== "object") {
     return null;
   }

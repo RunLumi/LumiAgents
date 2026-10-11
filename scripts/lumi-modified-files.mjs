@@ -81,6 +81,7 @@ export const MODIFIED_FILES = [
     comment: "line",
   },
   { path: "packages/desktop/src/main/desktopDataBaseDirBootstrap.ts", comment: "line" },
+  { path: "packages/desktop/test/desktopDataBaseDirBootstrap.test.ts", comment: "line" },
   { path: "packages/desktop/src/main/desktopRuntimeEnv.ts", comment: "line" },
   { path: "packages/desktop/src/main/exportLogs.ts", comment: "line" },
   { path: "packages/desktop/src/main/forceUpdatePrompt.ts", comment: "line" },
@@ -99,6 +100,8 @@ export const MODIFIED_FILES = [
   { path: "packages/services/src/node.ts", comment: "line" },
   { path: "packages/services/src/paths.ts", comment: "line" },
   { path: "packages/services/src/setting/settingService.ts", comment: "line" },
+  // v3.15.1 上游删除了遥测总开关判定；Lumi 恢复 opt-in 门禁。
+  { path: "packages/services/src/telemetry/telemetryCore.ts", comment: "line" },
   { path: "packages/shared/src/index.ts", comment: "line" },
   { path: "packages/ui/src/DesktopTopOverlay.tsx", comment: "line" },
   { path: "packages/ui/src/Root.tsx", comment: "line" },
@@ -121,7 +124,10 @@ export const MODIFIED_FILES = [
   { path: "packages/ui/src/v4/ConversationDraftEmptyState.tsx", comment: "line" },
   { path: "packages/web/index.html", comment: "html", place: "afterDoctype" },
   { path: "packages/web/src/main.tsx", comment: "line" },
-  { path: "packages/web/src/webThemeSeed.ts", comment: "line" },
+  { path: "packages/web/src/webRemoteControlThemeSeed.ts", comment: "line" },
+  { path: "packages/ui/src/highspeed/HighspeedShareNoticeCard.tsx", comment: "line" },
+  { path: "scripts/third-party-npm-platform.mjs", comment: "line" },
+  { path: "packages/web/test/webRemoteControlThemeSeed.test.ts", comment: "line" },
   // shebang 必须是脚本第一行，声明只能插在其后，否则脚本不再可执行。
   // shebang 必须是脚本第一行，声明只能插在其后，否则脚本不再可执行。
   { path: "scripts/build-zcode.mjs", comment: "line", place: "afterShebang" },
