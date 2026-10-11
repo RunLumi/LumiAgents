@@ -71,7 +71,7 @@ function resolveLocaleBroadcastPayload(payload: unknown): LocaleBroadcastPayload
   return null;
 }
 
-function resolveLocalePreferenceFromSettings({
+export function resolveLocalePreferenceFromSettings({
   storedPreference,
   settingsLocale,
   settingsLocalePreference,
@@ -92,7 +92,7 @@ function resolveLocalePreferenceFromSettings({
   return storedPreference ?? settingsLocalePreference ?? settingsLocale ?? null;
 }
 
-function shouldApplyLocaleBroadcastMessage(
+export function shouldApplyLocaleBroadcastMessage(
   message: Pick<BroadcastMessage, "channel" | "payload" | "sourceWindowId">,
   options: {
     ignoredLocalPayload?: LocaleBroadcastPayload | null;
@@ -117,14 +117,16 @@ function createIntl(locale: Locale): IntlInstance {
   const messages = MESSAGES[locale] ?? MESSAGES[DEFAULT_LOCALE]!;
   return {
     formatMessage({ id }, values) {
-      let msg = messages[id] ?? id;
+      // 产品名在唯一出口统一改写，避免在上游 locale 文件里散布大量品牌改动。
+      // 修复：只改写文案模板，再代入插值。先代入再改写会把用户数据（如工作区路径
+      // F:\ZCode_data、报错原文）里的 "ZCode" 也改成产品名，篡改反馈与报错内容。
+      let msg = applyLumiBranding(messages[id] ?? id);
       if (values) {
         for (const [key, val] of Object.entries(values)) {
           msg = msg.replaceAll(`{${key}}`, String(val));
         }
       }
-      // 产品名在唯一出口统一改写，避免在上游 locale 文件里散布大量品牌改动。
-      return applyLumiBranding(msg);
+      return msg;
     },
   };
 }

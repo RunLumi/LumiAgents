@@ -43,7 +43,7 @@ export const EXPECTATIONS = [
   {
     file: "packages/ui/src/i18n/IntlProvider.tsx",
     description: "locale 文案仍经过 Lumi 品牌覆盖层",
-    mustInclude: [/applyLumiBranding\(msg\)/, /lumiBrandingOverlay\.js/],
+    mustInclude: [/applyLumiBranding\(messages\[id\] \?\? id\)/, /lumiBrandingOverlay\.js/],
   },
   {
     file: "packages/ui/src/i18n/lumiBrandingOverlay.ts",
@@ -53,8 +53,13 @@ export const EXPECTATIONS = [
   {
     file: "packages/ui/src/useTheme.ts",
     description: "主题解析收口为 light-only 且应用 theme-lumi",
-    mustInclude: [/return "light";/, /classList\.add\("theme-lumi"\)/, /classList\.remove\("dark"/],
-    mustExclude: [/classList\.add\("dark"\)/],
+    // v3.15.1 同步：改用 toggle(…, force)，与 remove/add 语义相同，且兼容上游测试桩。
+    mustInclude: [
+      /return "light";/,
+      /classList\.toggle\("theme-lumi", true\)/,
+      /classList\.toggle\("dark", false\)/,
+    ],
+    mustExclude: [/classList\.add\("dark"\)/, /classList\.toggle\("dark", resolved/],
   },
   {
     file: "packages/ui/src/styles.css",

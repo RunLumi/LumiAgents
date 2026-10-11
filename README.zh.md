@@ -28,6 +28,7 @@ Lumi Agents 是 AI 编程工作台，提供桌面应用、浏览器界面和终�
 
 ## 上游更新
 
+- 2026-10-11：已纳入 ZCode v3.15.1（`aac4755`）的更新，并保留 Lumi 品牌与分发规则。
 - 2026-09-23：已纳入 ZCode v3.14.3（`29628c9`）的更新，并保留 Lumi 品牌与分发规则。
 
 > 以下章节继承自上游 ZCode 文档，仍描述上游命令与路径名（如 `zcode` 命令行、`~/.zcode`），本分支保持这些名称不变。
@@ -139,6 +140,12 @@ node apps/zcode-cli/packages/cli/dist/zcode.cjs --help
 ```
 
 这个入口直接运行 Agent CLI，不经过发行包的 `--web` 分流。开发 Web 用 `pnpm dev:web`；验证统一的 `zcode` 命令，用下方解压后的 `bin/zcode.mjs`。
+
+### UI Plugin 开发
+
+参见 [UI Plugin：能力、API 与调试](UI_PLUGIN.md)，从 Excalidraw 的画布协作示例开始，了解插件安装更新、页面 API 和宿主联调入口。
+
+**向 `zcode-plugins` 提交插件 PR 时，必须在 PR 模板中声明是否为 UI Plugin，并填写插件名称。** 判断标准见[提交 PR 时声明插件类型](UI_PLUGIN.md#提交-pr-时声明插件类型)。
 
 ## 配置
 

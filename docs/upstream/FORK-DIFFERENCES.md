@@ -154,6 +154,30 @@ Compatibility retained: `ZCODE_DATA_BASE_DIR`, `ZCODE_DESKTOP_HOME_DIR` and all 
 environment variable names; no data migration; Main's own process HOME and the OS
 keychain / `safeStorage` identity are not rewritten.
 
+## Upstream v3.15.1 integration (2026-10-11)
+
+Imported upstream `aac4755666d09fdcd70272fcf063c077a639015f` (ZCode v3.15.1, parent
+`29628c9`, offered as RunLumi PR #42) by merge commit; the exact SHA is recorded in
+`VERIFIED_UPSTREAM_IMPORTS`. Lumi contracts re-applied where upstream moved or removed them:
+
+| Area             | Upstream change                                                              | Lumi resolution                                                                                                                                                                                                                                                                                                |
+| ---------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Telemetry gate   | `ZCODE_TELEMETRY_ENABLED` removed; endpoints become build-time defines       | `env.ts` keeps the runtime opt-in (`LUMI_TELEMETRY=1`) and runtime endpoints; the gate is restored in `telemetryCore.ts` and around desktop stability/resource/network telemetry in `main/index.ts`                                                                                                            |
+| Auto update      | `ZCODE_AUTO_UPDATE_ENABLED` from build-time `ZCODE_AUTO_UPDATE`              | exported but resolved by `resolveLumiAutoUpdateEnabled` (Lumi https feed only); desktop still gates on `resolveLumiAutoUpdateEnabled(process.env)`                                                                                                                                                             |
+| ARMS             | `@arms/rum-electron` init restructured; patch, rrweb records re-added        | `appARMSBootstrap.ts` stays on the Lumi shim; `@arms` dependency/patch, `armsRumBridgeForward.ts` and rrweb/`@arms` license records stay removed                                                                                                                                                               |
+| Web theme        | `webThemeSeed.ts` → `webRemoteControlThemeSeed.ts`; bootstrap shell snapshot | light-only rule moved to the new file (+ test); `index.html` stays light and only adopts snapshot colour tokens                                                                                                                                                                                                |
+| About            | native About panel shows `© year ZCode`                                      | maintainer credit, no copyright claim; `formatAboutCopyright` stays removed                                                                                                                                                                                                                                    |
+| Bootstrap paths  | per-file `resolve*SettingsFile(homedir())` exports                           | Lumi `getBootstrapSettingsFile(env)` boundary kept; upstream test adapted                                                                                                                                                                                                                                      |
+| Login / OAuth UI | provider sort helpers exported                                               | Lumi-first entry keeps them removed (upstream `loginDialogProviders.test.ts` targets the removed helpers)                                                                                                                                                                                                      |
+| Packaging        | Electron 41.0.3, CUA helper, Windows fuses, Bluetooth usage string           | Electron 44.4.3 (MAS crash fix #34) kept; upstream packaging additions merged alongside MAS profile handling                                                                                                                                                                                                   |
+| License tooling  | platform filter drops non-target packages                                    | Lumi `platformUnsupported` inventory kept (platform-independent notices); upstream filter helpers retained for their tests                                                                                                                                                                                     |
+| Docs             | `DESIGN.md`, `third-party/README.md`, README updates                         | Lumi `DESIGN.md` and `third-party/README.md` kept; README update/UI Plugin sections ported to `README.md`/`README.zh.md`. Upstream `DESIGN.md` additions (full-page desktop overlays, specialized color tokens, Lucide foreground opacity, breakpoint roles) are not yet reflected in the Lumi design contract |
+| Generated files  | committed `schedulerProtocol.{js,d.ts}(.map)`                                | removed (build output; both sides had stale copies)                                                                                                                                                                                                                                                            |
+
+The upstream desktop/UI vitest suites added in this release still assert upstream
+ZCode branding in places (for example About and login provider tests); they are not
+part of Lumi CI and were not adapted wholesale.
+
 ## Not done / needs a separate decision
 
 The in-progress managed integration adds a private Agent reverse tool-decision
