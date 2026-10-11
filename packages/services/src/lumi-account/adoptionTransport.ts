@@ -10,6 +10,7 @@ import {
   type P08CredentialMode,
 } from "@zcode/shared";
 import { LumiAccountError } from "./errors.js";
+import { pagePath, readCompletePages } from "./pagination.js";
 
 type AdoptionRequest = (
   path: string,
@@ -87,6 +88,30 @@ function adoptionRecord(value: unknown): LumiAdoptionRecord {
     ownership: row.ownership as LumiAdoptionRecord["ownership"],
     credentialMode: row.credential_mode,
     version: row.version as number,
+  };
+}
+
+function projectProjection(value: unknown): LumiProjectProjection {
+  const item = value as Record<string, unknown> | null;
+  if (
+    !item ||
+    typeof item.id !== "string" ||
+    !/^prj_[0-9a-f]{32}$/.test(item.id) ||
+    typeof item.name !== "string" ||
+    !item.name ||
+    item.name.length > 128 ||
+    typeof item.slug !== "string" ||
+    !/^[a-z0-9-]{3,63}$/.test(item.slug) ||
+    typeof item.archived !== "boolean" ||
+    !["org", "restricted"].includes(String(item.visibility))
+  )
+    throw new LumiAccountError("lumi_response_invalid");
+  return {
+    id: item.id,
+    name: item.name,
+    slug: item.slug,
+    archived: item.archived,
+    visibility: item.visibility as "org" | "restricted",
   };
 }
 
@@ -190,44 +215,38 @@ export class LumiAdoptionHostTransport {
 
   async listProjects(orgId: string): Promise<LumiProjectProjection[]> {
     if (!/^org_[0-9a-f]{32}$/.test(orgId)) throw new LumiAccountError("lumi_org_invalid");
-    const response = await this.#request(`/api/v1/orgs/${orgId}/projects?limit=100`, "GET");
-    const row = (await response.json()) as Record<string, unknown>;
-    if (!Array.isArray(row.items) || row.items.length > 100 || row.has_more === true)
-      throw new LumiAccountError("lumi_response_invalid");
-    return row.items.map((item: Record<string, unknown>) => {
-      if (
-        !item ||
-        typeof item.id !== "string" ||
-        !/^prj_[0-9a-f]{32}$/.test(item.id) ||
-        typeof item.name !== "string" ||
-        !item.name ||
-        item.name.length > 128 ||
-        typeof item.slug !== "string" ||
-        !/^[a-z0-9-]{3,63}$/.test(item.slug) ||
-        typeof item.archived !== "boolean" ||
-        !["org", "restricted"].includes(String(item.visibility))
-      )
-        throw new LumiAccountError("lumi_response_invalid");
-      return {
-        id: item.id,
-        name: item.name,
-        slug: item.slug,
-        archived: item.archived,
-        visibility: item.visibility as "org" | "restricted",
-      };
+    return readCompletePages<LumiProjectProjection>({
+      fetchPage: async (cursor) =>
+        (await this.#request(pagePath(`/api/v1/orgs/${orgId}/projects`, cursor), "GET")).json(),
+      parse: projectProjection,
+      keyOf: (item) => item.id,
+      invalid: "lumi_response_invalid",
+      ceilingWithoutCursor: false,
     });
   }
 
+  /**
+   * Every adoption row of the org, or a failure. The list route has no cursor and a hard ceiling
+   * of 100, so a full page cannot prove completeness and fails closed with `lumi_page_incomplete`:
+   * the owner uses this list to decide whether a workspace already has a row before it creates one.
+   */
   async listAdoptionRecords(orgId: string): Promise<LumiAdoptionRecord[]> {
     if (!/^org_[0-9a-f]{32}$/.test(orgId)) throw new LumiAccountError("lumi_org_invalid");
-    const response = await this.#request(
-      `/api/v1/orgs/${orgId}/adoption/bindings?limit=100`,
-      "GET",
-    );
-    const row = (await response.json()) as Record<string, unknown>;
-    if (!Array.isArray(row.items) || row.items.length > 100)
-      throw new LumiAccountError("lumi_response_invalid");
-    return row.items.map(adoptionRecord);
+    return readCompletePages<LumiAdoptionRecord>({
+      fetchPage: async (cursor) =>
+        (
+          await this.#request(pagePath(`/api/v1/orgs/${orgId}/adoption/bindings`, cursor), "GET")
+        ).json(),
+      parse: (value) => {
+        const record = adoptionRecord(value);
+        // A row of another organization is never part of this org's list.
+        if (record.orgId !== orgId) throw new LumiAccountError("lumi_response_invalid");
+        return record;
+      },
+      keyOf: (item) => item.adoptionStateId,
+      invalid: "lumi_response_invalid",
+      ceilingWithoutCursor: true,
+    });
   }
 
   async createAdoptionRecord(

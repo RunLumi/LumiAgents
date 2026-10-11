@@ -58,13 +58,13 @@ AI gimmicks, or decorative noise. It must satisfy a CEO, team member, and top de
 
 Evaluate Lumi by what the user can understand and accomplish:
 
-* **Earned trust:** the user sees the source, freshness, and limits before relying on a signal.
-* **Quiet authority:** composed, edited, inevitable, never decorated.
-* **Operational warmth:** serious, not cold, for teams in Vietnam, Malaysia, Indonesia,
+- **Earned trust:** the user sees the source, freshness, and limits before relying on a signal.
+- **Quiet authority:** composed, edited, inevitable, never decorated.
+- **Operational warmth:** serious, not cold, for teams in Vietnam, Malaysia, Indonesia,
   Saudi Arabia, the Philippines, Latvia, and markets like them.
-* **Native confidence:** web, iOS, Android, Mac, and Watch are one product expressed
+- **Native confidence:** web, iOS, Android, Mac, and Watch are one product expressed
   through each platform's best behavior, never a stretched viewport.
-* **Unconventional restraint:** show fewer things in a better order with stronger evidence,
+- **Unconventional restraint:** show fewer things in a better order with stronger evidence,
   not a visual gimmick.
 
 Every screen must make its actual job clearer, safer, or faster; visual polish alone is not completion.
@@ -73,12 +73,12 @@ Every screen must make its actual job clearer, safer, or faster; visual polish a
 
 Lumi is a **lit operating desk**:
 
-* Warm paper background: the desk surface.
-* White cards: documents placed on the desk.
-* Blue actions: signed authority.
-* Amber and red rails: attention marks in the margin.
-* Evidence chips: source notes attached to the claim.
-* The clarity mark: Lumi found or verified something useful.
+- Warm paper background: the desk surface.
+- White cards: documents placed on the desk.
+- Blue actions: signed authority.
+- Amber and red rails: attention marks in the margin.
+- Evidence chips: source notes attached to the claim.
+- The clarity mark: Lumi found or verified something useful.
 
 Never replace it with all-glass panels, neon depth, floating dashboards, or chatbot theatrics:
 intelligence is work ordering, not visual effects. Floating chrome may use the scoped §8.0
@@ -90,16 +90,16 @@ The visual language is **Civic Editorial Minimalism + Material Intelligence**: c
 seriousness, editorial hierarchy, and high-end native tactility without ad-hoc glassmorphism, aurora
 gradients, AI glow, or signal-competing decoration. Every visible object needs a physical reason:
 
-| Material cue | Purpose | Allowed expression |
-|---|---|---|
-| Paper | calm reading, trust, warmth | `Paper White` canvas, slight top light |
-| Sheet | grouped evidence, decisions, records | white surface, 1px border, lit top edge |
-| Ink | authority and hierarchy | Civic Navy / Ink text, not black |
-| Mark | attention and provenance | rail, badge, source chip, restrained clarity mark |
-| Lift | interactivity or overlay plane | navy-tinted token shadow only |
-| Glass | floating chrome above the work | translucent surface white, backdrop blur + saturation, §8.0 recipes |
-| Well | input / capture area | recessed inner shade, white fill |
-| Seal | primary authority | Lumi Blue button, active state, selected state |
+| Material cue | Purpose                              | Allowed expression                                                  |
+| ------------ | ------------------------------------ | ------------------------------------------------------------------- |
+| Paper        | calm reading, trust, warmth          | `Paper White` canvas, slight top light                              |
+| Sheet        | grouped evidence, decisions, records | white surface, 1px border, lit top edge                             |
+| Ink          | authority and hierarchy              | Civic Navy / Ink text, not black                                    |
+| Mark         | attention and provenance             | rail, badge, source chip, restrained clarity mark                   |
+| Lift         | interactivity or overlay plane       | navy-tinted token shadow only                                       |
+| Glass        | floating chrome above the work       | translucent surface white, backdrop blur + saturation, §8.0 recipes |
+| Well         | input / capture area                 | recessed inner shade, white fill                                    |
+| Seal         | primary authority                    | Lumi Blue button, active state, selected state                      |
 
 Material is never decorative: remove any shadow, border, tint, or rail that does not explain state,
 hierarchy, affordance, or provenance.
@@ -126,22 +126,22 @@ Use it with restraint.
 
 Do:
 
-* Give the mark generous whitespace on warm paper or white.
-* Keep the four-point clarity mark separate and subtle for verified insight.
-* Use L geometry to inspire layouts, corners, dividers, and section framing.
+- Give the mark generous whitespace on warm paper or white.
+- Keep the four-point clarity mark separate and subtle for verified insight.
+- Use L geometry to inspire layouts, corners, dividers, and section framing.
 
 Do not:
 
-* Add decorative gradients beyond the supplied primary app-icon treatment
-* Add AI glow
-* Slant or italicize the `umi` wordmark; its outlined letters are upright
-* Separate the folded-L and `u` by more than one wordmark stem width; the canonical lockup uses
+- Add decorative gradients beyond the supplied primary app-icon treatment
+- Add AI glow
+- Slant or italicize the `umi` wordmark; its outlined letters are upright
+- Separate the folded-L and `u` by more than one wordmark stem width; the canonical lockup uses
   approximately 0.8× stem width
-* Add glassmorphism
-* Add drop shadows
-* Add animated sparkle effects
-* Place the logo on noisy backgrounds
-* Merge the separate clarity motif back into the folded-L logo
+- Add glassmorphism
+- Add drop shadows
+- Add animated sparkle effects
+- Place the logo on noisy backgrounds
+- Merge the separate clarity motif back into the folded-L logo
 
 ## 2.3 Logo clear space
 
@@ -230,58 +230,58 @@ operational intelligence, not an AI toy.
 
 Use for:
 
-* Logo
-* Primary buttons
-* Key links
-* Active navigation
-* Selected states
-* Important chart lines
-* Executive brief highlights
+- Logo
+- Primary buttons
+- Key links
+- Active navigation
+- Selected states
+- Important chart lines
+- Executive brief highlights
 
 Personality:
 
-* Trust
-* Governance
-* Reliability
-* Operating clarity
+- Trust
+- Governance
+- Reliability
+- Operating clarity
 
 ---
 
 ### Civic Navy
 
 ```css
---color-civic-navy: #102A43;
+--color-civic-navy: #102a43;
 ```
 
 Use for:
 
-* Headlines
-* Body text
-* Navigation labels
-* Dense UI text
-* Executive brief titles
+- Headlines
+- Body text
+- Navigation labels
+- Dense UI text
+- Executive brief titles
 
 Personality:
 
-* Serious
-* Editorial
-* Stable
-* Professional
+- Serious
+- Editorial
+- Stable
+- Professional
 
 ---
 
 ### Paper White
 
 ```css
---color-paper-white: #F4F0E8;
+--color-paper-white: #f4f0e8;
 ```
 
 Use for:
 
-* Main app background
-* Landing page background
-* Report surfaces
-* Empty states
+- Main app background
+- Landing page background
+- Report surfaces
+- Empty states
 
 Do not default to pure white.
 Warm paper makes the product feel more mature and less like a generic SaaS dashboard.
@@ -296,62 +296,62 @@ rejects.
 ### Surface White
 
 ```css
---color-surface-white: #FFFFFF;
+--color-surface-white: #ffffff;
 ```
 
 Use for:
 
-* Cards
-* Modals
-* Tables
-* Input backgrounds
+- Cards
+- Modals
+- Tables
+- Input backgrounds
 
 ---
 
 ### Archive Gray
 
 ```css
---color-archive-gray: #E7EAF0;
+--color-archive-gray: #e7eaf0;
 ```
 
 Use for:
 
-* Borders
-* Dividers
-* Table lines
-* Quiet UI structure
-* Disabled states
+- Borders
+- Dividers
+- Table lines
+- Quiet UI structure
+- Disabled states
 
 ---
 
 ### Soft Slate
 
 ```css
---color-soft-slate: #5E6677;   /* AA ≥4.5:1 on paper */
+--color-soft-slate: #5e6677; /* AA ≥4.5:1 on paper */
 ```
 
 Use for:
 
-* Secondary text
-* Timestamps
-* Helper text
-* Metadata
+- Secondary text
+- Timestamps
+- Helper text
+- Metadata
 
 ---
 
 ### Signal Amber
 
 ```css
---color-signal-amber: #F4A62A;
+--color-signal-amber: #f4a62a;
 ```
 
 Use only for:
 
-* Warnings
-* Overdue flags
-* Important notices
-* Cash/payment risks
-* Items needing attention
+- Warnings
+- Overdue flags
+- Important notices
+- Cash/payment risks
+- Items needing attention
 
 Limit amber to 5% of the interface.
 
@@ -360,15 +360,15 @@ Limit amber to 5% of the interface.
 ### Risk Red
 
 ```css
---color-risk-red: #C2410C;
+--color-risk-red: #c2410c;
 ```
 
 Use sparingly for:
 
-* Critical risk
-* Failed states
-* Dangerous actions
-* Data errors
+- Critical risk
+- Failed states
+- Dangerous actions
+- Data errors
 
 Do not use red for normal urgency. Use amber first.
 
@@ -377,15 +377,15 @@ Do not use red for normal urgency. Use amber first.
 ### Success Green
 
 ```css
---color-success-green: #1F7A4D;
+--color-success-green: #1f7a4d;
 ```
 
 Use for:
 
-* Completed work
-* Resolved risks
-* Confirmed decisions
-* Positive status
+- Completed work
+- Resolved risks
+- Confirmed decisions
+- Positive status
 
 Avoid bright SaaS green.
 
@@ -396,29 +396,29 @@ Avoid bright SaaS green.
 ```css
 :root {
   --color-lumi-blue: #006093;
-  --color-lumi-blue-hover: #004F80;   /* blue-700 — perceptual hover step */
-  --color-lumi-blue-active: #003E6A;  /* blue-800 — pressed */
-  --color-lumi-blue-soft: #E4F3FC;
+  --color-lumi-blue-hover: #004f80; /* blue-700 — perceptual hover step */
+  --color-lumi-blue-active: #003e6a; /* blue-800 — pressed */
+  --color-lumi-blue-soft: #e4f3fc;
 
-  --color-civic-navy: #102A43;
+  --color-civic-navy: #102a43;
   --color-ink: #172033;
-  --color-soft-slate: #5E6677;        /* AA ≥4.5:1 on paper (nudged from #667085) */
+  --color-soft-slate: #5e6677; /* AA ≥4.5:1 on paper (nudged from #667085) */
 
-  --color-paper-white: #F4F0E8;
-  --color-surface-white: #FFFFFF;
-  --color-archive-gray: #E7EAF0;
-  --color-border-subtle: #E7EAF0;
-  --color-border: #D9DEE8;
-  --color-border-strong: #C8D0DE;
+  --color-paper-white: #f4f0e8;
+  --color-surface-white: #ffffff;
+  --color-archive-gray: #e7eaf0;
+  --color-border-subtle: #e7eaf0;
+  --color-border: #d9dee8;
+  --color-border-strong: #c8d0de;
 
-  --color-signal-amber: #F4A62A;
-  --color-amber-soft: #FFF4DC;
+  --color-signal-amber: #f4a62a;
+  --color-amber-soft: #fff4dc;
 
-  --color-risk-red: #C2410C;
-  --color-red-soft: #FFF1EC;
+  --color-risk-red: #c2410c;
+  --color-red-soft: #fff1ec;
 
-  --color-success-green: #1F7A4D;
-  --color-green-soft: #E9F7EF;
+  --color-success-green: #1f7a4d;
+  --color-green-soft: #e9f7ef;
 }
 ```
 
@@ -446,28 +446,28 @@ Lumi color should feel expensive because it is controlled.
 
 Rules:
 
-* **Blue is authority.** Use Lumi Blue for the one action, active navigation,
+- **Blue is authority.** Use Lumi Blue for the one action, active navigation,
   selected state, and trusted insight. Do not wash whole screens in blue.
-* **Paper is material.** `Paper White` is not beige lifestyle branding; it is a
+- **Paper is material.** `Paper White` is not beige lifestyle branding; it is a
   calm reading surface. Pair it with white cards, navy text, and lit shadows so
   the app feels like documents on a desk.
-* **Amber is attention.** Amber means "look here soon." It is the default for
+- **Amber is attention.** Amber means "look here soon." It is the default for
   overdue, waiting, and business-risk states that are not catastrophic.
-* **Red is rare.** Red means destructive, failed, blocked, critical, or legally
+- **Red is rare.** Red means destructive, failed, blocked, critical, or legally
   dangerous. If everything is red, nothing is urgent.
-* **Green is closure.** Use green for resolved, completed, paid, approved, and
+- **Green is closure.** Use green for resolved, completed, paid, approved, and
   all-clear states. Do not use bright gamified green.
-* **Gray is structure.** Archive Gray and Border provide document structure. They
+- **Gray is structure.** Archive Gray and Border provide document structure. They
   should never become a cold enterprise-gray theme.
 
 Color budget per screen:
 
-| Color role | Budget |
-|---|---:|
+| Color role                   | Budget |
+| ---------------------------- | -----: |
 | Paper / white / navy / slate | 85-95% |
-| Lumi Blue | 3-8% |
-| Amber / red / green combined | 1-6% |
-| Decorative color | 0% |
+| Lumi Blue                    |   3-8% |
+| Amber / red / green combined |   1-6% |
+| Decorative color             |     0% |
 
 These budgets guide emphasis, not pixel quotas that hide real warnings. Reuse existing
 hues and semantic roles. A palette change requires a separate, explicitly approved
@@ -484,21 +484,21 @@ unreadable and the colour stops carrying meaning.
 Three tints exist for that ground only. They are the **same semantics**, lifted
 for legibility, never new meanings and never a second status palette:
 
-| Token | Hex | On navy | Replaces |
-|---|---|---:|---|
-| `--color-amber-on-navy` | `#F4A62A` | 7.21:1 | `signal-amber` (unchanged; already passes) |
-| `--color-red-on-navy` | `#FF9E7A` | 7.27:1 | `risk-red` |
-| `--color-green-on-navy` | `#6FD39F` | 8.01:1 | `success-green` |
+| Token                   | Hex       | On navy | Replaces                                   |
+| ----------------------- | --------- | ------: | ------------------------------------------ |
+| `--color-amber-on-navy` | `#F4A62A` |  7.21:1 | `signal-amber` (unchanged; already passes) |
+| `--color-red-on-navy`   | `#FF9E7A` |  7.27:1 | `risk-red`                                 |
+| `--color-green-on-navy` | `#6FD39F` |  8.01:1 | `success-green`                            |
 
 Rules:
 
-* Use them **only** on a Civic Navy surface. On paper or white, the §5.2 hues
+- Use them **only** on a Civic Navy surface. On paper or white, the §5.2 hues
   remain the only correct choice.
-* They are not a dark mode and do not license one. A navy panel is a single
+- They are not a dark mode and do not license one. A navy panel is a single
   editorial inversion, not a theme.
-* The saturated hue still carries the rail or dot; the tint carries the label
+- The saturated hue still carries the rail or dot; the tint carries the label
   text. Never invert that pairing.
-* Any additional dark-ground tint needs the same measured contrast in this table
+- Any additional dark-ground tint needs the same measured contrast in this table
   before it ships.
 
 ---
@@ -511,12 +511,12 @@ Type is **one family, Geist**, with authority expressed through weight and track
 not a second display face. Geist Mono serves technical content. Keep this shared
 identity across Lumi products; framework choice does not change typography.
 
-| Role | Face | Voice | Weight · tracking |
-|------|------|-------|-------------------|
-| **Titles / display** (page titles, hero, big numbers) | **Geist** (`--font-display`, `.font-display`) | heavier, tighter — authoritative | 600–700 · `-0.018em` titles → `-0.055em` hero |
-| **UI / body / labels** (everything else) | **Geist** (`--font-sans`) | lighter, quieter — disappears behind the work | 400–500 · 0 to `-0.01em` |
-| **Numeric / tabular** (tables, metrics, badges) | Geist, `tabular-nums` | figures align in columns; counts don't jitter | — |
-| **Mono** (code, evidence hashes, technical bits) | **Geist Mono** (`--font-mono`) | the mono of the same system | 400–500 |
+| Role                                                  | Face                                          | Voice                                         | Weight · tracking                             |
+| ----------------------------------------------------- | --------------------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| **Titles / display** (page titles, hero, big numbers) | **Geist** (`--font-display`, `.font-display`) | heavier, tighter — authoritative              | 600–700 · `-0.018em` titles → `-0.055em` hero |
+| **UI / body / labels** (everything else)              | **Geist** (`--font-sans`)                     | lighter, quieter — disappears behind the work | 400–500 · 0 to `-0.01em`                      |
+| **Numeric / tabular** (tables, metrics, badges)       | Geist, `tabular-nums`                         | figures align in columns; counts don't jitter | —                                             |
+| **Mono** (code, evidence hashes, technical bits)      | **Geist Mono** (`--font-mono`)                | the mono of the same system                   | 400–500                                       |
 
 Where bundled, serve Geist and Geist Mono locally with `font-display: swap`; verify
 the actual font assets, license, Vietnamese glyphs, and loaded weights rather than
@@ -541,7 +541,7 @@ Canonical stacks (mirrored on every platform — §19):
 ```
 
 **Hard rules.** One brand family: **Geist** (+ Geist Mono for mono). Display vs body
-is weight and tracking, *not* a second typeface. IBM Plex and Inter are removed
+is weight and tracking, _not_ a second typeface. IBM Plex and Inter are removed
 completely — do not reintroduce either, anywhere (web, iOS, Android, Mac, Watch,
 slides, email, docs-site). No third face in core UI.
 
@@ -561,12 +561,12 @@ metadata below 12px, or user-selected text scaling be overridden.
 ### App page title
 
 ```css
-font-family: var(--font-display);   /* Geist, display weight */
+font-family: var(--font-display); /* Geist, display weight */
 font-size: 28px;
 line-height: 1.2;
 font-weight: 650;
 letter-spacing: -0.02em;
-color: var(--color-civic-navy);     /* editorial ink — never pure black */
+color: var(--color-civic-navy); /* editorial ink — never pure black */
 ```
 
 **Headings are Civic Navy ink, never black.** Page and section titles use
@@ -634,26 +634,26 @@ Typography is product infrastructure: the cheapest way to feel world-class or ge
 
 Rules:
 
-* **Geist display (600–700, tight tracking) is authoritative:** page/brief titles,
+- **Geist display (600–700, tight tracking) is authoritative:** page/brief titles,
   hero moments, and large numbers should feel infrastructural, not like a consulting deck.
-* **Geist body (400–500) operates:** labels, tables, forms, metadata, chat, and dense mobile cards
+- **Geist body (400–500) operates:** labels, tables, forms, metadata, chat, and dense mobile cards
   disappear behind the work.
-* **One family:** display and body are Geist, differentiated only by weight/tracking. Never add a
+- **One family:** display and body are Geist, differentiated only by weight/tracking. Never add a
   second font; Noto is glyph fallback only.
-* **Numbers align:** use `tabular-nums` for counts, money, dates, percentages, and jitter-sensitive tables.
-* **Metadata stays readable:** owners, sources, dates, and confidence bear trust.
-* **Test Vietnamese:** verify diacritics, long phrases, and natural line breaks on mobile and desktop.
-* **No fake editorial flourish:** no random italics, mixed-family emphasis, poetic labels,
+- **Numbers align:** use `tabular-nums` for counts, money, dates, percentages, and jitter-sensitive tables.
+- **Metadata stays readable:** owners, sources, dates, and confidence bear trust.
+- **Test Vietnamese:** verify diacritics, long phrases, and natural line breaks on mobile and desktop.
+- **No fake editorial flourish:** no random italics, mixed-family emphasis, poetic labels,
   oversized microcopy, or decorative uppercase.
 
 Line-length rules:
 
-| Content | Ideal width |
-|---|---:|
-| CEO brief prose | 56-72 characters |
-| Form helper text | 40-64 characters |
-| Table cell text | truncate after useful signal, reveal full text on detail |
-| Mobile card body | 2-3 lines max before progressive disclosure |
+| Content          |                                              Ideal width |
+| ---------------- | -------------------------------------------------------: |
+| CEO brief prose  |                                         56-72 characters |
+| Form helper text |                                         40-64 characters |
+| Table cell text  | truncate after useful signal, reveal full text on detail |
+| Mobile card body |              2-3 lines max before progressive disclosure |
 
 If a line is too long, improve the composition or the copy. Do not shrink text
 below the scale.
@@ -742,10 +742,10 @@ Evidence / action
 
 Rules:
 
-* One focused column (`max-w-3xl`) unless comparison is required.
-* The most important item appears above filters and secondary navigation.
-* Each item shows claim, why it matters, owner, age/due date, and evidence.
-* Actions sit near the claim they affect.
+- One focused column (`max-w-3xl`) unless comparison is required.
+- The most important item appears above filters and secondary navigation.
+- Each item shows claim, why it matters, owner, age/due date, and evidence.
+- Actions sit near the claim they affect.
 
 ### Operating Table
 
@@ -760,10 +760,10 @@ Detail sheet
 
 Rules:
 
-* Tables are for comparison, not decoration.
-* On narrow views, use ranked cards when comparison survives; otherwise keep a labelled, keyboard-accessible table scroll region without forcing the whole page sideways.
-* Filters must reduce cognitive load. If a filter is rarely used, move it.
-* Empty states should explain what creates records and what Lumi will do next.
+- Tables are for comparison, not decoration.
+- On narrow views, use ranked cards when comparison survives; otherwise keep a labelled, keyboard-accessible table scroll region without forcing the whole page sideways.
+- Filters must reduce cognitive load. If a filter is rarely used, move it.
+- Empty states should explain what creates records and what Lumi will do next.
 
 ### Capture Form
 
@@ -779,10 +779,10 @@ Recovery state
 
 Rules:
 
-* Forms stay single-column.
-* Labels are always visible.
-* Helper text is short and human.
-* The save state is explicit: saving, saved, failed, retry.
+- Forms stay single-column.
+- Labels are always visible.
+- Helper text is short and human.
+- The save state is explicit: saving, saved, failed, retry.
 
 Do not mix these compositions casually. A CEO brief with dashboard widgets, a
 table with editorial prose blocks, or a pulse form with a dashboard sidebar all
@@ -796,45 +796,45 @@ feel confused.
 
 Every UI object must use one of these recipes. Do not invent one-off material.
 
-| Recipe | Background | Border | Radius | Shadow | Use |
-|---|---|---|---|---|---|
-| Canvas | `--color-paper-white` + `--canvas-glow` | none | 0 | none | app background |
-| Sheet | `--color-surface-white` | 1px `--color-border` | 8px | `--shadow-card` | cards, table shells, list groups |
-| Raised sheet | `--color-surface-white` | 1px `--color-border-strong` | 8px | `--shadow-raised` | sticky bars, hovered interactive cards |
-| Overlay | `--color-surface-white` | 1px `--color-border-strong` | 12px | `--shadow-overlay` | popovers, menus, tooltips |
-| Modal sheet | `--color-surface-white` | 1px `--color-border-strong` | 16px | `--shadow-modal` | dialogs, command palette, bottom sheets |
-| Glass chrome | `--glass-tint` + backdrop `--glass-blur` | 1px `--glass-border` | 0 (flush) | `--shadow-raised` | sidebar, docked side panels |
-| Glass overlay | `--glass-tint-strong` + backdrop `--glass-blur-strong` | 1px `--glass-border` | 12px | `--shadow-overlay` | popovers, menus, tooltips over content |
-| Glass modal | `--glass-tint-strong` + backdrop `--glass-blur-strong` | 1px `--glass-border` | 16px | `--shadow-modal` | dialogs, command palette over content |
-| Recessed well | `--color-surface-white` | 1px `--color-border` | 8px | `--shadow-input` | inputs, textareas, search fields |
-| Lit token | status soft token | 1px same-hue inset ring | 999px | `--shadow-lit` | badges, chips, tabs |
-| Authority seal | `--color-lumi-blue` + `--gradient-primary` | 1px blue-active mix | 8px | `--shadow-button` | primary action |
+| Recipe         | Background                                             | Border                      | Radius    | Shadow             | Use                                     |
+| -------------- | ------------------------------------------------------ | --------------------------- | --------- | ------------------ | --------------------------------------- |
+| Canvas         | `--color-paper-white` + `--canvas-glow`                | none                        | 0         | none               | app background                          |
+| Sheet          | `--color-surface-white`                                | 1px `--color-border`        | 8px       | `--shadow-card`    | cards, table shells, list groups        |
+| Raised sheet   | `--color-surface-white`                                | 1px `--color-border-strong` | 8px       | `--shadow-raised`  | sticky bars, hovered interactive cards  |
+| Overlay        | `--color-surface-white`                                | 1px `--color-border-strong` | 12px      | `--shadow-overlay` | popovers, menus, tooltips               |
+| Modal sheet    | `--color-surface-white`                                | 1px `--color-border-strong` | 16px      | `--shadow-modal`   | dialogs, command palette, bottom sheets |
+| Glass chrome   | `--glass-tint` + backdrop `--glass-blur`               | 1px `--glass-border`        | 0 (flush) | `--shadow-raised`  | sidebar, docked side panels             |
+| Glass overlay  | `--glass-tint-strong` + backdrop `--glass-blur-strong` | 1px `--glass-border`        | 12px      | `--shadow-overlay` | popovers, menus, tooltips over content  |
+| Glass modal    | `--glass-tint-strong` + backdrop `--glass-blur-strong` | 1px `--glass-border`        | 16px      | `--shadow-modal`   | dialogs, command palette over content   |
+| Recessed well  | `--color-surface-white`                                | 1px `--color-border`        | 8px       | `--shadow-input`   | inputs, textareas, search fields        |
+| Lit token      | status soft token                                      | 1px same-hue inset ring     | 999px     | `--shadow-lit`     | badges, chips, tabs                     |
+| Authority seal | `--color-lumi-blue` + `--gradient-primary`             | 1px blue-active mix         | 8px       | `--shadow-button`  | primary action                          |
 
 Rules:
 
-* A page may use many objects, but only these material recipes.
-* A card inside a card is prohibited. Use sections, dividers, or nested rows.
-* Overlays must visibly float above sheets. If the shadow tier does not make the
+- A page may use many objects, but only these material recipes.
+- A card inside a card is prohibited. Use sections, dividers, or nested rows.
+- Overlays must visibly float above sheets. If the shadow tier does not make the
   plane obvious, the plane is wrong.
-* Sheet surfaces must be white. Do not tint cards by domain unless the whole
+- Sheet surfaces must be white. Do not tint cards by domain unless the whole
   card is an alert or empty state.
-* The background glow is part of the canvas only. Never attach glows to
+- The background glow is part of the canvas only. Never attach glows to
   individual components.
 
 Liquid-glass rules (the §1.5 Glass cue):
 
-* Glass recipes apply to floating chrome only — sidebar, side panels, popovers,
+- Glass recipes apply to floating chrome only — sidebar, side panels, popovers,
   menus, dialogs, command palette. Content surfaces (cards, tables, inputs,
   lists, badges) stay on their opaque recipes; the §10.2/§10.3 bans on glass
   content stand.
-* Glass is derived from surface white and existing border tokens only. It adds
+- Glass is derived from surface white and existing border tokens only. It adds
   no new palette; §5 governs every color it shows.
-* Blur budget: at most three glass layers visible per screen. Never nest
+- Blur budget: at most three glass layers visible per screen. Never nest
   `backdrop-filter` inside another glass surface.
-* Every glass surface has an opaque twin: when `backdrop-filter` is unsupported
+- Every glass surface has an opaque twin: when `backdrop-filter` is unsupported
   or the user prefers reduced transparency, render the equivalent opaque recipe
   at the same radius, border, and shadow.
-* Text on glass must pass §16.1 contrast measured over the busiest content
+- Text on glass must pass §16.1 contrast measured over the busiest content
   beneath it; raise the tint opacity until it does.
 
 ## 8.1 Border Radius
@@ -855,21 +855,21 @@ Use modest radius. Radius communicates object class, not mood.
 
 Radius roles:
 
-| Radius | Use |
-|---|---|
-| 2px | tiny evidence markers, chart bar caps, progress segments |
-| 4px | small thumbnails, compact icon containers, table row hover background |
-| 8px | cards, buttons, inputs, list groups, mobile cards |
-| 12px | popovers, dropdowns, date pickers, elevated menus |
-| 16px | modals, command palette, bottom sheets, large empty states |
-| 999px | badges, chips, avatar circles, segmented-control thumb only |
+| Radius | Use                                                                   |
+| ------ | --------------------------------------------------------------------- |
+| 2px    | tiny evidence markers, chart bar caps, progress segments              |
+| 4px    | small thumbnails, compact icon containers, table row hover background |
+| 8px    | cards, buttons, inputs, list groups, mobile cards                     |
+| 12px   | popovers, dropdowns, date pickers, elevated menus                     |
+| 16px   | modals, command palette, bottom sheets, large empty states            |
+| 999px  | badges, chips, avatar circles, segmented-control thumb only           |
 
 Avoid:
 
-* giant pill buttons
-* extreme roundness
-* playful blobs
-* organic shapes that conflict with the logo geometry
+- giant pill buttons
+- extreme roundness
+- playful blobs
+- organic shapes that conflict with the logo geometry
 
 ## 8.2 Borders
 
@@ -879,93 +879,86 @@ Use borders as material edges, not decoration.
 --border-hairline: 1px;
 --border-focus: 2px;
 --border-rail: 3px;
---color-border-subtle: #E7EAF0;
---color-border: #D9DEE8;
---color-border-strong: #C8D0DE;
+--color-border-subtle: #e7eaf0;
+--color-border: #d9dee8;
+--color-border-strong: #c8d0de;
 ```
 
 Border roles:
 
-| Border | Width | Color | Use |
-|---|---:|---|---|
-| Hairline | 1px | `--color-border` | cards, inputs, tables, dividers |
-| Subtle divider | 1px | `--color-border-subtle` | section separators, table row dividers |
-| Strong edge | 1px | `--color-border-strong` | overlays, active containers, sticky surfaces |
-| Focus ring | 2px | blue mix | keyboard focus, never elevation |
-| Severity rail | 3px | status hue | risk, overdue, danger zone, urgent decision |
+| Border         | Width | Color                   | Use                                          |
+| -------------- | ----: | ----------------------- | -------------------------------------------- |
+| Hairline       |   1px | `--color-border`        | cards, inputs, tables, dividers              |
+| Subtle divider |   1px | `--color-border-subtle` | section separators, table row dividers       |
+| Strong edge    |   1px | `--color-border-strong` | overlays, active containers, sticky surfaces |
+| Focus ring     |   2px | blue mix                | keyboard focus, never elevation              |
+| Severity rail  |   3px | status hue              | risk, overdue, danger zone, urgent decision  |
 
 Rules:
 
-* Borders are always 1px except focus rings and severity rails.
-* Do not use double borders unless the inner line is the lit top edge token.
-* Do not put borders on all four sides of every row in a long list. Use one
+- Borders are always 1px except focus rings and severity rails.
+- Do not use double borders unless the inner line is the lit top edge token.
+- Do not put borders on all four sides of every row in a long list. Use one
   bottom divider or grouped sheets.
-* Borders should feel archival, not boxy. If the UI looks like a spreadsheet,
+- Borders should feel archival, not boxy. If the UI looks like a spreadsheet,
   reduce borders and increase hierarchy.
 
 ## 8.3 Shadows — the elevation ramp
 
 Shadows are **navy-tinted, never pure black** (`rgba(16, 42, 67, …)`) — a black
 shadow on warm paper reads as dirt; a navy one reads as depth. Depth is a
-4-tier ramp, not ad-hoc values. Each tier pairs an *ambient* shadow (close,
-tight, holds the object to its surface) with a *key* shadow (cast, soft, sells
+4-tier ramp, not ad-hoc values. Each tier pairs an _ambient_ shadow (close,
+tight, holds the object to its surface) with a _key_ shadow (cast, soft, sells
 the height); both scale together so a surface reads as the same physical
 material at every plane. Use the token, never a raw `box-shadow`.
 
-| Token | Plane | Use |
-|-------|-------|-----|
-| `--elevation-1` | resting | cards, tables, list rows |
-| `--elevation-2` | raised | sticky headers, hover-lifted cards, dock pods |
-| `--elevation-3` | overlay | popovers, dropdowns, tooltips, the dock panel |
-| `--elevation-4` | modal | dialogs, command palette, sheets (highest plane) |
+| Token           | Plane   | Use                                              |
+| --------------- | ------- | ------------------------------------------------ |
+| `--elevation-1` | resting | cards, tables, list rows                         |
+| `--elevation-2` | raised  | sticky headers, hover-lifted cards, dock pods    |
+| `--elevation-3` | overlay | popovers, dropdowns, tooltips, the dock panel    |
+| `--elevation-4` | modal   | dialogs, command palette, sheets (highest plane) |
 
 Exact shadow recipes:
 
 ```css
---elevation-1:
-  0 1px 2px rgba(16, 42, 67, 0.05);
+--elevation-1: 0 1px 2px rgba(16, 42, 67, 0.05);
 
---elevation-2:
-  0 8px 24px -6px rgba(16, 42, 67, 0.10),
-  0 2px 6px -2px rgba(16, 42, 67, 0.06);
+--elevation-2: 0 8px 24px -6px rgba(16, 42, 67, 0.1), 0 2px 6px -2px rgba(16, 42, 67, 0.06);
 
---elevation-3:
-  0 16px 40px -8px rgba(16, 42, 67, 0.14),
-  0 4px 10px -4px rgba(16, 42, 67, 0.08);
+--elevation-3: 0 16px 40px -8px rgba(16, 42, 67, 0.14), 0 4px 10px -4px rgba(16, 42, 67, 0.08);
 
---elevation-4:
-  0 28px 60px -12px rgba(16, 42, 67, 0.20),
-  0 8px 18px -6px rgba(16, 42, 67, 0.10);
+--elevation-4: 0 28px 60px -12px rgba(16, 42, 67, 0.2), 0 8px 18px -6px rgba(16, 42, 67, 0.1);
 ```
 
 Plane rules:
 
-* Resting cards use `--shadow-card`, not a visible floating shadow.
-* Hover lift is 1px vertical movement plus `--shadow-card-hover`, never a jump.
-* Sticky headers use `--shadow-raised` only after they are stuck.
-* Popovers and menus use `--shadow-overlay`.
-* Dialogs and bottom sheets use `--shadow-modal`.
-* Shadows do not communicate severity. Color rails and badges do.
+- Resting cards use `--shadow-card`, not a visible floating shadow.
+- Hover lift is 1px vertical movement plus `--shadow-card-hover`, never a jump.
+- Sticky headers use `--shadow-raised` only after they are stuck.
+- Popovers and menus use `--shadow-overlay`.
+- Dialogs and bottom sheets use `--shadow-modal`.
+- Shadows do not communicate severity. Color rails and badges do.
 
 ### Lit-token coverage (one lighting language, every surface)
 
 Lighting is not just elevation — each surface pairs a navy drop with an **inner
-light-edge** so it reads as *lit from above*, never a flat sticker. This is the
+light-edge** so it reads as _lit from above_, never a flat sticker. This is the
 single quality that makes the whole UI feel built by one hand. Every interactive
 surface is on it (web; mobile mirrors it via platform-idiomatic shadows):
 
-| Surface | Token | Lit treatment |
-|---------|-------|---------------|
-| Badges · chips · active nav pill · active tab | `shadow-lit` | soft tint + same-hue ring + lit edge (+ saturated dot/rail) |
-| Cards · tables | `shadow-card` (`-hover`) | bright top edge + two-layer navy drop |
-| Sticky bars (stuck header) · dock pods | `shadow-raised` | lit edge + the elevation-2 drop (8/24) — the raised plane: lifted off the page but a tier *below* the overlay panel that opens above a pod |
-| Primary button · toggle (on) | `shadow-button` + `--gradient-primary` | top-down sheen + inner highlight + tight drop |
-| Inputs · textarea · toggle track | `shadow-input` | recessed inner top shade (the inverse — a well) |
-| Selects · popovers · dropdowns · toasts · chart tooltip | `shadow-overlay` | lifted lit sheet (elevation-3) + hairline ring |
-| Dialogs · command palette · sheets | `shadow-modal` | the highest plane (elevation-4) — a deeper navy cast so a modal floats visibly clear of mere overlays |
-| Skeletons | `.lumi-shimmer` | a soft light sweeps across while loading |
-| Alerts · status banners | `shadow-lit` + accent rail | soft tint + same-hue ring + 3px saturated rail |
-| Charts | gradient fills | trend areas fade to a soft wash; bars get lit, rounded tops |
+| Surface                                                 | Token                                  | Lit treatment                                                                                                                              |
+| ------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Badges · chips · active nav pill · active tab           | `shadow-lit`                           | soft tint + same-hue ring + lit edge (+ saturated dot/rail)                                                                                |
+| Cards · tables                                          | `shadow-card` (`-hover`)               | bright top edge + two-layer navy drop                                                                                                      |
+| Sticky bars (stuck header) · dock pods                  | `shadow-raised`                        | lit edge + the elevation-2 drop (8/24) — the raised plane: lifted off the page but a tier _below_ the overlay panel that opens above a pod |
+| Primary button · toggle (on)                            | `shadow-button` + `--gradient-primary` | top-down sheen + inner highlight + tight drop                                                                                              |
+| Inputs · textarea · toggle track                        | `shadow-input`                         | recessed inner top shade (the inverse — a well)                                                                                            |
+| Selects · popovers · dropdowns · toasts · chart tooltip | `shadow-overlay`                       | lifted lit sheet (elevation-3) + hairline ring                                                                                             |
+| Dialogs · command palette · sheets                      | `shadow-modal`                         | the highest plane (elevation-4) — a deeper navy cast so a modal floats visibly clear of mere overlays                                      |
+| Skeletons                                               | `.lumi-shimmer`                        | a soft light sweeps across while loading                                                                                                   |
+| Alerts · status banners                                 | `shadow-lit` + accent rail             | soft tint + same-hue ring + 3px saturated rail                                                                                             |
+| Charts                                                  | gradient fills                         | trend areas fade to a soft wash; bars get lit, rounded tops                                                                                |
 
 The colour half is equally unified: badges, toasts, alerts, the chart tooltip, and
 the mobile banner all draw their status colours from the **same lit-token quads**
@@ -979,8 +972,10 @@ A token guard should reject them; verify the host’s actual check. The companio
 example `node frontend/scripts/check-design-tokens.mjs` is not a command in this repository.
 
 ```html
-<div class="shadow-elevation-1">  <!-- resting card -->
-<div class="shadow-elevation-3">  <!-- floating popover / dropdown -->
+<div class="shadow-elevation-1">
+  <!-- resting card -->
+  <div class="shadow-elevation-3"><!-- floating popover / dropdown --></div>
+</div>
 ```
 
 ```css
@@ -1006,20 +1001,20 @@ Icons should feel like they belong to the logo.
 
 Use:
 
-* Simple line icons
-* Geometric construction
-* 1.75px or 2px stroke
-* Square or angled details
-* Occasional four-point star motif
+- Simple line icons
+- Geometric construction
+- 1.75px or 2px stroke
+- Square or angled details
+- Occasional four-point star motif
 
 Avoid:
 
-* Cartoon icons
-* 3D icons
-* AI sparkle overload
-* Gradient icons
-* Emoji-like icons
-* Random icon packs with inconsistent stroke
+- Cartoon icons
+- 3D icons
+- AI sparkle overload
+- Gradient icons
+- Emoji-like icons
+- Random icon packs with inconsistent stroke
 
 ## 9.2 Core Icon Motifs
 
@@ -1029,10 +1024,10 @@ Supporting system motifs:
 
 Meaning:
 
-* verified
-* clarified
-* important insight
-* Lumi found this
+- verified
+- clarified
+- important insight
+- Lumi found this
 
 Use sparingly.
 
@@ -1040,39 +1035,39 @@ Use sparingly.
 
 Meaning:
 
-* structure
-* framework
-* workspace
-* task/project container
+- structure
+- framework
+- workspace
+- task/project container
 
 ### Annotation dot
 
 Meaning:
 
-* evidence
-* source
-* comment
-* detail
+- evidence
+- source
+- comment
+- detail
 
 ### Line bracket
 
 Meaning:
 
-* grouping
-* section
-* report category
+- grouping
+- section
+- report category
 
 ## 9.3 Icon Examples
 
-* Daily Pulse: circle + small star
-* CEO Brief: document + star
-* Commitment: check line + deadline dot
-* Risk: amber marker + bracket
-* Decision: forked path + star
-* Project: L-frame + stacked cards
-* Recurring: loop arrow + small dot
-* Evidence: document + annotation dot
-* Chat: speech bubble + L-corner
+- Daily Pulse: circle + small star
+- CEO Brief: document + star
+- Commitment: check line + deadline dot
+- Risk: amber marker + bracket
+- Decision: forked path + star
+- Project: L-frame + stacked cards
+- Recurring: loop arrow + small dot
+- Evidence: document + annotation dot
+- Chat: speech bubble + L-corner
 
 ---
 
@@ -1089,8 +1084,8 @@ drop). The result is a tactile object you want to press, not a flat rectangle.
 
 ```css
 background-color: var(--color-lumi-blue);
-background-image: var(--gradient-primary);   /* approved button lighting */
-box-shadow: var(--shadow-button);            /* inner highlight + navy drop */
+background-image: var(--gradient-primary); /* approved button lighting */
+box-shadow: var(--shadow-button); /* inner highlight + navy drop */
 color: white;
 border: 1px solid color-mix(in oklch, var(--color-lumi-blue-active) 35%, transparent);
 border-radius: var(--radius-control);
@@ -1114,20 +1109,20 @@ letter-spacing: 0;
 
 Button size contract:
 
-| Size | Height | Padding | Font | Use |
-|---|---:|---:|---:|---|
-| `sm` | 32px | 12px | 13px / 550 | table rows, dense toolbars |
-| `md` | 40px | 16px | 14px / 550 | default product actions |
-| `lg` | 48px | 20px | 15px / 600 | hero, mobile primary actions |
-| `icon-sm` | 32px square | 0 | icon 16px | dense toolbars |
-| `icon-md` | 40px square | 0 | icon 18px | default icon actions |
+| Size      |      Height | Padding |       Font | Use                          |
+| --------- | ----------: | ------: | ---------: | ---------------------------- |
+| `sm`      |        32px |    12px | 13px / 550 | table rows, dense toolbars   |
+| `md`      |        40px |    16px | 14px / 550 | default product actions      |
+| `lg`      |        48px |    20px | 15px / 600 | hero, mobile primary actions |
+| `icon-sm` | 32px square |       0 |  icon 16px | dense toolbars               |
+| `icon-md` | 40px square |       0 |  icon 18px | default icon actions         |
 
 Button hierarchy:
 
-* One filled primary button per action cluster.
-* Secondary buttons can sit beside the primary, but never compete in fill.
-* Tertiary buttons are inline actions, not page-level CTAs.
-* Destructive actions never share the same visual weight as the safe primary
+- One filled primary button per action cluster.
+- Secondary buttons can sit beside the primary, but never compete in fill.
+- Tertiary buttons are inline actions, not page-level CTAs.
+- Destructive actions never share the same visual weight as the safe primary
   action unless the entire dialog is a destructive confirmation.
 
 ### Secondary Button
@@ -1179,20 +1174,20 @@ background: var(--color-surface-white);
 border: 1px solid var(--color-border);
 border-radius: var(--radius-card);
 padding: 20px;
-box-shadow: var(--shadow-card);     /* lit token — see §19 */
+box-shadow: var(--shadow-card); /* lit token — see §19 */
 ```
 
 Clickable rows and board cards lift 1px with `shadow-card-hover`; all others rest.
 
 Card density contract:
 
-| Card type | Padding | Radius | Border | Shadow | Use |
-|---|---:|---:|---|---|---|
-| Compact row card | 12-16px | 8px | 1px | `--shadow-card` | mobile list rows, task rows |
-| Standard card | 20px | 8px | 1px | `--shadow-card` | brief item, risk, decision |
-| Reading card | 24px | 8px | 1px | `--shadow-card` | CEO summary, evidence detail |
-| Empty-state card | 24-32px | 16px | 1px | `--shadow-card` | all-clear, no data yet |
-| Overlay card | 16-20px | 12px | 1px strong | `--shadow-overlay` | popover content |
+| Card type        | Padding | Radius | Border     | Shadow             | Use                          |
+| ---------------- | ------: | -----: | ---------- | ------------------ | ---------------------------- |
+| Compact row card | 12-16px |    8px | 1px        | `--shadow-card`    | mobile list rows, task rows  |
+| Standard card    |    20px |    8px | 1px        | `--shadow-card`    | brief item, risk, decision   |
+| Reading card     |    24px |    8px | 1px        | `--shadow-card`    | CEO summary, evidence detail |
+| Empty-state card | 24-32px |   16px | 1px        | `--shadow-card`    | all-clear, no data yet       |
+| Overlay card     | 16-20px |   12px | 1px strong | `--shadow-overlay` | popover content              |
 
 Card anatomy:
 
@@ -1215,9 +1210,10 @@ gap-meta-action: 16px;
 Clickable card state:
 
 ```css
-transition: transform var(--motion-fast) var(--ease-out),
-            box-shadow var(--motion-fast) var(--ease-out),
-            border-color var(--motion-fast) var(--ease-out);
+transition:
+  transform var(--motion-fast) var(--ease-out),
+  box-shadow var(--motion-fast) var(--ease-out),
+  border-color var(--motion-fast) var(--ease-out);
 hover: transform translateY(-1px);
 hover: box-shadow var(--shadow-card-hover);
 active: transform translateY(0);
@@ -1263,13 +1259,13 @@ padding: 12px;
 
 Input state contract:
 
-| State | Border | Shadow | Text |
-|---|---|---|---|
-| Rest | `--color-border` | `--shadow-input` | `--color-ink` |
-| Hover | `--color-border-strong` | `--shadow-input` | unchanged |
-| Focus | `--color-lumi-blue` + blue halo | input + focus ring | unchanged |
-| Error | `--color-risk-red` + red halo | input + destructive ring | error text below |
-| Disabled | `--color-border-subtle` | none | `--color-soft-slate` |
+| State    | Border                          | Shadow                   | Text                 |
+| -------- | ------------------------------- | ------------------------ | -------------------- |
+| Rest     | `--color-border`                | `--shadow-input`         | `--color-ink`        |
+| Hover    | `--color-border-strong`         | `--shadow-input`         | unchanged            |
+| Focus    | `--color-lumi-blue` + blue halo | input + focus ring       | unchanged            |
+| Error    | `--color-risk-red` + red halo   | input + destructive ring | error text below     |
+| Disabled | `--color-border-subtle`         | none                     | `--color-soft-slate` |
 
 Placeholder text must meet contrast expectations for helper text. Never use
 placeholder text as the label.
@@ -1279,17 +1275,17 @@ placeholder text as the label.
 ## 10.4 Badges — the "lit token" system
 
 > **The anti-slop rule.** Never use a flat pastel text pill. Lumi badges are layered,
-> scannable *lit tokens*, not one flat fill.
+> scannable _lit tokens_, not one flat fill.
 
 **Anatomy.** Every status badge is a **quad**, not one color:
 
-| Layer | Role | Token |
-|-------|------|-------|
-| **surface** | the chip body — a soft, desaturated tint | `--badge-{status}-surface` |
-| **ring** | a 1px *inset* hairline in the **same hue at low alpha** — identity, not a generic grey border | `--badge-{status}-ring` (`color-mix`, tracks the brand hue automatically) |
-| **dot** | a 5px **saturated** disc the eye locks onto first — instant scannability | `--badge-{status}-dot` |
-| **text** | AA-compliant strong ink of the hue | `--badge-{status}-text` |
-| **lit edge** | a 1px inner top highlight so the chip reads *lit from above*, not flat | `shadow-lit` |
+| Layer        | Role                                                                                          | Token                                                                     |
+| ------------ | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **surface**  | the chip body — a soft, desaturated tint                                                      | `--badge-{status}-surface`                                                |
+| **ring**     | a 1px _inset_ hairline in the **same hue at low alpha** — identity, not a generic grey border | `--badge-{status}-ring` (`color-mix`, tracks the brand hue automatically) |
+| **dot**      | a 5px **saturated** disc the eye locks onto first — instant scannability                      | `--badge-{status}-dot`                                                    |
+| **text**     | AA-compliant strong ink of the hue                                                            | `--badge-{status}-text`                                                   |
+| **lit edge** | a 1px inner top highlight so the chip reads _lit from above_, not flat                        | `shadow-lit`                                                              |
 
 Five families (`neutral · info · success · warning · danger`) define the quad in
 `index.css`; components reference token classes, never inline values.
@@ -1298,27 +1294,29 @@ Five families (`neutral · info · success · warning · danger`) define the qua
 tracking-0.01em / tabular-nums`: compact and readable. Grow with text scaling; interactive chips need the hit area in §16.3.
 
 **States (every badge earns them).**
+
 - **Resting:** surface + inset ring + lit edge + (status only) dot.
 - **Hover** (interactive badges — filters, links, removable tags): `brightness 0.985`
-  + a 1px lift (`-translate-y-px`). Calm, tactile, never a colour flash.
+  - a 1px lift (`-translate-y-px`). Calm, tactile, never a colour flash.
 - **Active:** settle back down (`translate-y-0`, `brightness 0.95`).
 - **Focus-visible:** 2px `--ring` halo at 2px offset — keyboard parity with buttons.
 
 **Variant → family map** (the only allowed status variants):
 
-| Variant | Family | Domain meaning |
-|---------|--------|----------------|
-| `status-open` | neutral | open / todo / draft / queued |
-| `status-in-progress` | info (blue) | active / in review / medium |
-| `status-done` | success (green) | done / approved / resolved / paid |
-| `status-overdue` · `status-amber` | warning (amber) | overdue / high / waiting |
-| `status-critical` | danger (red) | blocked / failed / rejected / critical |
+| Variant                           | Family          | Domain meaning                         |
+| --------------------------------- | --------------- | -------------------------------------- |
+| `status-open`                     | neutral         | open / todo / draft / queued           |
+| `status-in-progress`              | info (blue)     | active / in review / medium            |
+| `status-done`                     | success (green) | done / approved / resolved / paid      |
+| `status-overdue` · `status-amber` | warning (amber) | overdue / high / waiting               |
+| `status-critical`                 | danger (red)    | blocked / failed / rejected / critical |
 
 Generic counts/categories/tags use dotless `outline` / `secondary` lit-neutral chips
 (`bg-card`/`bg-secondary` + inset `ring-border` + `shadow-lit`) so tags never pose as status;
 `default` is solid brand.
 
 **Do / Don't.**
+
 - ✅ One dot, one hue, per status. ✅ The ring is the status hue, never plain grey.
 - ❌ No flat pastel fill with no ring or dot. ❌ No bright red unless truly critical.
 - ❌ Never hand-roll a `statusColors` map on a page.
@@ -1332,25 +1330,25 @@ status/severity/priority to a variant and automatically enables its status dot. 
 Mobile UI must express the same shadcn-style component contract as the web app.
 The implementation language differs, but the primitives do not.
 
-| Web primitive | Mobile KMP primitive | Native Android wrapper | Use for |
-|---|---|---|---|
-| `PageHeader` | `LumiPageTitle` | `LumiPageTitle` | Page title + optional description |
-| `SectionHeader` | `LumiSectionHeader` | `LumiSectionHeader` | One-message section dividers |
-| `Card` | `LumiCard` | `LumiCard` | Brief, task, risk, decision, pulse summaries |
-| `Button` default | `LumiPrimaryButton` | `LumiButton` | One primary screen action |
-| `Button` link/ghost | `LumiInlineAction` | `LumiTextButton` / `LumiInlineAction` | Inline row actions |
-| `Input` / `Textarea` | `LumiMultilineField` / field primitive | `LumiFormField` | Forms and Pulse answers |
-| `Badge` / `StatusBadge` | `LumiBadge` | `LumiBadge` | Status, counts, severity |
-| `EmptyState` | `LumiEmptyState` | `LumiEmptyState` | Purposeful empty and all-clear states |
-| Directory row | `LumiDirectoryRow` | `LumiRow` | Workspace rows and settings rows |
+| Web primitive           | Mobile KMP primitive                   | Native Android wrapper                | Use for                                      |
+| ----------------------- | -------------------------------------- | ------------------------------------- | -------------------------------------------- |
+| `PageHeader`            | `LumiPageTitle`                        | `LumiPageTitle`                       | Page title + optional description            |
+| `SectionHeader`         | `LumiSectionHeader`                    | `LumiSectionHeader`                   | One-message section dividers                 |
+| `Card`                  | `LumiCard`                             | `LumiCard`                            | Brief, task, risk, decision, pulse summaries |
+| `Button` default        | `LumiPrimaryButton`                    | `LumiButton`                          | One primary screen action                    |
+| `Button` link/ghost     | `LumiInlineAction`                     | `LumiTextButton` / `LumiInlineAction` | Inline row actions                           |
+| `Input` / `Textarea`    | `LumiMultilineField` / field primitive | `LumiFormField`                       | Forms and Pulse answers                      |
+| `Badge` / `StatusBadge` | `LumiBadge`                            | `LumiBadge`                           | Status, counts, severity                     |
+| `EmptyState`            | `LumiEmptyState`                       | `LumiEmptyState`                      | Purposeful empty and all-clear states        |
+| Directory row           | `LumiDirectoryRow`                     | `LumiRow`                             | Workspace rows and settings rows             |
 
 Mobile source of truth:
 
-* Shared cross-platform screens and reusable business UI live in
+- Shared cross-platform screens and reusable business UI live in
   `android/shared/src/commonMain/kotlin/com/locuno/lumi/shared/ui/`.
-* Android-only adapters live in `android/core/designsystem/`, but must mirror the
+- Android-only adapters live in `android/core/designsystem/`, but must mirror the
   same names, token values, shapes, and states.
-* iOS must consume the shared KMP screens when available through
+- iOS must consume the shared KMP screens when available through
   `ios/Lumi/KMP/SharedScreenBridge.swift`; SwiftUI-only fallbacks are temporary
   adapters, not a second product design system.
 
@@ -1377,13 +1375,13 @@ Use badges for status and risk — always the **lit-token quad** of §10.4 (surf
 same-hue inset ring + saturated dot + AA text + lit edge), never a flat fill. The
 canonical quads (web `index.css §19`, iOS `LumiBadge`, Android `LumiBadge`):
 
-| Family | surface | dot / ring hue | text |
-|--------|---------|----------------|------|
-| neutral (open) | `#F2F4F7` | slate | `#344054` |
-| info (in progress) | `lumi-blue-soft` | `lumi-blue` | `lumi-blue` |
-| success (done) | `green-soft` | `success-green` | `success-green` |
-| warning (overdue) | `amber-soft` | `signal-amber` | `#9A5B00` (AA) |
-| danger (critical) | `red-soft` | `risk-red` | `risk-red` |
+| Family             | surface          | dot / ring hue  | text            |
+| ------------------ | ---------------- | --------------- | --------------- |
+| neutral (open)     | `#F2F4F7`        | slate           | `#344054`       |
+| info (in progress) | `lumi-blue-soft` | `lumi-blue`     | `lumi-blue`     |
+| success (done)     | `green-soft`     | `success-green` | `success-green` |
+| warning (overdue)  | `amber-soft`     | `signal-amber`  | `#9A5B00` (AA)  |
+| danger (critical)  | `red-soft`       | `risk-red`      | `risk-red`      |
 
 Do not use bright red unless critical. The dot is the saturated hue; the ring is
 the same hue at low alpha (`color-mix`), never plain grey.
@@ -1399,13 +1397,13 @@ Mobile is a first-class executive surface, not a companion view.
 
 Rules:
 
-* **One-handed operation:** reach primary actions on common phones; use bottom bars/sheets when central.
-* **Native touch targets:** ≥44pt iOS, ≥48dp Android unless the primitive is larger.
-* **Cards over squeezed tables:** tables that cannot retain title, owner, status, due/age, and action become cards.
-* **Evidence stays visible:** source/confidence need a compact row or disclosure, never an unlabeled tiny icon.
-* **Design network states:** loading, retry, stale, offline, and denied must match the happy path.
-* **Honor keyboard/safe areas:** submit stays uncovered and active fields visible.
-* **Resist locale pressure:** Vietnamese fits navigation, cards, buttons, and empties without shrinking type.
+- **One-handed operation:** reach primary actions on common phones; use bottom bars/sheets when central.
+- **Native touch targets:** ≥44pt iOS, ≥48dp Android unless the primitive is larger.
+- **Cards over squeezed tables:** tables that cannot retain title, owner, status, due/age, and action become cards.
+- **Evidence stays visible:** source/confidence need a compact row or disclosure, never an unlabeled tiny icon.
+- **Design network states:** loading, retry, stale, offline, and denied must match the happy path.
+- **Honor keyboard/safe areas:** submit stays uncovered and active fields visible.
+- **Resist locale pressure:** Vietnamese fits navigation, cards, buttons, and empties without shrinking type.
 
 Mobile polish test:
 
@@ -1422,20 +1420,20 @@ Tables should be functional, not spreadsheet-like.
 
 Use for:
 
-* Tasks
-* Commitments
-* Risks
-* Decisions
-* Projects
+- Tasks
+- Commitments
+- Risks
+- Decisions
+- Projects
 
 Rules:
 
-* Row height minimum 52px
-* Strong title column
-* Subtle metadata
-* Sticky header if table is long
-* Use badges for status
-* Avoid excessive grid lines
+- Row height minimum 52px
+- Strong title column
+- Subtle metadata
+- Sticky header if table is long
+- Use badges for status
+- Avoid excessive grid lines
 
 Table border:
 
@@ -1497,11 +1495,11 @@ Authored empty state, never blank: icon, title, one-line population explanation,
 List and digest items use a **3px inline-start status-hue rail** for pre-reading triage. Only
 attention levels get one; calm items stay rail-less, applying the §8.3 vocabulary to rows.
 
-| Level | Rail | Used for |
-|-------|------|----------|
-| Danger | `border-inline-start: var(--border-rail) solid var(--color-risk-red)` | critical risk, failed action, destructive confirmation |
-| Attention | `border-inline-start: var(--border-rail) solid var(--color-signal-amber)` | overdue, waiting, high priority, review needed |
-| Calm | *(no rail)* | everything routine |
+| Level     | Rail                                                                      | Used for                                               |
+| --------- | ------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Danger    | `border-inline-start: var(--border-rail) solid var(--color-risk-red)`     | critical risk, failed action, destructive confirmation |
+| Attention | `border-inline-start: var(--border-rail) solid var(--color-signal-amber)` | overdue, waiting, high priority, review needed         |
+| Calm      | _(no rail)_                                                               | everything routine                                     |
 
 Pair rails with **ranking** (§4.3): railed items lead so a digest reads in priority order.
 Today is the ranked-and-railed reference; Risks, Decisions, and Settings danger use the same
@@ -1513,26 +1511,26 @@ lit-token quad hues (§10.4), never per-surface severity colors.
 
 Every Lumi surface must know which operating job it serves:
 
-| Surface job | Design answer |
-|---|---|
-| See clearly | summary first, ranked items, evidence nearby |
-| Decide fast | one primary action, options visible, owner and deadline clear |
+| Surface job      | Design answer                                                    |
+| ---------------- | ---------------------------------------------------------------- |
+| See clearly      | summary first, ranked items, evidence nearby                     |
+| Decide fast      | one primary action, options visible, owner and deadline clear    |
 | Trust the signal | source, timestamp, confidence, and provenance close to the claim |
-| Capture signal | short form, visible labels, calm save state |
-| Chase and verify | status, owner, next action, and follow-up age visible |
+| Capture signal   | short form, visible labels, calm save state                      |
+| Chase and verify | status, owner, next action, and follow-up age visible            |
 
 Design from the operating question inward, then reveal the data needed to answer it.
 Sections 11.1–11.10 are companion examples, not a screen backlog for Lumi Agents.
 
 For Lumi Agents, apply the same compositions to the existing runtime contracts:
 
-| User job | Required visible context |
-|---|---|
-| Delegate | goal, desired output, active Project/environment, scope and constraints |
-| Supervise | observed phase, milestones, affected system, budget, next meaningful event |
-| Approve | exact business effect, account/target/destination, material value, expiry, safe rejection |
-| Recover | what happened, known vs unknown effects, preserved work, owner, safe next choice |
-| Review result | artifact/change set, evidence, validation status, unresolved items, next action |
+| User job      | Required visible context                                                                  |
+| ------------- | ----------------------------------------------------------------------------------------- |
+| Delegate      | goal, desired output, active Project/environment, scope and constraints                   |
+| Supervise     | observed phase, milestones, affected system, budget, next meaningful event                |
+| Approve       | exact business effect, account/target/destination, material value, expiry, safe rejection |
+| Recover       | what happened, known vs unknown effects, preserved work, owner, safe next choice          |
+| Review result | artifact/change set, evidence, validation status, unresolved items, next action           |
 
 Keep planned, attempted, executed, and verified distinct. A source-backed claim is
 not automatically verified; human approval is not execution; execution is not
@@ -1542,16 +1540,16 @@ requested job complete when its required verification passes.
 
 ## Shared state contract
 
-| State | What the user needs |
-|---|---|
-| First use / empty | what belongs here and one real setup action; never fake records |
-| Loading | stable space and the observed activity; no fabricated progress percentage |
-| Waiting for approval | action summary and approve/reject; no silent timeout approval |
-| Partial / stale / offline | visible limit or timestamp, preserved result/input, safe continuation |
-| Failed / denied | specific cause and remedy; retry only when policy and effect state permit |
-| Ambiguous effect | explain that the action may have happened; verify before offering replay |
-| Cancelled | distinguish stopped work from already completed or in-flight effects |
-| Verified result | inspectable evidence, useful output, and any remaining exceptions |
+| State                     | What the user needs                                                       |
+| ------------------------- | ------------------------------------------------------------------------- |
+| First use / empty         | what belongs here and one real setup action; never fake records           |
+| Loading                   | stable space and the observed activity; no fabricated progress percentage |
+| Waiting for approval      | action summary and approve/reject; no silent timeout approval             |
+| Partial / stale / offline | visible limit or timestamp, preserved result/input, safe continuation     |
+| Failed / denied           | specific cause and remedy; retry only when policy and effect state permit |
+| Ambiguous effect          | explain that the action may have happened; verify before offering replay  |
+| Cancelled                 | distinguish stopped work from already completed or in-flight effects      |
+| Verified result           | inspectable evidence, useful output, and any remaining exceptions         |
 
 Implement these through existing primitives, not a new status framework. Preserve
 focus, selection, scroll, and unsaved input across refresh and recovery. Notifications
@@ -1696,14 +1694,14 @@ AI-generated items look accountable, never magical.
 
 Every AI insight, risk, commitment, and decision request has a visible state:
 
-| State | Visual treatment | Copy behavior |
-|---|---|---|
-| Source-backed | normal card, evidence chip, timestamp | confident, concrete |
-| Low confidence | neutral or amber soft badge, confirm action | cautious, asks for review |
-| Missing evidence | empty/evidence-needed state, no strong claim | explains what data is missing |
-| Conflicting evidence | comparison layout or warning rail | names the conflict plainly |
-| Stale evidence | age visible, refresh or request update | avoids current-tense claims |
-| Confirmed by human | success badge or resolved state | records owner and time |
+| State                | Visual treatment                             | Copy behavior                 |
+| -------------------- | -------------------------------------------- | ----------------------------- |
+| Source-backed        | normal card, evidence chip, timestamp        | confident, concrete           |
+| Low confidence       | neutral or amber soft badge, confirm action  | cautious, asks for review     |
+| Missing evidence     | empty/evidence-needed state, no strong claim | explains what data is missing |
+| Conflicting evidence | comparison layout or warning rail            | names the conflict plainly    |
+| Stale evidence       | age visible, refresh or request update       | avoids current-tense claims   |
+| Confirmed by human   | success badge or resolved state              | records owner and time        |
 
 Never make AI look more certain than its evidence; an honest, useful low-confidence state
 is more premium than a polished hallucination.
@@ -1716,29 +1714,29 @@ Use charts sparingly; Lumi is not a dashboard.
 
 Companion chart examples (choose only when they answer the current user’s question):
 
-* Small weekly pulse completion trend
-* Overdue tasks by team
-* Risks by type
-* Decisions waiting by age
-* Commitments resolved vs overdue
+- Small weekly pulse completion trend
+- Overdue tasks by team
+- Risks by type
+- Decisions waiting by age
+- Commitments resolved vs overdue
 
 Style:
 
-* Minimal axes
-* No rainbow palettes
-* No 3D charts
-* No decorative gradients
-* Use Lumi Blue, Civic Navy, Archive Gray, Signal Amber
+- Minimal axes
+- No rainbow palettes
+- No 3D charts
+- No decorative gradients
+- Use Lumi Blue, Civic Navy, Archive Gray, Signal Amber
 
 Default chart colors:
 
 ```css
 --chart-primary: #006093;
---chart-secondary: #102A43;
---chart-muted: #CBD3DF;
---chart-warning: #F4A62A;
---chart-risk: #C2410C;
---chart-success: #1F7A4D;
+--chart-secondary: #102a43;
+--chart-muted: #cbd3df;
+--chart-warning: #f4a62a;
+--chart-risk: #c2410c;
+--chart-success: #1f7a4d;
 ```
 
 ---
@@ -1754,27 +1752,27 @@ precision, or improvement the data cannot establish.
 
 Use:
 
-* Documents
-* Briefing sheets
-* Operating ledgers
-* Checklists
-* Evidence markers
-* Thin annotation circles
-* Structured work surfaces
-* Simple geometric diagrams
-* Paper textures
-* Editorial layouts
+- Documents
+- Briefing sheets
+- Operating ledgers
+- Checklists
+- Evidence markers
+- Thin annotation circles
+- Structured work surfaces
+- Simple geometric diagrams
+- Paper textures
+- Editorial layouts
 
 Avoid:
 
-* Robots
-* Neural networks
-* Holograms
-* AI glow
-* 3D mascots
-* Floating dashboards
-* Generic people illustrations
-* Hyper-polished startup illustration packs
+- Robots
+- Neural networks
+- Holograms
+- AI glow
+- 3D mascots
+- Floating dashboards
+- Generic people illustrations
+- Hyper-polished startup illustration packs
 
 ## 13.2 Photography
 
@@ -1782,20 +1780,20 @@ If using photography:
 
 Use:
 
-* Real work environments
-* Natural light
-* Editorial composition
-* Real notebooks, papers, laptops
-* Human hands reviewing documents
-* CEO/founder desk scenes
+- Real work environments
+- Natural light
+- Editorial composition
+- Real notebooks, papers, laptops
+- Human hands reviewing documents
+- CEO/founder desk scenes
 
 Avoid:
 
-* Stock call-center teams
-* Overly smiling office people
-* Fake diversity collage
-* Futuristic blue-light rooms
-* Corporate handshake photos
+- Stock call-center teams
+- Overly smiling office people
+- Fake diversity collage
+- Futuristic blue-light rooms
+- Corporate handshake photos
 
 ---
 
@@ -1805,11 +1803,11 @@ Motion should be calm and functional.
 
 Use motion for:
 
-* Loading brief generation
-* Showing AI extraction progress
-* Expanding evidence
-* Revealing brief sections
-* Completing tasks
+- Loading brief generation
+- Showing AI extraction progress
+- Expanding evidence
+- Revealing brief sections
+- Completing tasks
 
 Motion duration:
 
@@ -1827,11 +1825,11 @@ cubic-bezier(0.2, 0.8, 0.2, 1)
 
 Avoid:
 
-* Bouncy motion
-* Sparkle animation
-* AI typing theatrics
-* Excessive loading animations
-* Looping decorative motion
+- Bouncy motion
+- Sparkle animation
+- AI typing theatrics
+- Excessive loading animations
+- Looping decorative motion
 
 ## 14.1 Layout stability
 
@@ -1863,8 +1861,6 @@ No magical animation needed.
 
 ---
 
-
-
 ### 14.2 Parallax and purposeful alternatives
 
 Updated 2026-10-03. This is a design contract for future changes, not evidence that effects are shipped. Existing brand, material, content, safety, and platform rules remain authoritative.
@@ -1875,14 +1871,14 @@ Updated 2026-10-03. This is a design contract for future changes, not evidence t
 
 **Lumi Agents scope:** the working UI prioritizes immediate, calm feedback. Never apply parallax, kinetic text, narrative pinning, or decorative 3D to sessions, streamed output, tool logs, diffs, approval/permission controls, or workspace navigation. Preserve user scroll position and focus. Reserve optional storytelling for a separate explanatory surface; it cannot imply a runtime capability or observed tool progress.
 
-| Option | Appropriate use | Limits and static equivalent |
-| --- | --- | --- |
-| Traditional parallax | An optional depth cue in one explanatory marketing composition, where existing surface rules permit it. | Relative travel <=12px; never move essential text or controls. Disable on narrow viewports, coarse pointers, and reduced motion. No full-screen camera travel or fixed-background dependency. |
-| Scroll-driven animations | Connect stages of a workflow or reveal an illustrative artifact as its section enters view. | Prefer transform/opacity: travel <=16px, scale 0.98–1.02. Keep content visible by default. Rotation, SVG morphing, and animated masks need explanatory value and profiling; they are not defaults. |
-| Immersive 3D / WebGL | An optional explorable object when depth helps the visitor understand something a static view cannot. | Prefer HTML/SVG or modest CSS perspective first. Load 3D only for a justified, measured use; provide a complete static equivalent and accessible controls. Existing prohibitions on decorative 3D remain in force. |
-| Kinetic / variable typography | Brief emphasis on one short marketing phrase. | Use only axes supported by the existing font. Keep body, prices, metrics, evidence, primary headlines, and CTA labels stable. No per-letter motion, shifting wraps, clipped diacritics, or continuous font-weight animation. |
-| Sticky reveal / pinning | Hold an illustration alongside naturally scrolling explanatory steps. | Prefer CSS sticky; at most one narrative section. Release at its container boundary and use normal flow on short/narrow viewports. No wheel/touch interception, artificial scroll runway, or cards covering readable content. |
-| Micro-interactions | Focus, press, disclosure, selected state, validation, and actual request outcomes. | Reuse existing timing tokens and <=1px control lift. Supply equivalent touch/keyboard feedback. No hover-only information, cursor chasing, or decorative loops. |
+| Option                        | Appropriate use                                                                                         | Limits and static equivalent                                                                                                                                                                                                  |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Traditional parallax          | An optional depth cue in one explanatory marketing composition, where existing surface rules permit it. | Relative travel <=12px; never move essential text or controls. Disable on narrow viewports, coarse pointers, and reduced motion. No full-screen camera travel or fixed-background dependency.                                 |
+| Scroll-driven animations      | Connect stages of a workflow or reveal an illustrative artifact as its section enters view.             | Prefer transform/opacity: travel <=16px, scale 0.98–1.02. Keep content visible by default. Rotation, SVG morphing, and animated masks need explanatory value and profiling; they are not defaults.                            |
+| Immersive 3D / WebGL          | An optional explorable object when depth helps the visitor understand something a static view cannot.   | Prefer HTML/SVG or modest CSS perspective first. Load 3D only for a justified, measured use; provide a complete static equivalent and accessible controls. Existing prohibitions on decorative 3D remain in force.            |
+| Kinetic / variable typography | Brief emphasis on one short marketing phrase.                                                           | Use only axes supported by the existing font. Keep body, prices, metrics, evidence, primary headlines, and CTA labels stable. No per-letter motion, shifting wraps, clipped diacritics, or continuous font-weight animation.  |
+| Sticky reveal / pinning       | Hold an illustration alongside naturally scrolling explanatory steps.                                   | Prefer CSS sticky; at most one narrative section. Release at its container boundary and use normal flow on short/narrow viewports. No wheel/touch interception, artificial scroll runway, or cards covering readable content. |
+| Micro-interactions            | Focus, press, disclosure, selected state, validation, and actual request outcomes.                      | Reuse existing timing tokens and <=1px control lift. Supply equivalent touch/keyboard feedback. No hover-only information, cursor chasing, or decorative loops.                                                               |
 
 #### Implementation rules
 
@@ -1909,43 +1905,42 @@ Reviewed 2026-10-03. Technical references support implementation; trend material
 - [MDN: WebGL best practices](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices) — device limits and resource costs.
 - [Figma: Web design trends](https://www.figma.com/resource-library/web-design-trends/) — inspiration for typography, motion, and immersive elements.
 
-
 # 15. Voice and Copy
 
 ## 15.1 Brand Voice
 
 Lumi speaks like:
 
-* A precise operating assistant
-* A calm chief of staff
-* A trustworthy analyst
-* A clear editor
+- A precise operating assistant
+- A calm chief of staff
+- A trustworthy analyst
+- A clear editor
 
 Lumi does not speak like:
 
-* A motivational coach
-* A hype AI tool
-* A playful chatbot
-* A corporate consultant using jargon
+- A motivational coach
+- A hype AI tool
+- A playful chatbot
+- A corporate consultant using jargon
 
 ## 15.2 Copy Rules
 
 Use:
 
-* Short sentences
-* Specific nouns
-* Action verbs
-* Clear ownership
-* Evidence-based claims
+- Short sentences
+- Specific nouns
+- Action verbs
+- Clear ownership
+- Evidence-based claims
 
 Avoid:
 
-* “Unlock productivity”
-* “Supercharge your team”
-* “10x your workflow”
-* “AI-powered magic”
-* “Revolutionize operations”
-* “Seamlessly leverage synergy”
+- “Unlock productivity”
+- “Supercharge your team”
+- “10x your workflow”
+- “AI-powered magic”
+- “Revolutionize operations”
+- “Seamlessly leverage synergy”
 
 ## 15.3 Preferred Language
 
@@ -1997,10 +1992,10 @@ Lumi must feel premium because it is usable.
 
 ## 16.1 Contrast
 
-* Body text must meet WCAG AA
-* Primary blue on white must pass
-* Avoid pale gray text
-* Do not use color alone to communicate risk
+- Body text must meet WCAG AA
+- Primary blue on white must pass
+- Avoid pale gray text
+- Do not use color alone to communicate risk
 
 Require measured evidence, not a blanket compliance claim. Normal text needs at
 least 4.5:1 and qualifying large text at least 3:1. Essential control/state indicators
@@ -2045,12 +2040,12 @@ See [target size](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimu
 
 All app controls must be reachable by keyboard:
 
-* buttons
-* links
-* form fields
-* modals
-* dropdowns
-* chat input
+- buttons
+- links
+- form fields
+- modals
+- dropdowns
+- chat input
 
 Use semantic buttons/links and programmatic labels. Associate hints/errors with
 inputs; give icon actions accessible names and meaningful tables headers. Dialogs
@@ -2067,10 +2062,21 @@ highlight track one colour:
 
 ```css
 :focus-visible {
-  outline: 2px solid var(--color-lumi-blue);
+  outline: 2px solid var(--color-brand);
   outline-offset: 2px;
 }
+
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight;
+  }
+}
 ```
+
+In the shipped `packages/ui` stylesheet the semantic token is `--color-brand` (`#006093` in
+`theme-lumi`); `--color-lumi-blue` is the brand-palette name and is not defined there, and an
+undefined `var()` invalidates the whole `outline` shorthand. Never reintroduce a global
+`outline: none` / `box-shadow: none !important` on focus, including under `forced-colors`.
 
 **Touch feedback.** On touch devices the browser's default tap highlight is an opaque
 grey box that reads as unfinished. Replace it with a faint branded tint rather than
@@ -2096,20 +2102,20 @@ Avoid a typical AI-startup landing page.
 
 Avoid:
 
-* Big 3D orb
-* Gradient AI brain
-* Floating cards everywhere
-* Cartoon team workflow
-* Fake dashboard overload
+- Big 3D orb
+- Gradient AI brain
+- Floating cards everywhere
+- Cartoon team workflow
+- Fake dashboard overload
 
 Use:
 
-* Strong typography
-* Warm paper background
-* Product screenshots
-* Short CEO-focused copy
-* Evidence-based sections
-* Calm structure
+- Strong typography
+- Warm paper background
+- Product screenshots
+- Short CEO-focused copy
+- Evidence-based sections
+- Calm structure
 
 ## 17.2 Hero
 
@@ -2232,10 +2238,10 @@ Default member route:
 
 Member should see:
 
-* Today’s tasks
-* Daily pulse reminder
-* Assigned commitments
-* Overdue items
+- Today’s tasks
+- Daily pulse reminder
+- Assigned commitments
+- Overdue items
 
 ---
 
@@ -2246,54 +2252,57 @@ Use this base token file.
 ```css
 :root {
   /* Brand — anchored to the OKLCH blue ramp (§5.3) */
-  --color-lumi-blue: #006093;          /* blue-600 */
-  --color-lumi-blue-hover: #004F80;    /* blue-700 */
-  --color-lumi-blue-active: #003E6A;   /* blue-800 */
-  --color-lumi-blue-soft: #E4F3FC;
+  --color-lumi-blue: #006093; /* blue-600 */
+  --color-lumi-blue-hover: #004f80; /* blue-700 */
+  --color-lumi-blue-active: #003e6a; /* blue-800 */
+  --color-lumi-blue-soft: #e4f3fc;
 
   /* Text */
-  --color-civic-navy: #102A43;
+  --color-civic-navy: #102a43;
   --color-ink: #172033;
-  --color-soft-slate: #5E6677;         /* AA ≥4.5:1 on paper */
+  --color-soft-slate: #5e6677; /* AA ≥4.5:1 on paper */
 
   /* Surfaces */
-  --color-paper-white: #F4F0E8;
-  --color-surface-white: #FFFFFF;
-  --color-archive-gray: #E7EAF0;
-  --color-border-subtle: #E7EAF0;
-  --color-border: #D9DEE8;
-  --color-border-strong: #C8D0DE;
+  --color-paper-white: #f4f0e8;
+  --color-surface-white: #ffffff;
+  --color-archive-gray: #e7eaf0;
+  --color-border-subtle: #e7eaf0;
+  --color-border: #d9dee8;
+  --color-border-strong: #c8d0de;
 
   /* States */
-  --color-signal-amber: #F4A62A;
-  --color-amber-soft: #FFF4DC;
-  --color-risk-red: #C2410C;
-  --color-red-soft: #FFF1EC;
-  --color-success-green: #1F7A4D;
-  --color-green-soft: #E9F7EF;
+  --color-signal-amber: #f4a62a;
+  --color-amber-soft: #fff4dc;
+  --color-risk-red: #c2410c;
+  --color-red-soft: #fff1ec;
+  --color-success-green: #1f7a4d;
+  --color-green-soft: #e9f7ef;
 
   /* Dark-ground status tints (§5.5). Web/print sales surfaces only — these are
      deliberately OUTSIDE the §19.1 platform-parity contract: no native shell has
      a navy panel, so mirroring them would add dead tokens to every platform. */
-  --color-amber-on-navy: #F4A62A;
-  --color-red-on-navy: #FF9E7A;
-  --color-green-on-navy: #6FD39F;
+  --color-amber-on-navy: #f4a62a;
+  --color-red-on-navy: #ff9e7a;
+  --color-green-on-navy: #6fd39f;
 
   /* Typography — Geist (one brand family, display = weight/tracking; §6.1).
      Noto families are a named glyph fallback (OS-provided), never self-hosted. */
-  --font-sans: Geist, "Noto Sans", "Noto Sans Thai", "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans JP", "Noto Sans KR", "Noto Sans SC", "Noto Sans TC", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-sans:
+    Geist, "Noto Sans", "Noto Sans Thai", "Noto Sans Arabic", "Noto Sans Devanagari",
+    "Noto Sans JP", "Noto Sans KR", "Noto Sans SC", "Noto Sans TC", ui-sans-serif, system-ui,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-display: var(--font-sans);
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
 
   /* Fluid type scale — clamp(min, preferred, max); ~1.2 minor third (§6.2) */
-  --text-xs: clamp(0.75rem, 0.73rem + 0.10vw, 0.8125rem);
+  --text-xs: clamp(0.75rem, 0.73rem + 0.1vw, 0.8125rem);
   --text-sm: clamp(0.8125rem, 0.79rem + 0.12vw, 0.875rem);
   --text-base: clamp(0.9375rem, 0.91rem + 0.16vw, 1rem);
   --text-lg: clamp(1.0625rem, 1.01rem + 0.28vw, 1.1875rem);
   --text-xl: clamp(1.25rem, 1.16rem + 0.45vw, 1.5rem);
-  --text-2xl: clamp(1.5rem, 1.34rem + 0.80vw, 2rem);
-  --text-3xl: clamp(1.875rem, 1.60rem + 1.35vw, 2.75rem);
-  --text-display: clamp(2.5rem, 1.90rem + 3.00vw, 4.5rem);
+  --text-2xl: clamp(1.5rem, 1.34rem + 0.8vw, 2rem);
+  --text-3xl: clamp(1.875rem, 1.6rem + 1.35vw, 2.75rem);
+  --text-display: clamp(2.5rem, 1.9rem + 3vw, 4.5rem);
 
   /* Letter-spacing — tighten as type grows */
   --tracking-tight: -0.02em;
@@ -2332,9 +2341,9 @@ Use this base token file.
 
   /* Elevation — navy-tinted 4-tier ramp (§8.3) */
   --elevation-1: 0 1px 2px rgba(16, 42, 67, 0.05);
-  --elevation-2: 0 8px 24px -6px rgba(16, 42, 67, 0.10), 0 2px 6px -2px rgba(16, 42, 67, 0.06);
+  --elevation-2: 0 8px 24px -6px rgba(16, 42, 67, 0.1), 0 2px 6px -2px rgba(16, 42, 67, 0.06);
   --elevation-3: 0 16px 40px -8px rgba(16, 42, 67, 0.14), 0 4px 10px -4px rgba(16, 42, 67, 0.08);
-  --elevation-4: 0 28px 60px -12px rgba(16, 42, 67, 0.20), 0 8px 18px -6px rgba(16, 42, 67, 0.10);
+  --elevation-4: 0 28px 60px -12px rgba(16, 42, 67, 0.2), 0 8px 18px -6px rgba(16, 42, 67, 0.1);
 
   /* Lit tokens — lighting, not just elevation (§8.3 / §10.1 / §10.2). Each pairs
      an inner top highlight (lit from above) with a navy drop:
@@ -2345,21 +2354,49 @@ Use this base token file.
        shadow-input   — the recessed inverse, for form fields
        shadow-overlay — floating panels (selects, popovers, dropdowns, the dock)
        shadow-modal   — dialogs, command palette, sheets */
-  --shadow-lit: inset 0 1px 0 0 color-mix(in oklch, white 70%, transparent), inset 0 -1px 1px 0 color-mix(in oklch, var(--color-civic-navy) 5%, transparent);
-  --shadow-card: inset 0 1px 0 0 color-mix(in oklch, white 60%, transparent), 0 1px 2px -1px color-mix(in oklch, var(--color-civic-navy) 8%, transparent), 0 8px 20px -10px color-mix(in oklch, var(--color-civic-navy) 10%, transparent);
-  --shadow-card-hover: inset 0 1px 0 0 color-mix(in oklch, white 68%, transparent), 0 2px 6px -2px color-mix(in oklch, var(--color-civic-navy) 10%, transparent), 0 12px 28px -14px color-mix(in oklch, var(--color-civic-navy) 14%, transparent);
-  --shadow-raised: inset 0 1px 0 0 color-mix(in oklch, white 72%, transparent), 0 8px 24px -6px color-mix(in oklch, var(--color-civic-navy) 10%, transparent), 0 2px 6px -2px color-mix(in oklch, var(--color-civic-navy) 6%, transparent);
-  --shadow-button: inset 0 1px 0 0 color-mix(in oklch, white 22%, transparent), 0 1px 2px 0 color-mix(in oklch, var(--color-civic-navy) 22%, transparent);
+  --shadow-lit:
+    inset 0 1px 0 0 color-mix(in oklch, white 70%, transparent),
+    inset 0 -1px 1px 0 color-mix(in oklch, var(--color-civic-navy) 5%, transparent);
+  --shadow-card:
+    inset 0 1px 0 0 color-mix(in oklch, white 60%, transparent),
+    0 1px 2px -1px color-mix(in oklch, var(--color-civic-navy) 8%, transparent),
+    0 8px 20px -10px color-mix(in oklch, var(--color-civic-navy) 10%, transparent);
+  --shadow-card-hover:
+    inset 0 1px 0 0 color-mix(in oklch, white 68%, transparent),
+    0 2px 6px -2px color-mix(in oklch, var(--color-civic-navy) 10%, transparent),
+    0 12px 28px -14px color-mix(in oklch, var(--color-civic-navy) 14%, transparent);
+  --shadow-raised:
+    inset 0 1px 0 0 color-mix(in oklch, white 72%, transparent),
+    0 8px 24px -6px color-mix(in oklch, var(--color-civic-navy) 10%, transparent),
+    0 2px 6px -2px color-mix(in oklch, var(--color-civic-navy) 6%, transparent);
+  --shadow-button:
+    inset 0 1px 0 0 color-mix(in oklch, white 22%, transparent),
+    0 1px 2px 0 color-mix(in oklch, var(--color-civic-navy) 22%, transparent);
   --shadow-input: inset 0 1px 1px 0 color-mix(in oklch, var(--color-civic-navy) 4%, transparent);
-  --shadow-overlay: inset 0 1px 0 0 color-mix(in oklch, white 75%, transparent), 0 16px 40px -8px color-mix(in oklch, var(--color-civic-navy) 14%, transparent), 0 4px 10px -4px color-mix(in oklch, var(--color-civic-navy) 8%, transparent);
-  --shadow-modal: inset 0 1px 0 0 color-mix(in oklch, white 80%, transparent), 0 28px 60px -12px color-mix(in oklch, var(--color-civic-navy) 20%, transparent), 0 8px 18px -6px color-mix(in oklch, var(--color-civic-navy) 10%, transparent);
+  --shadow-overlay:
+    inset 0 1px 0 0 color-mix(in oklch, white 75%, transparent),
+    0 16px 40px -8px color-mix(in oklch, var(--color-civic-navy) 14%, transparent),
+    0 4px 10px -4px color-mix(in oklch, var(--color-civic-navy) 8%, transparent);
+  --shadow-modal:
+    inset 0 1px 0 0 color-mix(in oklch, white 80%, transparent),
+    0 28px 60px -12px color-mix(in oklch, var(--color-civic-navy) 20%, transparent),
+    0 8px 18px -6px color-mix(in oklch, var(--color-civic-navy) 10%, transparent);
 
   /* Approved control lighting — the primary-button sheen (§10.1) */
-  --gradient-primary: linear-gradient(180deg, color-mix(in oklch, white 10%, var(--color-lumi-blue)) 0%, var(--color-lumi-blue) 52%, var(--color-lumi-blue-hover) 100%);
+  --gradient-primary: linear-gradient(
+    180deg,
+    color-mix(in oklch, white 10%, var(--color-lumi-blue)) 0%,
+    var(--color-lumi-blue) 52%,
+    var(--color-lumi-blue-hover) 100%
+  );
 
   /* Canvas atmosphere — a fixed, very soft top-down light under the paper grain so
      the background reads as a lit surface in a calm room, never a dead sheet (§1.2). */
-  --canvas-glow: radial-gradient(115% 50% at 50% -6%, color-mix(in oklch, white 60%, transparent) 0%, transparent 58%);
+  --canvas-glow: radial-gradient(
+    115% 50% at 50% -6%,
+    color-mix(in oklch, white 60%, transparent) 0%,
+    transparent 58%
+  );
 
   /* Liquid glass — translucent floating-chrome materials (§8.0). Derived from the
      existing surface/border tokens; adds no palette. Web/desktop-webview materials,
@@ -2381,8 +2418,8 @@ Use this base token file.
 
 > Companion web implementations may define full OKLCH ramps (`--blue-50…950`, etc.) and a
 > `@media (color-gamut: p3)` enrichment block — see §5.3 and
-> `frontend/src/index.css`. Those are the *generator*; the hexes above are the
-> *contract* every platform mirrors.
+> `frontend/src/index.css`. Those are the _generator_; the hexes above are the
+> _contract_ every platform mirrors.
 
 ## 19.1 Cross-Platform Token Parity (contract)
 
@@ -2393,27 +2430,27 @@ coordinate every affected project/platform before release and record each adopti
 Separate repositories may require linked PRs; do not claim cross-project parity
 from a change in this file alone. Palette changes require explicit brand approval.
 
-| Token | Web (`index.css`) | iOS / Mac / Watch (`Color`) | Android (`Color.kt`) |
-|-------|-------------------|-----------------------------|----------------------|
-| lumi-blue | `#006093` | `lumiBlue` | `LumiBlue` |
-| lumi-blue-hover | `#004F80` | `lumiBlueHover` | `LumiBlueHover` |
-| lumi-blue-active | `#003E6A` | `lumiBlueActive` | `LumiBlueActive` |
-| lumi-blue-soft | `#E4F3FC` | `lumiBlueSoft` | `LumiBlueSoft` |
-| civic-navy | `#102A43` | `civicNavy` | `CivicNavy` |
-| ink | `#172033` | `ink` | `Ink` |
-| soft-slate | `#5E6677` | `softSlate` | `SoftSlate` |
-| paper-white | `#F4F0E8` | `paperWhite` | `PaperWhite` |
-| surface-white | `#FFFFFF` | `surfaceWhite` | `SurfaceWhite` |
-| archive-gray | `#E7EAF0` | `archiveGray` | `ArchiveGray` |
-| border-subtle | `#E7EAF0` | `borderSubtle` | `BorderSubtle` |
-| border | `#D9DEE8` | `border` | `Border` |
-| border-strong | `#C8D0DE` | `borderStrong` | `BorderStrong` |
-| signal-amber | `#F4A62A` | `signalAmber` | `SignalAmber` |
-| amber-soft | `#FFF4DC` | `warningBanner` | `AmberSoft` |
-| risk-red | `#C2410C` | `riskRed` | `RiskRed` |
-| red-soft | `#FFF1EC` | — | `RedSoft` |
-| success-green | `#1F7A4D` | `successGreen` | `SuccessGreen` |
-| green-soft | `#E9F7EF` | — | `GreenSoft` |
+| Token            | Web (`index.css`) | iOS / Mac / Watch (`Color`) | Android (`Color.kt`) |
+| ---------------- | ----------------- | --------------------------- | -------------------- |
+| lumi-blue        | `#006093`         | `lumiBlue`                  | `LumiBlue`           |
+| lumi-blue-hover  | `#004F80`         | `lumiBlueHover`             | `LumiBlueHover`      |
+| lumi-blue-active | `#003E6A`         | `lumiBlueActive`            | `LumiBlueActive`     |
+| lumi-blue-soft   | `#E4F3FC`         | `lumiBlueSoft`              | `LumiBlueSoft`       |
+| civic-navy       | `#102A43`         | `civicNavy`                 | `CivicNavy`          |
+| ink              | `#172033`         | `ink`                       | `Ink`                |
+| soft-slate       | `#5E6677`         | `softSlate`                 | `SoftSlate`          |
+| paper-white      | `#F4F0E8`         | `paperWhite`                | `PaperWhite`         |
+| surface-white    | `#FFFFFF`         | `surfaceWhite`              | `SurfaceWhite`       |
+| archive-gray     | `#E7EAF0`         | `archiveGray`               | `ArchiveGray`        |
+| border-subtle    | `#E7EAF0`         | `borderSubtle`              | `BorderSubtle`       |
+| border           | `#D9DEE8`         | `border`                    | `Border`             |
+| border-strong    | `#C8D0DE`         | `borderStrong`              | `BorderStrong`       |
+| signal-amber     | `#F4A62A`         | `signalAmber`               | `SignalAmber`        |
+| amber-soft       | `#FFF4DC`         | `warningBanner`             | `AmberSoft`          |
+| risk-red         | `#C2410C`         | `riskRed`                   | `RiskRed`            |
+| red-soft         | `#FFF1EC`         | —                           | `RedSoft`            |
+| success-green    | `#1F7A4D`         | `successGreen`              | `SuccessGreen`       |
+| green-soft       | `#E9F7EF`         | —                           | `GreenSoft`          |
 
 **Scope of this contract.** It binds the product palette above. The §5.5
 dark-ground tints (`amber/red/green-on-navy`) are intentionally absent: they exist
@@ -2428,16 +2465,16 @@ in that PR.
 Material shape tokens must also mirror by role, even when native platforms express
 them as `CGFloat`, `Dp`, or component defaults:
 
-| Role | Web token | iOS / Mac / Watch | Android |
-|---|---|---|---|
-| tiny radius | `--radius-xs: 2px` | `radiusXS = 2` | `RadiusXS = 2.dp` |
-| small radius | `--radius-sm: 4px` | `radiusSM = 4` | `RadiusSM = 4.dp` |
-| card/control radius | `--radius-card/control: 8px` | `radiusCard = 8` | `RadiusCard = 8.dp` |
-| popover radius | `--radius-popover: 12px` | `radiusPopover = 12` | `RadiusPopover = 12.dp` |
-| modal radius | `--radius-xl: 16px` | `radiusXL = 16` | `RadiusXL = 16.dp` |
-| hairline border | `--border-hairline: 1px` | `1 / displayScale` | `1.dp` or platform hairline |
-| focus ring | `--border-focus: 2px` | `2` | `2.dp` |
-| severity rail | `--border-rail: 3px` | `3` | `3.dp` |
+| Role                | Web token                    | iOS / Mac / Watch    | Android                     |
+| ------------------- | ---------------------------- | -------------------- | --------------------------- |
+| tiny radius         | `--radius-xs: 2px`           | `radiusXS = 2`       | `RadiusXS = 2.dp`           |
+| small radius        | `--radius-sm: 4px`           | `radiusSM = 4`       | `RadiusSM = 4.dp`           |
+| card/control radius | `--radius-card/control: 8px` | `radiusCard = 8`     | `RadiusCard = 8.dp`         |
+| popover radius      | `--radius-popover: 12px`     | `radiusPopover = 12` | `RadiusPopover = 12.dp`     |
+| modal radius        | `--radius-xl: 16px`          | `radiusXL = 16`      | `RadiusXL = 16.dp`          |
+| hairline border     | `--border-hairline: 1px`     | `1 / displayScale`   | `1.dp` or platform hairline |
+| focus ring          | `--border-focus: 2px`        | `2`                  | `2.dp`                      |
+| severity rail       | `--border-rail: 3px`         | `3`                  | `3.dp`                      |
 
 **No dark column** — by design (§5). Native shells force light
 (`UIUserInterfaceStyle = Light` / `.preferredColorScheme(.light)` /
@@ -2468,39 +2505,39 @@ export default {
         lumi: {
           blue: "#006093",
           hover: "#004F80",
-          soft: "#E4F3FC"
+          soft: "#E4F3FC",
         },
         civic: {
-          navy: "#102A43"
+          navy: "#102A43",
         },
         paper: {
-          white: "#F4F0E8"
+          white: "#F4F0E8",
         },
         archive: {
-          gray: "#E7EAF0"
+          gray: "#E7EAF0",
         },
         signal: {
-          amber: "#F4A62A"
+          amber: "#F4A62A",
         },
         risk: {
-          red: "#C2410C"
+          red: "#C2410C",
         },
         success: {
-          green: "#1F7A4D"
-        }
+          green: "#1F7A4D",
+        },
       },
       borderRadius: {
         sm: "4px",
         md: "8px",
         lg: "12px",
-        xl: "16px"
+        xl: "16px",
       },
       fontFamily: {
         sans: ["Geist", "Noto Sans", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["Geist Mono", "ui-monospace", "SFMono-Regular", "monospace"]
-      }
-    }
-  }
+        mono: ["Geist Mono", "ui-monospace", "SFMono-Regular", "monospace"],
+      },
+    },
+  },
 };
 ```
 
@@ -2632,8 +2669,6 @@ it complete because the happy-path screenshot looks finished. Keep existing bran
 values stable when fixing a pairing, hierarchy, or interaction defect.
 
 ---
-
-
 
 # 25. Final Design Statement
 

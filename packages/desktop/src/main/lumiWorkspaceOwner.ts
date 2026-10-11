@@ -170,21 +170,31 @@ export function createLumiWorkspaceOwner(options: {
   };
 
   return {
-    authorizeManagedWorkspace: (workspaceIdentity: string) =>
-      serialized(async () => {
-        await account();
-        const vaultRecord = await load();
-        const current = vaultRecord.mappings.find(
-          (item) => item.workspaceIdentity === workspaceIdentity,
-        );
-        if (!current) throw new Error("lumi_workspace_missing");
-        return authorizeManagedWorkspaceScope({
-          orgId: options.orgId,
-          current,
-          readServerState: () => readServerState(current),
-          readCurrentPolicy: () => options.device.readCurrentPolicy(),
-        });
-      }),
+    /**
+     * Read-only, but its result is authority for a later import: the scope it was read under must
+     * still hold when it is returned, so a stale answer is refused rather than handed out.
+     */
+    authorizeManagedWorkspace: (workspaceIdentity: string, admitted?: LumiWorkspaceEpoch) =>
+      fenced(
+        { workspacePath: workspaceIdentity, workspaceIdentity },
+        admitted,
+        async (assertCurrent) => {
+          await assertCurrent();
+          const vaultRecord = await load();
+          const current = vaultRecord.mappings.find(
+            (item) => item.workspaceIdentity === workspaceIdentity,
+          );
+          if (!current) throw new Error("lumi_workspace_missing");
+          const authorized = await authorizeManagedWorkspaceScope({
+            orgId: options.orgId,
+            current,
+            readServerState: () => readServerState(current),
+            readCurrentPolicy: () => options.device.readCurrentPolicy(),
+          });
+          await assertCurrent();
+          return authorized;
+        },
+      ),
 
     listProjects: (orgId: string) =>
       serialized(async () => {

@@ -13,12 +13,12 @@ Same shape in three more readers.
 
 Root cause: each reader resolved `setting.json` independently from `os.homedir()` / `HOME`:
 
-| Reader | Before |
-| --- | --- |
-| `desktopDataBaseDirBootstrap` (early) | `homedir()` + unconditional `setDataBaseDir` |
-| `desktopChromiumHardwareAccelerationBootstrap` (early) | `homedir()` |
-| `index.ts` `settingsFile` (startup workspace) and `whenReady` bootstrap | `homedir()`; unconditional `setDataBaseDir` |
-| `SettingService` | `ZCODE_DESKTOP_HOME_DIR > HOME > USERPROFILE` (differed from the readers above) |
+| Reader                                                                  | Before                                                                          |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `desktopDataBaseDirBootstrap` (early)                                   | `homedir()` + unconditional `setDataBaseDir`                                    |
+| `desktopChromiumHardwareAccelerationBootstrap` (early)                  | `homedir()`                                                                     |
+| `index.ts` `settingsFile` (startup workspace) and `whenReady` bootstrap | `homedir()`; unconditional `setDataBaseDir`                                     |
+| `SettingService`                                                        | `ZCODE_DESKTOP_HOME_DIR > HOME > USERPROFILE` (differed from the readers above) |
 
 ## Fix (one boundary: `packages/services/src/paths.ts`)
 
@@ -36,33 +36,22 @@ Not changed (by design): Main's own `HOME`, native keychain / OS credential acce
 authorization or test-only relaxation. Normal installed behaviour (no `ZCODE_DATA_BASE_DIR`) is unchanged except
 that Main readers now also honour `ZCODE_DESKTOP_HOME_DIR`, matching `SettingService`.
 
-## Evidence (head: working tree, uncommitted)
+## Evidence (originating lane, uncommitted working tree; NOT re-run on this cut)
+
+The results below were recorded by the lane that authored the change, on a working tree that is not this cut.
+They are history, not proof for this commit: this commit's own test, typecheck and lint results are recorded
+separately by whoever validates it.
 
 Test: `packages/desktop/src/main/desktopBootstrapStateRoot.test.ts` — `node --import tsx --test` → 6 pass / 0 fail.
 Controls:
+
 - positive: no explicit root → OS-home `dataBaseDir` and hardware-acceleration setting still applied.
 - negative: explicit root + fake OS-home `dataBaseDir` → root unchanged, returns null; hardware setting read from owned root.
 - sensitivity: removing the explicit-root guard in `applyConfiguredDataBaseDir` fails test 3 (explicit root with a
   `dataBaseDir` inside its own settings); restored afterwards. Test 2 passes under that mutation because root
   resolution alone already stops the OS-home read (two independent defences).
 
-`pnpm exec oxlint` on touched files: 0 warnings/errors. `pnpm typecheck`: no errors in touched files; remaining
-errors are in other lanes' automation files (`automationAdoptionOwner.test.ts`, `automationOccurrenceDriver.test.ts`,
-`LumiAutomationAttachDialog.tsx`) and were not touched.
-
-Source hashes (sha256, first 16 hex):
-
-```
-b111cc031b7a32e4 packages/services/src/paths.ts
-1ba7c61abc21532e packages/services/src/node.ts
-99e5b307b566df7a packages/services/src/setting/settingService.ts
-ef9712536ef429fb packages/desktop/src/main/desktopDataBaseDirBootstrap.ts
-b746cca27983e23e packages/desktop/src/main/desktopChromiumHardwareAccelerationBootstrap.ts
-3ea69fbaef42908e packages/desktop/src/main/mcpUserDirectory/index.ts
-e8f8de2832281e44 packages/desktop/src/main/exportLogs.ts
-593b6a5436d65d99 packages/desktop/src/main/index.ts   (shared WIP file; only my 4 hunks are in scope)
-509f3780729f215f packages/desktop/src/main/desktopBootstrapStateRoot.test.ts
-```
+`pnpm exec oxlint` on touched files: 0 warnings/errors in the originating lane (not re-run here).
 
 ## Remaining actual Electron proof (UNPROVEN)
 

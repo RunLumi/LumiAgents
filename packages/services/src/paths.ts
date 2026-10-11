@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /* path 规则集中维护：旧 task 快照与 provider 配置路径仍在这里收口。 */
 import { lstatSync } from "node:fs";
 import { cp } from "node:fs/promises";
