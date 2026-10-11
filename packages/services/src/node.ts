@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /* eslint-disable max-lines -- host process 服务注册和启动装配需要集中维护，拆散后会更难追踪依赖注入顺序 */
 // Node.js service implementations — NOT safe to import in browser code
 import { randomBytes } from "node:crypto";
@@ -59,6 +60,9 @@ export type {
 export {
   setDataBaseDir,
   getDataBaseDir,
+  getBootstrapHomeDir,
+  getBootstrapSettingsFile,
+  applyConfiguredDataBaseDir,
   getZCodeDataRootDir,
   getConversationWorkspaceDir,
   getAppConfigDir,
@@ -2822,3 +2826,5 @@ export type {
   DeviceEnrollmentInput,
 } from "./lumi-account/deviceTransport.js";
 export type { LumiDeviceCredential } from "./lumi-account/deviceTransport.js";
+export type { LumiWorkspaceBinding } from "./lumi-account/deviceTransport.js";
+export type { LumiAdoptionRecord } from "./lumi-account/hostTransport.js";

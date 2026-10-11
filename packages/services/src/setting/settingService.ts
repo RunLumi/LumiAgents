@@ -1,5 +1,6 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { access, readFile, mkdir, rename } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { homedir } from "node:os";
 import type {
   AppSettings,
@@ -14,7 +15,12 @@ import {
 } from "@zcode/shared";
 import type { ISettingService } from "./setting.js";
 import { normalizeSettingsPatch } from "#src/setting/normalizeSettingsPatch.js";
-import { copyDataDirectory, getDataBaseDir, validateDataBaseDirTarget } from "../paths.js";
+import {
+  copyDataDirectory,
+  getBootstrapSettingsFile,
+  getDataBaseDir,
+  validateDataBaseDirTarget,
+} from "../paths.js";
 import { isEffectiveDevelopmentNodeEnv } from "../runtime-tools/nodeEnv.js";
 import { maybeThrowInjectedFsFault } from "../fs/fsFaultInjection.js";
 import { atomicWriteText } from "../fs/atomicFileUtils.js";
@@ -42,22 +48,14 @@ const debugLog = (...args: unknown[]) => {
   console.debug(formatLogPrefix("settingService", process.pid), ...args);
 };
 
-function resolveUserHomeDir() {
-  // 独立桌面 Dev 实例已设置自己的 home，设置服务却仍写真实 HOME，
-  // 导致启动迁移和外观操作污染其他实例。与 Electron 的显式 home 覆盖保持一致。
-  const envHome =
-    process.env.ZCODE_DESKTOP_HOME_DIR?.trim() ||
-    process.env.HOME?.trim() ||
-    process.env.USERPROFILE?.trim();
-  return envHome && envHome.length > 0 ? envHome : homedir();
-}
-
+// 与 early bootstrap 共用 paths.ts 的解析：独立 Dev 实例的 home、显式 ZCODE_DATA_BASE_DIR 状态根
+// 都由同一处决定，避免服务读写的 setting.json 与启动读取的不是同一份。
 function getSettingsDir() {
-  return join(resolveUserHomeDir(), ".zcode", "v2");
+  return dirname(getBootstrapSettingsFile());
 }
 
 function getSettingsFile() {
-  return join(getSettingsDir(), "setting.json");
+  return getBootstrapSettingsFile();
 }
 
 function defaultSettings(): AppSettings {

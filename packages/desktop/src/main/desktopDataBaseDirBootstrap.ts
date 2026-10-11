@@ -1,11 +1,6 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { existsSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
-import { setDataBaseDir } from "@zcode/services/node";
-
-function resolveBootstrapSettingsFile(homePath: string = homedir()): string {
-  return join(homePath, ".zcode", "v2", "setting.json");
-}
+import { applyConfiguredDataBaseDir, getBootstrapSettingsFile } from "@zcode/services/node";
 
 function extractBootstrapDataBaseDir(rawValue: unknown): string | null {
   if (!rawValue || typeof rawValue !== "object") {
@@ -22,7 +17,7 @@ function extractBootstrapDataBaseDir(rawValue: unknown): string | null {
 }
 
 function readBootstrapDataBaseDirFromDisk(
-  settingsFile: string = resolveBootstrapSettingsFile(),
+  settingsFile: string = getBootstrapSettingsFile(),
 ): string | null {
   if (!existsSync(settingsFile)) {
     return null;
@@ -36,12 +31,15 @@ function readBootstrapDataBaseDirFromDisk(
   }
 }
 
-export function applyEarlyDataBaseDirBootstrap(): string | null {
-  const dataBaseDir = readBootstrapDataBaseDirFromDisk();
-  if (dataBaseDir) {
-    // 启动早期就把 dataBaseDir 注入进来，避免 logger / crashReporter 先按默认 HOME 建目录，
-    // 导致后续再切换到自定义目录时，日志和 crash dump 落在两套路径里。
-    setDataBaseDir(dataBaseDir);
-  }
-  return dataBaseDir;
+export function applyEarlyDataBaseDirBootstrap(
+  settingsFile?: string,
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): string | null {
+  const dataBaseDir = readBootstrapDataBaseDirFromDisk(
+    settingsFile ?? getBootstrapSettingsFile(env),
+  );
+  // 启动早期就把 dataBaseDir 注入进来，避免 logger / crashReporter 先按默认 HOME 建目录，
+  // 导致后续再切换到自定义目录时，日志和 crash dump 落在两套路径里。
+  // 显式 ZCODE_DATA_BASE_DIR 优先：此时设置值被忽略，返回 null 表示未改写数据根。
+  return applyConfiguredDataBaseDir(dataBaseDir, env) ? dataBaseDir : null;
 }

@@ -34,6 +34,82 @@ const enUS: Record<string, string> = {
   "lumiAccount.complete": "I approved — complete sign-in",
   "lumiAccount.cancel": "Cancel",
   "lumiAccount.begin": "Sign in to Lumi",
+  "lumiEntry.restoring": "Checking your Lumi session…",
+  "lumiEntry.signedInAs": "Signed in as {name}",
+  "lumiEntry.continue": "Continue",
+  "lumiEntry.local": "Continue locally",
+  "lumiEntry.localHint":
+    "Local workspaces and your own API keys work without a Lumi account. Signing in does not enroll this device or share any workspace.",
+  "lumiEntry.retry": "Try again",
+  "lumiEntry.restoringSlow":
+    "This is taking longer than usual. You can continue locally or use your own API key below while we keep checking.",
+  "lumiEntry.restoreFailed":
+    "Could not check your saved Lumi session. Local workspaces and your own keys are unaffected.",
+  "lumiEntry.checkAgain": "Check saved session again",
+
+  "lumiWorkspace.title": "Workspace adoption",
+  "lumiWorkspace.privacy":
+    "Only the approved display name, selected project/device and opaque workspace key are sent. Paths, files, prompts, sessions and credentials stay on this device.",
+  "lumiWorkspace.org": "Organization",
+  "lumiWorkspace.project": "Project",
+  "lumiWorkspace.chooseProject": "Choose a project",
+  "lumiWorkspace.displayName": "Name shown to your organization",
+  "lumiWorkspace.ownership": "Ownership",
+  "lumiWorkspace.stage": "Adoption stage",
+  "lumiWorkspace.busy": "Reading or updating workspace state…",
+  "lumiWorkspace.noProjects": "No projects available",
+  "lumiWorkspace.noProjectsHint":
+    "Your organization has no open projects you can use yet. Ask an organization admin to create one or grant you access.",
+  "lumiWorkspace.reload": "Reload workspace state",
+  "lumiError.generic":
+    "Workspace action failed. Check device, membership and network, then try again.",
+  "lumiError.pageIncomplete":
+    "Your organization has more projects or workspaces than this app can safely list, so nothing was loaded or changed. This app does not support lists this large yet; no workspace was bound. Local workspaces and your own keys still work.",
+  "lumiError.timeout":
+    "Lumi did not answer in time. Nothing was changed on this device. Check your connection and try again.",
+  "lumiError.changed":
+    "The account, organization or workspace changed while this was running. The latest state has been reloaded; review it before trying again.",
+  "lumiError.notPersisted":
+    "Your organization did not confirm the change, so it was not recorded. The latest state has been reloaded.",
+  "lumiError.denied": "This window is not allowed to manage the Lumi account.",
+  "lumiWorkspace.deviceRequired": "Enroll or recover this device before binding the workspace.",
+  "lumiWorkspace.bind": "Review and bind this workspace",
+  "lumiWorkspace.next.account_optional": "Continue: account is optional",
+  "lumiWorkspace.next.device_enrolled": "Continue: device enrolled",
+  "lumiWorkspace.next.workspace_bound": "Confirm workspace ownership",
+  "lumiWorkspace.next.managed_policy": "Apply managed policy",
+  "lumiWorkspace.credential.legend": "Credential for this workspace",
+  "lumiWorkspace.credential.explainer":
+    "This is a label recorded with the workspace. It does not move, copy or provision any key, and it does not change how requests are routed.",
+  "lumiWorkspace.credential.current": "Recorded by your organization",
+  "lumiWorkspace.credential.local_credential": "Keep my key on this computer",
+  "lumiWorkspace.credential.local_credential.detail":
+    "Your key stays on this computer and is not sent. This is the default.",
+  "lumiWorkspace.credential.metadata_only": "I manage my own key",
+  "lumiWorkspace.credential.metadata_only.detail":
+    "The workspace is marked as using a key you keep yourself. Nothing about the key is sent.",
+  "lumiWorkspace.credential.org_managed_credential": "Use an organization credential",
+  "lumiWorkspace.credential.org_managed_credential.detail":
+    "The workspace is marked as using a credential stored by your organization. This app never uploads your local key and never receives the organization's secret.",
+  "lumiWorkspace.credential.orgUnavailable":
+    "Available once the workspace is organization-managed (workspace bound or later).",
+  "lumiWorkspace.credential.confirm": "Record this choice",
+  "lumiWorkspace.credential.cancel": "Discard choice",
+  "lumiWorkspace.credential.console": "Add or review organization credentials in the web console",
+  "lumiWorkspace.credential.consoleHint":
+    "Organization credentials are added only in the web console, never in this app.",
+  "lumiWorkspace.credential.rollbackNote":
+    "Returning to local mode resets this label to “Keep my key on this computer”. Organization credentials already stored are kept; revoke them in the web console.",
+  "lumiWorkspace.rollback": "Return this workspace to local mode",
+  "lumiWorkspace.unbind": "Unbind this workspace",
+  "lumiWorkspace.ownership.local_unmanaged": "Local only",
+  "lumiWorkspace.ownership.org_managed": "Organization-managed",
+  "lumiWorkspace.stage.local_unmanaged": "Local only",
+  "lumiWorkspace.stage.account_optional": "Account selected",
+  "lumiWorkspace.stage.device_enrolled": "Device enrolled",
+  "lumiWorkspace.stage.workspace_bound": "Workspace bound",
+  "lumiWorkspace.stage.managed_policy": "Managed policy",
+  "lumiWorkspace.stage.history_sync": "History sync unavailable",
 
   "startPlan.recommendation.subagentDescription":
     "Your Start Plan has quota available for {model}. Switch this subagent’s model to the Start Plan?",

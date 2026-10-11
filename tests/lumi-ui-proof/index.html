@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>Lumi UI proof fixture (not a product surface)</title>
+    <style>
+      html,
+      body,
+      #root {
+        margin: 0;
+        min-height: 100%;
+      }
+      html,
+      body,
+      #root {
+        /* The shared stylesheet makes the root transparent for Electron vibrancy; a browser
+           fixture needs the semantic page background back (same override as packages/web). */
+        background: var(--color-background, #f4f0e8) !important;
+      }
+      body {
+        font-family:
+          Geist,
+          "Noto Sans",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /* eslint-disable max-lines -- Root 当前集中编排启动和 workspace shell wiring，先保持入口收口避免跨层状态拆散。 */
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LucideProvider, RefreshCw } from "lucide-react";
@@ -21,6 +22,7 @@ import { SSHDialog } from "@/SSHDialog.js";
 import { SettingsPage } from "@/SettingsPage.js";
 import { CodingPlanUpgradeDialogProvider } from "@/settings/CodingPlanUpgradeDialogProvider.js";
 import { WelcomeScreen, type LoginCompleteReason } from "@/WelcomeScreen.js";
+import { useLumiStartupGate } from "@/lumi/useLumiStartupGate.js";
 import { setDefaultFileDisplayBasePath } from "@/lib/fileDisplay.js";
 import { readRendererLaunchTimings, shouldReportLaunchToInput } from "@/lib/launchToInputReport.js";
 import { reportUiLaunchToInput } from "@/lib/uiPerfArmsTelemetry.js";
@@ -92,6 +94,7 @@ interface RemoteConnectionOpenPreference {
 
 type WelcomeScreenOpenReason =
   | "startup-provider-required"
+  | "startup-lumi-required"
   | "manual-login"
   | "provider-request"
   | "logout-provider-required"
@@ -429,7 +432,7 @@ function RootInner({
       rootProviderAvailability.hydrated || rootModelSelectionRead.state.status === "error",
   });
   const providerAvailabilityLoginEntryGuardEnabled =
-    shouldEnableProviderAvailabilityLoginEntryGuard();
+    shouldEnableProviderAvailabilityLoginEntryGuard() && !platform.lumiAccount;
   const { startupCheckCompleted: providerAvailabilityStartupCheckCompleted } =
     useProviderAvailabilityLoginEntryGuard({
       enabled: providerAvailabilityLoginEntryGuardEnabled,
@@ -455,11 +458,31 @@ function RootInner({
         });
       },
     });
-  const isResolvingProviderStartupState = shouldResolveProviderStartupState({
-    providerStartupSyncPending,
-    providerAvailabilityStartupCheckCompleted,
-  });
-  const isStartupProviderLoginEntryOpen = welcomeScreenOpenReason === "startup-provider-required";
+  // Lumi 登录是首次启动的主入口：先读取宿主持有的 Lumi 会话，未恢复时打开入口页。
+  // 门禁只读不写，不会自动登录、注册设备或绑定 workspace（spec 04）。
+  const lumiStartupGate = useLumiStartupGate(platform.lumiAccount);
+  // The entry opens from an effect, one commit after the gate decides. In that gap the startup
+  // fallback below would already see "no entry open" and create the default workspace before the
+  // user could choose. The flag keeps startup blocked until the entry has actually been opened, and
+  // stays true afterwards so closing the entry releases the fallback as before.
+  const [lumiEntryOpened, setLumiEntryOpened] = useState(false);
+  useEffect(() => {
+    if (lumiStartupGate === "entry-required") {
+      setWelcomeScreenOpenReason((currentReason) => currentReason ?? "startup-lumi-required");
+      setLumiEntryOpened(true);
+    }
+  }, [lumiStartupGate]);
+  const isLumiEntryPending = lumiStartupGate === "entry-required" && !lumiEntryOpened;
+  const isResolvingProviderStartupState =
+    shouldResolveProviderStartupState({
+      providerStartupSyncPending,
+      providerAvailabilityStartupCheckCompleted,
+    }) ||
+    lumiStartupGate === "pending" ||
+    isLumiEntryPending;
+  const isStartupProviderLoginEntryOpen =
+    welcomeScreenOpenReason === "startup-provider-required" ||
+    welcomeScreenOpenReason === "startup-lumi-required";
   // 首次安装时 provider 登录入口判定晚于 workspace 注入，ChatView 会先 mount 并触发草稿预热。
   // 这里把 provider 启动检查纳入 workspace 恢复门禁，避免未连接账号前启动 ZCode session。
   const canRestoreWorkspaceSession =
@@ -874,7 +897,10 @@ function RootInner({
     async (reason: LoginCompleteReason) => {
       await refreshAppSettings();
       if (
-        welcomeScreenOpenReason !== "startup-provider-required" ||
+        !(
+          welcomeScreenOpenReason === "startup-provider-required" ||
+          welcomeScreenOpenReason === "startup-lumi-required"
+        ) ||
         workspaceShellPath ||
         !allowOpenWorkspace
       ) {

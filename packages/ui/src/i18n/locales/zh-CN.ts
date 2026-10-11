@@ -29,6 +29,76 @@ const zhCN: Record<string, string> = {
   "lumiAccount.complete": "已批准，完成登录",
   "lumiAccount.cancel": "取消",
   "lumiAccount.begin": "登录 Lumi",
+  "lumiEntry.restoring": "正在检查 Lumi 会话…",
+  "lumiEntry.signedInAs": "已登录为 {name}",
+  "lumiEntry.continue": "继续",
+  "lumiEntry.local": "在本地继续",
+  "lumiEntry.localHint":
+    "本地工作区和你自己的 API key 无需 Lumi 账户即可使用。登录不会注册此设备，也不会共享任何工作区。",
+  "lumiEntry.retry": "重试",
+  "lumiEntry.restoringSlow":
+    "耗时比平时长。你可以先在本地继续，或使用下方自己的 API key，我们会继续检查。",
+  "lumiEntry.restoreFailed": "无法检查已保存的 Lumi 会话。本地工作区和你自己的密钥不受影响。",
+  "lumiEntry.checkAgain": "重新检查已保存的会话",
+
+  "lumiWorkspace.title": "工作区组织管理",
+  "lumiWorkspace.privacy":
+    "仅发送你确认的显示名称、所选项目/设备和不透明工作区标识。路径、文件、提示词、会话和凭据留在本机。",
+  "lumiWorkspace.org": "组织",
+  "lumiWorkspace.project": "项目",
+  "lumiWorkspace.chooseProject": "选择项目",
+  "lumiWorkspace.displayName": "组织中显示的名称",
+  "lumiWorkspace.ownership": "归属",
+  "lumiWorkspace.stage": "接入阶段",
+  "lumiWorkspace.busy": "正在读取或更新工作区状态…",
+  "lumiWorkspace.noProjects": "暂无可用项目",
+  "lumiWorkspace.noProjectsHint":
+    "你的组织暂时没有可用的开放项目。请联系组织管理员创建项目或授予访问权限。",
+  "lumiWorkspace.reload": "重新加载工作区状态",
+  "lumiError.generic": "工作区操作失败。请检查设备、成员资格和网络后重试。",
+  "lumiError.pageIncomplete":
+    "你的组织的项目或工作区数量超出本应用可安全列出的范围，因此未加载也未更改任何内容。本应用暂不支持如此大的列表，也没有绑定任何工作区。本地工作区和你自己的密钥仍可使用。",
+  "lumiError.timeout": "Lumi 未能及时响应。此设备上未做任何更改。请检查网络后重试。",
+  "lumiError.changed":
+    "操作进行期间，账户、组织或工作区发生了变化。已重新加载最新状态，请确认后再重试。",
+  "lumiError.notPersisted": "你的组织未确认此更改，因此未被记录。已重新加载最新状态。",
+  "lumiError.denied": "此窗口无权管理 Lumi 账户。",
+  "lumiWorkspace.deviceRequired": "请先登记或恢复此设备，再绑定工作区。",
+  "lumiWorkspace.bind": "检查并绑定此工作区",
+  "lumiWorkspace.next.account_optional": "继续：确认账户步骤",
+  "lumiWorkspace.next.device_enrolled": "继续：确认设备已登记",
+  "lumiWorkspace.next.workspace_bound": "确认工作区归属",
+  "lumiWorkspace.next.managed_policy": "启用组织策略",
+  "lumiWorkspace.credential.legend": "此工作区使用的凭据",
+  "lumiWorkspace.credential.explainer":
+    "这只是随工作区记录的标签，不会移动、复制或配置任何密钥，也不会改变请求的路由方式。",
+  "lumiWorkspace.credential.current": "组织已记录",
+  "lumiWorkspace.credential.local_credential": "密钥保留在此电脑",
+  "lumiWorkspace.credential.local_credential.detail":
+    "你的密钥保留在此电脑上，不会被发送。这是默认选项。",
+  "lumiWorkspace.credential.metadata_only": "我自行管理密钥",
+  "lumiWorkspace.credential.metadata_only.detail":
+    "此工作区被标记为使用你自行保管的密钥，不会发送任何与密钥有关的信息。",
+  "lumiWorkspace.credential.org_managed_credential": "使用组织凭据",
+  "lumiWorkspace.credential.org_managed_credential.detail":
+    "此工作区被标记为使用由组织保管的凭据。本应用不会上传你的本地密钥，也不会接收组织的密钥。",
+  "lumiWorkspace.credential.orgUnavailable": "工作区归组织管理（已绑定或更高阶段）后才可选择。",
+  "lumiWorkspace.credential.confirm": "记录此选择",
+  "lumiWorkspace.credential.cancel": "放弃此选择",
+  "lumiWorkspace.credential.console": "在网页控制台添加或查看组织凭据",
+  "lumiWorkspace.credential.consoleHint": "组织凭据只能在网页控制台添加，不会在本应用中输入。",
+  "lumiWorkspace.credential.rollbackNote":
+    "恢复为本地模式会把此标签重置为“密钥保留在此电脑”。组织已保存的凭据会保留，请在网页控制台撤销。",
+  "lumiWorkspace.rollback": "将此工作区恢复为本地模式",
+  "lumiWorkspace.unbind": "解除此工作区绑定",
+  "lumiWorkspace.ownership.local_unmanaged": "仅本地",
+  "lumiWorkspace.ownership.org_managed": "组织管理",
+  "lumiWorkspace.stage.local_unmanaged": "仅本地",
+  "lumiWorkspace.stage.account_optional": "账户已确认",
+  "lumiWorkspace.stage.device_enrolled": "设备已登记",
+  "lumiWorkspace.stage.workspace_bound": "工作区已绑定",
+  "lumiWorkspace.stage.managed_policy": "组织策略",
+  "lumiWorkspace.stage.history_sync": "历史同步不可用",
 
   "startPlan.recommendation.subagentDescription":
     "你的体验套餐中，{model} 仍有可用额度，是否将此子智能体的模型切换到体验套餐？",

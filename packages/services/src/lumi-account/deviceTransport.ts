@@ -1,5 +1,7 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
-import { LumiAccountError } from "./hostTransport.js";
+import { id, instant } from "./deviceFields.js";
+import { LumiAccountError } from "./errors.js";
+import { pagePath, readCompletePages } from "./pagination.js";
 
 export interface DeviceEnrollmentInput {
   org_slug: string;
@@ -19,20 +21,16 @@ export interface LumiDeviceCredential extends LumiDeviceProjection {
   token: string;
 }
 
-function id(value: unknown, prefix: string): string {
-  if (typeof value !== "string" || !new RegExp(`^${prefix}_[0-9a-f]{32}$`).test(value))
-    throw new LumiAccountError("lumi_device_response_invalid");
-  return value;
+export interface LumiWorkspaceBinding {
+  id: string;
+  orgId: string;
+  projectId: string;
+  deviceId: string;
+  workspaceIdentity: string;
+  displayName: string;
+  environmentType: "local" | "ssh" | "wsl" | "docker" | "remote";
 }
-function instant(value: unknown): string {
-  if (
-    typeof value !== "string" ||
-    !Number.isFinite(Date.parse(value)) ||
-    Date.parse(value) <= Date.now()
-  )
-    throw new LumiAccountError("lumi_device_response_invalid");
-  return value;
-}
+
 /** Device-only transport. Human cookies never accompany these requests. Main owns custody. */
 export class LumiDeviceHostTransport {
   readonly #origin: string;
@@ -67,6 +65,85 @@ export class LumiDeviceHostTransport {
     this.#fetch = fetchImpl;
     this.#persistence = persistence;
   }
+
+  async listWorkspaceBindings(): Promise<LumiWorkspaceBinding[]> {
+    // The route has no cursor and a hard ceiling of 100 rows; a full page fails closed (see pagination.ts).
+    return readCompletePages<LumiWorkspaceBinding>({
+      fetchPage: (cursor) =>
+        this.#request(pagePath("/api/v1/devices/bindings", cursor), "GET", undefined, true),
+      parse: (value) => {
+        if (!value || typeof value !== "object")
+          throw new LumiAccountError("lumi_device_response_invalid");
+        return this.#workspaceBinding(value as Record<string, unknown>);
+      },
+      keyOf: (item) => item.id,
+      invalid: "lumi_device_response_invalid",
+      ceilingWithoutCursor: true,
+    });
+  }
+
+  async createWorkspaceBinding(input: {
+    projectId: string;
+    workspaceIdentity: string;
+    displayName: string;
+    environmentType: LumiWorkspaceBinding["environmentType"];
+  }): Promise<LumiWorkspaceBinding> {
+    if (
+      !this.#credential ||
+      !/^prj_[0-9a-f]{32}$/.test(input.projectId) ||
+      !/^[A-Za-z0-9._~-]{1,256}$/.test(input.workspaceIdentity) ||
+      !input.displayName.trim() ||
+      input.displayName.length > 120 ||
+      !["local", "ssh", "wsl", "docker", "remote"].includes(input.environmentType)
+    )
+      throw new LumiAccountError("lumi_workspace_invalid");
+    const row = await this.#request(
+      "/api/v1/devices/bindings",
+      "POST",
+      {
+        project_id: input.projectId,
+        workspace_identity: input.workspaceIdentity,
+        display_name: input.displayName.trim(),
+        environment_type: input.environmentType,
+      },
+      true,
+    );
+    if (!row) throw new LumiAccountError("lumi_device_response_invalid");
+    return this.#workspaceBinding(row);
+  }
+
+  async deleteWorkspaceBinding(bindingId: string): Promise<void> {
+    if (!/^wsb_[0-9a-f]{32}$/.test(bindingId)) throw new LumiAccountError("lumi_workspace_invalid");
+    await this.#request(`/api/v1/devices/bindings/${bindingId}`, "DELETE", undefined, true);
+  }
+
+  #workspaceBinding(value: Record<string, unknown>): LumiWorkspaceBinding {
+    if (
+      typeof value.id !== "string" ||
+      !/^wsb_[0-9a-f]{32}$/.test(value.id) ||
+      value.org_id !== this.#credential?.orgId ||
+      typeof value.project_id !== "string" ||
+      !/^prj_[0-9a-f]{32}$/.test(value.project_id) ||
+      value.device_id !== this.#credential?.id ||
+      typeof value.workspace_identity !== "string" ||
+      !/^[A-Za-z0-9._~-]{1,256}$/.test(value.workspace_identity) ||
+      typeof value.display_name !== "string" ||
+      !value.display_name ||
+      value.display_name.length > 128 ||
+      !["local", "ssh", "wsl", "docker", "remote"].includes(String(value.environment_type))
+    )
+      throw new LumiAccountError("lumi_device_response_invalid");
+    return {
+      id: value.id,
+      orgId: value.org_id as string,
+      projectId: value.project_id,
+      deviceId: this.#credential?.id as string,
+      workspaceIdentity: value.workspace_identity,
+      displayName: value.display_name,
+      environmentType: value.environment_type as LumiWorkspaceBinding["environmentType"],
+    };
+  }
+
   async restore(): Promise<boolean> {
     const value = await this.#persistence?.load();
     if (!value) return false;
@@ -81,7 +158,12 @@ export class LumiDeviceHostTransport {
     this.#credential = value;
     return true;
   }
-  async #request(path: string, method: "GET" | "POST", body?: unknown, authenticated = false) {
+  async #request(
+    path: string,
+    method: "GET" | "POST" | "DELETE",
+    body?: unknown,
+    authenticated = false,
+  ) {
     const headers: Record<string, string> = { Accept: "application/json" };
     if (body !== undefined) headers["Content-Type"] = "application/json";
     if (authenticated) {

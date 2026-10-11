@@ -69,3 +69,77 @@ not bind workspaces. Restore reuses its own pending/device identity; another
 account cannot load the previous user's key. Logout clears account owner cache,
 not provider credentials or device evidence. Policy sync and refresh use device
 auth, never human cookies. Expired tokens pause managed operations until the signed-in user explicitly starts recovery. Recovery uses a five-minute, one-time challenge issued with the Lumi human session and CSRF proof; only the original enrolled device key may sign the domain-separated challenge. The backend atomically consumes the challenge, rotates the token, and audits success. Anonymous nonce access, key regeneration, and silent re-enrollment never recover an expired device. See control-plane P03-CR-002 and DE2E-INT-02 runtime evidence.
+
+### Main OS identity vs application state root
+
+Status: candidate, not yet verified; behavior implemented by the workspace
+adoption cut (see `05-workspace-adoption-runtime.md`).
+
+Two contexts are distinct and must not be conflated in logs or manifests:
+
+1. **Native OS keystore context** (Main only): the real OS account HOME that
+   macOS Keychain / `safeStorage` need. A test profile or explicit app root never
+   replaces, mocks or bypasses it; unavailable encryption stays fail-closed.
+2. **Main application state root** (`ZCODE_DATA_BASE_DIR`, and the existing
+   `ZCODE_DESKTOP_USER_DATA_DIR` / `..._SESSION_DATA_DIR`): explicit roots.
+
+Rules: Main resolves its bootstrap home and `setting.json` through one boundary
+(`getBootstrapHomeDir` / `getBootstrapSettingsFile` in `packages/services/src/paths.ts`)
+in the order `ZCODE_DATA_BASE_DIR`, `ZCODE_DESKTOP_HOME_DIR`, `HOME`,
+`USERPROFILE`, `homedir()`. The early data-dir bootstrap, hardware-acceleration
+bootstrap, startup settings, `SettingService`, the MCP user directory and log
+export all use it. An explicit `ZCODE_DATA_BASE_DIR` wins over a `dataBaseDir`
+stored in settings (`applyConfiguredDataBaseDir` ignores the setting). Unset keeps
+production behavior with no data migration; Main's own process HOME is never
+rewritten and no new environment name is introduced. Acceptance: a fake OS HOME
+holding a conflicting `setting.json` does not change an explicit root; a fresh
+runtime replay proves nothing is created under the fake HOME. Not yet proven.
+
+## Lumi-first startup entry (supersedes visible ZCode login)
+
+When the Lumi bridge exists, Lumi restore alone owns automatic login entry.
+Provider-availability startup guards must not reopen entry for an authenticated
+Lumi user lacking ZCode OAuth. Explicit provider-connect requests remain separate.
+
+Use existing warm-paper background tokens from DESIGN.md for the startup entry.
+Do not inherit the old decorative ThemeHeroVisual gradient; keep the supplied
+Lumi mark and semantic surface/primary-action tokens. Verify desktop and 320px
+render, keyboard focus and async states after the final build.
+
+Product decision (2026-10-08): the visible z.ai / BigModel OAuth login is
+temporarily hidden. This supersedes the earlier "provider login remains in
+place" visibility; it does not remove ZCode auth/session/refresh/credential
+custody, BYOK API keys, active provider state or local workspaces.
+
+- First app open without a restored Lumi session shows the entry screen with
+  Lumi sign-in as the primary action. Entry reasons are unchanged; the screen
+  never lists the ZCode OAuth providers (onboarding, manual account entry,
+  session-expired). Explicit provider-connect requests from Model Provider
+  settings keep their own owner and are unaffected.
+- Alternatives on that screen: "Use API key" (existing BYOK form) and an
+  explicit "Continue locally" that completes entry as `skip`. Local use never
+  requires a Lumi account. Continue-locally is per launch; there is no
+  persisted dismissal.
+- One session owner: the Electron host (`platform.lumiAccount`). The entry
+  screen and `LumiAccountSection` share one renderer flow reducer
+  (`lumiAccountFlow`) that only holds projections: restoring, signed-out,
+  code pending, completing, signed-in, error. A newer request invalidates any
+  older in-flight result (sequence guard). Cancel/unmount invalidate it.
+- Startup creates nothing before the entry decision. While the startup gate is
+  pending, or has decided the entry is required but the entry is not yet open,
+  Root must not run the default-conversation-workspace fallback or restore
+  workspace tabs. The fallback runs only after the entry closes through an
+  explicit Continue / Continue locally / API key, or when no entry is required.
+  Acceptance: `startup.root-no-workspace-before-entry` (tests/lumi-ui-proof).
+- Successful sign-in completes the entry screen only. It does not enroll the
+  device or adopt a workspace; those stay explicit steps in settings.
+- Lumi logout clears only the Lumi session projection. Provider credentials,
+  active provider and device evidence are untouched.
+- States: restoring (status), error (alert, retry), pending code (browser
+  open is a separate explicit action; cancel returns to signed-out), restored
+  account (entry completes without prompting). If `platform.lumiAccount` is
+  absent (web/test hosts) the entry screen offers only API key and
+  Continue locally, and Lumi sign-in does not gate startup.
+- Acceptance: reducer tests for stale-result rejection, cancel and logout;
+  entry screen shows no ZCode OAuth provider button; keyboard focus lands on
+  the primary action; narrow (320px) layout has no overflow.

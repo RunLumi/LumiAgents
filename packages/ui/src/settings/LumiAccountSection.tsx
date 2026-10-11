@@ -1,76 +1,32 @@
 import { LumiDeviceSection } from "./LumiDeviceSection.js";
+import { LumiWorkspaceSection } from "./LumiWorkspaceSection.js";
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
-import { useEffect, useRef, useState } from "react";
-import type {
-  LumiAccountProjection,
-  LumiSignInProjection,
-  LumiAccountCommand,
-} from "@zcode/shared";
+import { useState } from "react";
+import type { LumiWorkspaceEnvironment } from "@zcode/shared";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import type { LumiFlowCommand } from "@/lumi/lumiAccountFlow.js";
+import { useLumiAccountFlow } from "@/lumi/useLumiAccountFlow.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { Button } from "@/components/ui/button.js";
 
 /** Separate optional organization account; provider login stays in its existing owner. */
-export function LumiAccountSection() {
+export function LumiAccountSection({
+  workspace,
+}: {
+  workspace?: {
+    workspacePath: string;
+    workspaceIdentity?: string;
+    environmentType: LumiWorkspaceEnvironment;
+  };
+}) {
   const platform = usePlatform();
-  const { lumiAccount } = platform;
   const { intl } = useZCodeIntl();
-  const [account, setAccount] = useState<LumiAccountProjection>();
-  const [signIn, setSignIn] = useState<LumiSignInProjection>();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string>();
-  const sequence = useRef(0);
+  const { available, state, run } = useLumiAccountFlow();
+  const { account, signIn, busy, error } = state;
+  const [workspaceRefresh, setWorkspaceRefresh] = useState(0);
   const text = (id: string) => intl.formatMessage({ id: `lumiAccount.${id}` });
-  useEffect(() => {
-    if (!lumiAccount) return;
-    const current = ++sequence.current;
-    setBusy(true);
-    void lumiAccount
-      .request("restore")
-      .then((result) => {
-        if (current !== sequence.current) return;
-        if (result.ok) setAccount(result.account);
-        else setError(result.code);
-      })
-      .catch(() => {
-        if (current === sequence.current) setError("lumi_account_failed");
-      })
-      .finally(() => {
-        if (current === sequence.current) setBusy(false);
-      });
-    return () => {
-      sequence.current++;
-    };
-  }, [lumiAccount]);
-  if (!lumiAccount) return null;
-  async function request(command: LumiAccountCommand) {
-    if (!lumiAccount || busy) return;
-    const current = ++sequence.current;
-    setBusy(true);
-    setError(undefined);
-    try {
-      const result = await lumiAccount.request(command);
-      if (current !== sequence.current) return;
-      if (!result.ok) {
-        setError(result.code);
-        return;
-      }
-      if (command === "begin") setSignIn(result.signIn);
-      if (command === "complete") {
-        setAccount(result.account);
-        setSignIn(undefined);
-      }
-      if (command === "cancel") setSignIn(undefined);
-      if (command === "logout") {
-        setAccount(undefined);
-        setSignIn(undefined);
-      }
-    } catch {
-      if (current === sequence.current) setError("lumi_account_failed");
-    } finally {
-      if (current === sequence.current) setBusy(false);
-    }
-  }
+  if (!available) return null;
+  const request = (command: LumiFlowCommand) => void run(command);
   return (
     <section
       aria-labelledby="lumi-account-heading"
@@ -96,7 +52,13 @@ export function LumiAccountSection() {
             {account.user.displayName} · {account.user.email}
           </p>
           <p>{text("noBinding")}</p>
-          <LumiDeviceSection account={account} />
+          <LumiDeviceSection
+            account={account}
+            onDeviceChanged={() => setWorkspaceRefresh((value) => value + 1)}
+          />
+          {workspace ? (
+            <LumiWorkspaceSection account={account} refreshKey={workspaceRefresh} {...workspace} />
+          ) : null}
           <ul>
             {account.organizations.map((org) => (
               <li key={org.id}>
@@ -124,7 +86,7 @@ export function LumiAccountSection() {
             <Button disabled={busy} onClick={() => void request("complete")}>
               {text("complete")}
             </Button>
-            <Button variant="outline" disabled={busy} onClick={() => void request("cancel")}>
+            <Button variant="outline" onClick={() => void request("cancel")}>
               {text("cancel")}
             </Button>
           </div>

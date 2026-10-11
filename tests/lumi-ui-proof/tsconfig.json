@@ -1,0 +1,30 @@
+{
+  "extends": "../../tsconfig.base.json",
+  // Type-checks only the fixture entry (and the UI source it imports) against the real component
+  // props and bridge types. Not part of `pnpm typecheck`; run with
+  // `pnpm exec tsc -p tests/lumi-ui-proof --noEmit`.
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "incremental": false,
+    "declaration": false,
+    "declarationMap": false,
+    "rootDir": "../..",
+    "lib": ["es2025", "dom", "dom.iterable"],
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "paths": {
+      "@/*": ["../../packages/ui/src/*"],
+      "@zcode/shared": ["../../packages/shared/src/index.ts"]
+    }
+  },
+  // The ambient declarations (assets, css, Electron webview, env) are what the real UI package relies
+  // on; without them Root's transitive imports cannot resolve.
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vite.config.ts",
+    "patches.mjs",
+    "../../packages/ui/src/**/*.d.ts"
+  ]
+}

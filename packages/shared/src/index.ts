@@ -351,4 +351,8 @@ export type {
   LumiAccountBridge,
   LumiAccountProjection,
   LumiSignInProjection,
+  LumiProjectProjection,
+  LumiWorkspaceProjection,
+  LumiWorkspaceStage,
+  LumiWorkspaceEnvironment,
 } from "./lumi-account.js";

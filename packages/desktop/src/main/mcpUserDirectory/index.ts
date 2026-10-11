@@ -1,10 +1,11 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 /**
  * MCP 用户目录模块 - 主入口
  */
 
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { homedir } from "node:os";
+import { getBootstrapHomeDir } from "@zcode/services/node";
 import type {
   CliMcpSource,
   LoadCliMcpFromUserDirectoryRequest,
@@ -60,8 +61,8 @@ const AGENTS_MCP_DESCRIPTOR: DirectoryMcpDescriptor = {
 };
 
 function resolveUserHomeDir(): string {
-  const envHome = process.env.HOME?.trim() || process.env.USERPROFILE?.trim();
-  return envHome && envHome.length > 0 ? envHome : homedir();
+  // 显式状态根（ZCODE_DATA_BASE_DIR）的实例不得读取 OS home 里的个人 MCP 配置。
+  return getBootstrapHomeDir();
 }
 
 const DIRECTORY_MCP_DESCRIPTORS: readonly DirectoryMcpDescriptor[] = [

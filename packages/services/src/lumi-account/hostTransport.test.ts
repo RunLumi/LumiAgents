@@ -200,3 +200,15 @@ test("cancel during persistent write clears the stale session before publishing"
   await assert.rejects(completed, { code: "lumi_flow_cancelled" });
   assert.equal(stored, null);
 });
+
+test("the facade the workspace owner calls exposes every adoption operation it uses", () => {
+  // 回归：owner 测试用 `as never` 假传输，曾掩盖真实门面缺少 changeAdoptionCredentialMode。
+  for (const method of [
+    "listAdoptionRecords",
+    "createAdoptionRecord",
+    "advanceAdoptionRecord",
+    "changeAdoptionCredentialMode",
+    "rollbackAdoptionRecord",
+  ] as const)
+    assert.equal(typeof LumiAccountHostTransport.prototype[method], "function", method);
+});

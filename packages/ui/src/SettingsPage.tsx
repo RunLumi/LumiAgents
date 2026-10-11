@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 import { LumiAccountSection } from "@/settings/LumiAccountSection.js";
 /* oxlint-disable eslint(max-lines) */
 import { ArrowLeft, Rocket, type LucideIcon } from "lucide-react";
@@ -25,6 +26,7 @@ import {
   TID_SETTINGS_SECTION_NAV,
   TID_SETTINGS_USAGE_TAB,
   testId,
+  parseRemoteWorkspaceIdentity,
 } from "@zcode/shared";
 import { Button } from "@/components/ui/button.js";
 import { toast } from "@/components/ui/toast.js";
@@ -645,6 +647,12 @@ export function SettingsPage({
       null
     );
   });
+  const lumiWorkspaceEnvironment =
+    (activeWorkspaceIdentity
+      ? parseRemoteWorkspaceIdentity(activeWorkspaceIdentity)?.kind
+      : null) ??
+    activeWorkspaceTab?.remoteTarget?.kind ??
+    "local";
   const localModelProviderConnectivityWorkspacePath = useMemo(
     () =>
       resolveModelProviderConnectivityWorkspacePath({
@@ -1654,7 +1662,19 @@ export function SettingsPage({
                       <div className="space-y-8">
                         {activeSection === "general" ? (
                           <>
-                            <LumiAccountSection />
+                            <LumiAccountSection
+                              workspace={
+                                activeWorkspacePath
+                                  ? {
+                                      workspacePath: activeWorkspacePath,
+                                      ...(activeWorkspaceIdentity
+                                        ? { workspaceIdentity: activeWorkspaceIdentity }
+                                        : {}),
+                                      environmentType: lumiWorkspaceEnvironment,
+                                    }
+                                  : undefined
+                              }
+                            />
                             <GeneralSectionContent
                               localePreference={localePreference}
                               interfaceMode={interfaceMode}

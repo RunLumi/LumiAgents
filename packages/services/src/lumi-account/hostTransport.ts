@@ -1,18 +1,18 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-
-export class LumiAccountError extends Error {
-  constructor(
-    readonly code: string,
-    readonly status = 0,
-  ) {
-    super(code);
-    this.name = "LumiAccountError";
-  }
-}
+import { LumiAccountError } from "./errors.js";
+import { LumiAdoptionHostTransport, type LumiAdoptionRecord } from "./adoptionTransport.js";
+export { LumiAccountError } from "./errors.js";
+export type { LumiAdoptionRecord } from "./adoptionTransport.js";
+type AdoptionInput<K extends keyof LumiAdoptionHostTransport> =
+  LumiAdoptionHostTransport[K] extends (input: infer I, ...rest: never[]) => unknown ? I : never;
 
 export type { LumiSignInProjection, LumiAccountProjection } from "@zcode/shared";
-import type { LumiSignInProjection, LumiAccountProjection } from "@zcode/shared";
+import type {
+  LumiSignInProjection,
+  LumiAccountProjection,
+  LumiProjectProjection,
+} from "@zcode/shared";
 
 export interface LumiSessionEnvelope {
   version: 1;
@@ -33,6 +33,7 @@ export class LumiAccountHostTransport {
   readonly #origin: string;
   readonly #fetch: typeof fetch;
   readonly #persistence: LumiSessionPersistence | undefined;
+  readonly #adoption: LumiAdoptionHostTransport;
   #writes: Promise<void> = Promise.resolve();
   #session: string | undefined;
   #csrf: string | undefined;
@@ -59,11 +60,14 @@ export class LumiAccountHostTransport {
     this.#origin = url.origin;
     this.#fetch = fetchImpl;
     this.#persistence = persistence;
+    this.#adoption = new LumiAdoptionHostTransport((path, method, body, headers) =>
+      this.#request(path, method, body, headers),
+    );
   }
 
   async #request(
     path: string,
-    method: "GET" | "POST",
+    method: "GET" | "POST" | "PATCH" | "DELETE",
     body?: unknown,
     extraHeaders: Record<string, string> = {},
   ) {
@@ -330,6 +334,30 @@ export class LumiAccountHostTransport {
       expiresAt: row.token_expires_at,
       policyVersion: row.policy_version as number,
     };
+  }
+
+  listProjects(orgId: string): Promise<LumiProjectProjection[]> {
+    return this.#adoption.listProjects(orgId);
+  }
+
+  listAdoptionRecords(orgId: string): Promise<LumiAdoptionRecord[]> {
+    return this.#adoption.listAdoptionRecords(orgId);
+  }
+
+  createAdoptionRecord(input: AdoptionInput<"createAdoptionRecord">, key: string) {
+    return this.#adoption.createAdoptionRecord(input, key);
+  }
+
+  advanceAdoptionRecord(input: AdoptionInput<"advanceAdoptionRecord">, key: string) {
+    return this.#adoption.advanceAdoptionRecord(input, key);
+  }
+
+  changeAdoptionCredentialMode(input: AdoptionInput<"changeAdoptionCredentialMode">, key: string) {
+    return this.#adoption.changeAdoptionCredentialMode(input, key);
+  }
+
+  rollbackAdoptionRecord(input: AdoptionInput<"rollbackAdoptionRecord">, key: string) {
+    return this.#adoption.rollbackAdoptionRecord(input, key);
   }
 
   async signOut(): Promise<void> {
