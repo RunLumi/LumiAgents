@@ -7,8 +7,10 @@ import {
   LumiAutomationWireError,
   type LumiDueOccurrence,
 } from "./automationLeaseTransport.js";
+import { createJournaledLeasePort } from "./automationJournaledLeases.js";
 import {
   createManagedOccurrenceDriver,
+  isStartRefusedBeforeStart,
   type OccurrenceDriverPorts,
 } from "./automationOccurrenceDriver.js";
 
@@ -505,4 +507,192 @@ test("a guard rejection after a granted claim returns the lease before any side 
     ["claim", "release"],
   );
   assert.equal(worker.state, "pending");
+});
+
+// ---------------------------------------------------------------------------
+// DE2E-CLI-01: start refusal classification, race loser and off-peak, through the journal.
+// ---------------------------------------------------------------------------
+
+const wireClaim = {
+  occurrence_id: OCC,
+  attempt: 1,
+  lease_id: `lse_${hex("3")}`,
+  lease_version: 1,
+  lease_fence: 1,
+  expires_at: FAR,
+  state: "leased",
+  lease_token: "lease-token-0123456789abcdef",
+};
+
+const envelope = (reason: string, extra: Record<string, unknown> = {}) => ({
+  error: { code: "conflict", message: "refused", details: { reason, ...extra } },
+});
+
+/** Real transport + the journaled port Main assembles + an in-memory journal (spec 07). */
+function journaledWireDriver(respond: (path: string) => { status: number; body: unknown }) {
+  const calls: string[] = [];
+  const rows: { state: string; reason?: string }[] = [];
+  const transport = new LumiAutomationLeaseHostTransport(
+    async (path) => {
+      calls.push(path.split("/").pop()?.split("?")[0] ?? path);
+      return respond(path);
+    },
+    () => `dvc_${hex("8")}`,
+  );
+  const leases = createJournaledLeasePort({
+    leases: transport,
+    orgId: ORG,
+    localIdFor: async () => marker.localAutomationId,
+    journal: {
+      async record(input) {
+        rows.push({ state: input.state, ...(input.reason ? { reason: input.reason } : {}) });
+      },
+    },
+  });
+  const driver = createManagedOccurrenceDriver({
+    orgId: ORG,
+    leases,
+    findMarkerByManagedId: async () => marker,
+    principalFor: async () => ({ kind: "user", id: USER }),
+    currentPolicyVersion: async () => 4,
+  });
+  return {
+    calls,
+    rows,
+    async poll() {
+      try {
+        return await driver.poll();
+      } finally {
+        await leases.sweepUnconfirmed();
+      }
+    },
+  };
+}
+
+function startRefusedWith(status: number, reason: string) {
+  return (path: string) => {
+    if (path.startsWith("/api/v1/devices/automations/due"))
+      return { status: 200, body: { items: [wireDue] } };
+    if (path.endsWith("/claim")) return { status: 201, body: wireClaim };
+    if (path.endsWith("/start")) return { status, body: envelope(reason) };
+    if (path.endsWith("/release"))
+      return {
+        status: 200,
+        body: { occurrence_id: OCC, lease_id: wireClaim.lease_id, state: "pending" },
+      };
+    return { status: 500, body: undefined };
+  };
+}
+
+// Worker `dispatch_block` + `authorize_device`/`require_device`: refused before any write.
+const PROVEN_NOT_STARTED: [number, string][] = [
+  [409, "entitlement_limit_exceeded"],
+  [403, "entitlement_grace_expired"],
+  [403, "entitlement_not_granted"],
+  [409, "policy_snapshot_stale"],
+  [409, "organization_suspended"],
+  [409, "organization_not_found"],
+  [409, "organization_pending_deletion"],
+  [409, "execution_principal_unavailable"],
+  [403, "device_revoked"],
+  [403, "device_not_approved"],
+  [403, "organization_not_active"],
+  [401, "device_token_expired"],
+];
+
+test("a start refusal that proves no run was created releases and is never needs-reconciliation", async () => {
+  for (const [status, reason] of PROVEN_NOT_STARTED) {
+    const h = journaledWireDriver(startRefusedWith(status, reason));
+    const { started, skipped } = await h.poll();
+    assert.equal(started.length, 0, reason);
+    assert.deepEqual(
+      skipped.map((item) => [item.code, item.reason]),
+      [["refused", reason]],
+      `${reason}: a refusal, not needs_reconciliation`,
+    );
+    assert.deepEqual(h.calls, ["due", "claim", "start", "release"], `${reason}: released`);
+    assert.deepEqual(
+      h.rows.map((row) => row.state),
+      ["starting", "released"],
+      `${reason}: the journal never shows a possibly-started run`,
+    );
+  }
+});
+
+test("a start failure that cannot prove 'not started' stays ambiguous and is never released", async () => {
+  for (const [status, reason] of [
+    [409, "lease_fence_invalid"],
+    [409, "automation_invalid_state"],
+    [409, "occurrence_ambiguous"],
+    // A client-local guard code is not a server start refusal: unknown on the wire.
+    [409, "automation_policy_stale"],
+    [403, "some_future_reason"],
+    // A known pre-start code on a 5xx is not a refusal the Worker made deliberately.
+    [503, "entitlement_not_granted"],
+  ] as const) {
+    const h = journaledWireDriver(startRefusedWith(status, reason));
+    const { started, skipped } = await h.poll();
+    assert.equal(started.length, 0, reason);
+    assert.equal(skipped[0]?.code, "needs_reconciliation", reason);
+    assert.deepEqual(h.calls, ["due", "claim", "start"], `${reason}: no release`);
+    assert.deepEqual(
+      h.rows.map((row) => [row.state, row.reason]),
+      [
+        ["starting", undefined],
+        ["ambiguous", "start_unconfirmed"],
+      ],
+      reason,
+    );
+  }
+  assert.equal(isStartRefusedBeforeStart(new Error("socket hang up")), false);
+});
+
+test("a race loser (sequential or concurrent) is a lost race: no start, no journal row", async () => {
+  for (const details of [{}, { existing_lease_id: `lse_${hex("e")}` }]) {
+    const h = journaledWireDriver((path) => {
+      if (path.startsWith("/api/v1/devices/automations/due"))
+        return { status: 200, body: { items: [wireDue] } };
+      if (path.endsWith("/claim"))
+        return { status: 409, body: envelope("occurrence_already_claimed", details) };
+      return { status: 500, body: undefined };
+    });
+    const { started, skipped } = await h.poll();
+    assert.equal(started.length, 0);
+    assert.deepEqual(
+      skipped.map((item) => [item.code, item.reason]),
+      [["lost_race", "occurrence_already_claimed"]],
+      JSON.stringify(details),
+    );
+    assert.deepEqual(h.calls, ["due", "claim"], "the loser sends nothing after the claim");
+    assert.deepEqual(h.rows, [], "no journal row, so no 'Check run history' badge");
+  }
+});
+
+test("an off_peak occurrence is refused by the shared P06 classifier before any claim", async () => {
+  const worker = new FakeWorker();
+  const offPeak = { ...due, offPeakMode: "off_peak" as const };
+  const driver = driverFor(worker, "A", {
+    leases: { ...worker.port("A"), listDue: async () => [offPeak] },
+  });
+  const { started, skipped } = await driver.poll();
+  assert.equal(started.length, 0);
+  assert.deepEqual(
+    skipped.map((item) => [item.code, item.reason]),
+    [["refused", "off_peak_not_allowed"]],
+  );
+  assert.deepEqual(worker.calls, [], "no claim, start or release");
+
+  const h = journaledWireDriver((path) =>
+    path.startsWith("/api/v1/devices/automations/due")
+      ? { status: 200, body: { items: [{ ...wireDue, off_peak_mode: "off_peak" }] } }
+      : { status: 500, body: undefined },
+  );
+  const result = await h.poll();
+  assert.deepEqual(
+    result.skipped.map((item) => [item.code, item.reason]),
+    [["refused", "off_peak_not_allowed"]],
+    "the assembled path reports the stable reason instead of silently dropping it",
+  );
+  assert.deepEqual(h.calls, ["due"]);
+  assert.deepEqual(h.rows, []);
 });

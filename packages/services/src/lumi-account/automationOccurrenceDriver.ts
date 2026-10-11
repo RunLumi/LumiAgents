@@ -7,6 +7,7 @@ import {
   P06AutomationLeaseError,
   isP06ExecutableExecutionPrincipal,
   p06ReasonCodeSchema,
+  resolveAutomationExecutionClass,
   type P06AutomationExecutionGrant,
   type P06ExecutionPrincipal,
   type P06ReasonCode,
@@ -69,6 +70,47 @@ export interface ManagedOccurrence {
 
 const MS_PER_SECOND = 1000;
 
+/**
+ * The one list of `start` refusals that prove the Worker created no run for this attempt, so a
+ * best-effort pre-start release is allowed (spec 07: "Only explicit known pre-start eligibility
+ * refusals permit best-effort release"). Each is returned before the Worker writes anything:
+ * - `device_token_expired`: token lookup, which also refuses a revoked device (`require_device`);
+ * - `device_revoked` / `device_not_approved` / `organization_not_active`: `authorize_device`;
+ * - `device_not_eligible`: P06-CG frozen eligibility reason;
+ * - the rest: `dispatch_block`, re-read by `start_occurrence` immediately before the run exists.
+ * Anything else after `start` was sent (lost response, 5xx, stale fence, invalid state, unknown
+ * reason, unreadable grant) cannot prove "not started" and is ambiguous.
+ */
+const START_REFUSED_BEFORE_START: ReadonlySet<string> = new Set([
+  "device_token_expired",
+  "device_revoked",
+  "device_not_approved",
+  "organization_not_active",
+  "device_not_eligible",
+  "organization_suspended",
+  "organization_not_found",
+  "organization_pending_deletion",
+  "execution_principal_unavailable",
+  "policy_snapshot_stale",
+  "entitlement_not_granted",
+  "entitlement_grace_expired",
+  "entitlement_limit_exceeded",
+]);
+
+/** No off-peak policy is enforceable by the Host turn path yet; see the classifier call below. */
+const HOST_ENFORCEABLE_OFF_PEAK_POLICY = undefined;
+
+/** Whether a failed `start` is a server refusal that proves no run was created. */
+export function isStartRefusedBeforeStart(error: unknown): error is LumiAutomationLeaseError {
+  return (
+    error instanceof LumiAutomationLeaseError &&
+    error.status >= 400 &&
+    error.status < 500 &&
+    error.reason !== undefined &&
+    START_REFUSED_BEFORE_START.has(error.reason)
+  );
+}
+
 function refusalReason(error: unknown): string | undefined {
   if (error instanceof LumiAutomationLeaseError) return error.reason;
   if (error && typeof error === "object" && "code" in error) {
@@ -96,6 +138,27 @@ export function createManagedOccurrenceDriver(ports: OccurrenceDriverPorts) {
         "the resolved execution principal is not executable in the P06 MVP",
         { occurrenceId: due.occurrenceId },
       );
+    // Off-peak is decided by the shared P06 classifier, never by a second local rule. The Host does
+    // not apply `narrowOffPeakToolConstraints` yet (spec 07 "Off-peak and ineligible work"), so this
+    // device has no off-peak policy it can enforce and presents none: every off_peak occurrence is
+    // then refused with the frozen `off_peak_not_allowed`, before the claim spends an attempt.
+    const executionClass = resolveAutomationExecutionClass(
+      {
+        occurrence_id: due.occurrenceId,
+        automation_id: due.automationId,
+        attempt: due.attempt,
+        scheduled_for: due.scheduledFor,
+        off_peak_mode: due.offPeakMode,
+        policy_snapshot_id: due.policySnapshotId,
+        policy_version: due.policyVersion,
+        execution_principal: principal,
+      },
+      HOST_ENFORCEABLE_OFF_PEAK_POLICY,
+      // The principal already passed the executable check above.
+      { isExecutablePrincipal: (kind) => kind === principal.kind },
+    );
+    if (!executionClass.ok)
+      throw Object.assign(new Error(executionClass.code), { code: executionClass.code });
     const claim = await ports.leases.claim(due, principal);
     try {
       guard.acceptClaim(claim);
@@ -116,14 +179,7 @@ export function createManagedOccurrenceDriver(ports: OccurrenceDriverPorts) {
     try {
       guard.acceptStart(await ports.leases.start(occurrenceId, guard.buildFenceRequest({})));
     } catch (error) {
-      const refusedBeforeStart =
-        error instanceof LumiAutomationLeaseError &&
-        error.status >= 400 &&
-        error.status < 500 &&
-        ["entitlement_not_granted", "device_not_eligible", "automation_policy_stale"].includes(
-          error.reason ?? "",
-        );
-      if (!refusedBeforeStart) {
+      if (!isStartRefusedBeforeStart(error)) {
         // A lost response or invalid grant does not prove the server never started.
         guard.markAmbiguous();
         throw new LumiAutomationLeaseError(409, "occurrence_ambiguous");
