@@ -109,6 +109,8 @@ export async function startPromptTurn(
     record.activeOffPeakTaskId = activeOffPeakTaskId;
   }
   record.activeBotDeliveryTarget = params.botDeliveryTarget;
+  // P05-CR-005 step 1: browser commands in a managed session fail closed without a decision.
+  if (params.modelExecution?.managedContext) record.lumiManagedSession = true;
 
   let admission: SendInputResult;
   try {

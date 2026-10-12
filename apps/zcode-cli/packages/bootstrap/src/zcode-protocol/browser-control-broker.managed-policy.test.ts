@@ -4,10 +4,7 @@ import test from "node:test";
 import type { ManagedBrowserComputerPolicyContext } from "@zcode/contracts";
 import type { BrowserComputerPolicyGate } from "@zcode/shared";
 
-import {
-  createProtocolBrowserControlBroker,
-  markManagedBrowserSession,
-} from "./browser-control-broker.js";
+import { createProtocolBrowserControlBroker } from "./browser-control-broker.js";
 import type { ZCodeProtocolAgentServerContext } from "./server-types.js";
 
 /**
@@ -216,8 +213,9 @@ test("a session that received managed input refuses browser commands without a m
   assert.equal(before.ok, true, "positive control: a local-personal session is unchanged");
   assert.equal(requests.length, 1);
 
-  // The marker is shared by every broker built on this context (process-level and per-app).
-  markManagedBrowserSession(context, SESSION_ID);
+  // The flag lives on the session record, so every broker on this context (process-level
+  // node_repl broker and per-app runtime port) sees it.
+  (context.sessions.get(SESSION_ID) as { lumiManagedSession?: boolean }).lumiManagedSession = true;
   const after = await nodeReplBroker.execute({
     browserId: "iab:test",
     browserGeneration: 1,

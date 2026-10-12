@@ -33,13 +33,6 @@ interface ProtocolBrowserBrokerState {
   childSessionParents: Map<string, string>;
   /** 以父会话为 tab 归属的子会话（core Agent 子代理，tabOwner: "parent"）。 */
   parentTabOwnerChildren: Set<string>;
-  /**
-   * Sessions that received Lumi managed input. Sticky: once a session ran a managed turn, its
-   * browser commands require a managed decision (P05-CR-005 step 1). Without one they are refused
-   * instead of degrading to local-personal, which let an approved Browser Use call bypass the
-   * organization's browser policy.
-   */
-  managedSessions: Set<string>;
 }
 
 const brokerStateByContext = new WeakMap<
@@ -54,7 +47,6 @@ function brokerState(context: ZCodeProtocolAgentServerContext): ProtocolBrowserB
       connectionsBySession: new Map(),
       childSessionParents: new Map(),
       parentTabOwnerChildren: new Set(),
-      managedSessions: new Set(),
     };
     brokerStateByContext.set(context, state);
   }
@@ -124,19 +116,22 @@ function browserPolicyDenialMessage(code: string): string {
   }
 }
 
-/** Mark a session as managed: its browser commands now fail closed without a managed decision. */
-export function markManagedBrowserSession(
+/**
+ * P05-CR-005 step 1: a session (or the client session that started a child session) that received
+ * Lumi managed input requires a managed decision for every browser command. Without one the command
+ * is refused instead of degrading to local-personal, which let an approved Browser Use call bypass
+ * the organization's browser policy.
+ */
+function isManagedBrowserSession(
   context: ZCodeProtocolAgentServerContext,
+  state: ProtocolBrowserBrokerState,
   sessionId: string,
-): void {
-  brokerState(context).managedSessions.add(sessionId);
-}
-
-function isManagedBrowserSession(state: ProtocolBrowserBrokerState, sessionId: string): boolean {
+): boolean {
   const parentSessionId = state.childSessionParents.get(sessionId);
   return (
-    state.managedSessions.has(sessionId) ||
-    (parentSessionId !== undefined && state.managedSessions.has(parentSessionId))
+    context.sessions.get(sessionId)?.lumiManagedSession === true ||
+    (parentSessionId !== undefined &&
+      context.sessions.get(parentSessionId)?.lumiManagedSession === true)
   );
 }
 
@@ -215,7 +210,7 @@ export function createProtocolBrowserControlBroker(
         const argumentsSummary = summarizeBrowserPolicyCommand(command as BrowserCommand);
         const authorization = await authorizeBrowserComputerAction({
           ...(options.policyGate ? { gate: options.policyGate } : {}),
-          ...(options.requireManagedPolicy || isManagedBrowserSession(state, sessionId)
+          ...(options.requireManagedPolicy || isManagedBrowserSession(context, state, sessionId)
             ? { requireManagedPolicy: true }
             : {}),
           ...(signal ? { signal } : {}),
