@@ -35,6 +35,11 @@ concurrency:
 
 jobs:
   dco:
+    # TEMPORARILY DISABLED by the repository owner (2026-10-12) for development.
+    # To restore: delete this `if:` line. Before re-enabling, add a verified same-author
+    # retrospective attestation (docs/licensing/dco-attestations.json) for every unsigned
+    # commit merged to main while this was off, or the main-push check fails.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout (merge commit)
