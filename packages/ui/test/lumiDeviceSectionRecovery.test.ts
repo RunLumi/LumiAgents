@@ -8,7 +8,11 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { LumiDeviceStateProjection } from "@zcode/shared";
+import {
+  TID_LUMI_DEVICE_RECOVER,
+  TID_LUMI_DEVICE_REVOKED,
+  type LumiDeviceStateProjection,
+} from "@zcode/shared";
 
 const orgId = `org_${"a".repeat(32)}`;
 const device = (status: LumiDeviceStateProjection["status"]): LumiDeviceStateProjection => ({
@@ -57,25 +61,42 @@ describe("Lumi device section after a refused action", () => {
         : { ok: false, code: "lumi_device_action_failed" },
     );
     await renderSection();
-    expect(screen.queryByText("lumiDevice.recover")).toBeNull();
+    expect(screen.queryByTestId(TID_LUMI_DEVICE_RECOVER)).toBeNull();
 
     await act(async () => fireEvent.click(screen.getByText("lumiDevice.sync")));
 
-    await waitFor(() => expect(screen.getByText("lumiDevice.recover")).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId(TID_LUMI_DEVICE_RECOVER)).toBeTruthy());
+    expect(screen.queryByTestId(TID_LUMI_DEVICE_REVOKED)).toBeNull();
     expect(screen.getByText("lumiDevice.expired")).toBeTruthy();
   });
 
-  it("a revoked device is not offered recovery", async () => {
+  it("a refused recovery that reveals revocation shows the revoked message and no recovery", async () => {
+    const reads = [device("reauth_required"), device("revoked")];
     bridge.request.mockImplementation(async (command: { action: string }) =>
       command.action === "read-device"
-        ? { ok: true, device: device("active") }
+        ? { ok: true, device: reads.shift() }
         : { ok: false, code: "lumi_device_action_failed" },
     );
     await renderSection();
+    await act(async () => fireEvent.click(screen.getByTestId(TID_LUMI_DEVICE_RECOVER)));
 
-    await act(async () => fireEvent.click(screen.getByText("lumiDevice.sync")));
+    await waitFor(() => expect(screen.getByTestId(TID_LUMI_DEVICE_REVOKED)).toBeTruthy());
+    expect(screen.getByText("lumiDevice.revoked")).toBeTruthy();
+    expect(screen.queryByTestId(TID_LUMI_DEVICE_RECOVER)).toBeNull();
+    expect(screen.queryByText("lumiDevice.enroll")).toBeNull();
+    expect((screen.getByText("lumiDevice.sync") as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByText("lumiDevice.refresh") as HTMLButtonElement).disabled).toBe(true);
+    expect(bridge.request.mock.calls.map(([command]) => command.action)).toEqual([
+      "read-device",
+      "recover-device",
+      "read-device",
+    ]);
+  });
 
-    await waitFor(() => expect(screen.getByText("lumiDevice.error")).toBeTruthy());
-    expect(screen.queryByText("lumiDevice.recover")).toBeNull();
+  it("after a restart a revoked device still shows no recovery", async () => {
+    bridge.request.mockResolvedValue({ ok: true, device: device("revoked") });
+    await renderSection();
+    expect(screen.getByTestId(TID_LUMI_DEVICE_REVOKED)).toBeTruthy();
+    expect(screen.queryByTestId(TID_LUMI_DEVICE_RECOVER)).toBeNull();
   });
 });

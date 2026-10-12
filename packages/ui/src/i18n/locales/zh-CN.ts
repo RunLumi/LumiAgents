@@ -116,6 +116,8 @@ const zhCN: Record<string, string> = {
   "lumiDevice.enroll": "确认并注册此设备",
   "lumiDevice.sync": "同步策略",
   "lumiDevice.refresh": "刷新设备令牌",
+  "lumiDevice.revoked":
+    "此设备已被组织吊销。本设备上的托管操作已停止，本地工作不受影响。如需重新注册此设备，请先联系组织管理员。",
   "lumiDevice.recover": "确认恢复并续期此设备",
 
   "lumiAccount.openBrowser": "打开批准页面",

@@ -134,13 +134,13 @@ test("a Worker-expired token becomes reauth_required, persists across restart an
   );
 });
 
-test("a revoked device is reported as revoked and is not offered recovery", async () => {
+test("a device route answering device_revoked persists revoked, never reauth_required", async () => {
   const h = harness({ status: 403, reason: "device_revoked" });
   const owner = h.ownerFor();
   await assert.rejects(owner.syncPolicy(), /lumi_device_revoked/);
-  assert.equal((await owner.read()).status, "active", "never reauth_required, so no recovery");
-  assert.equal((await h.ownerFor().read()).status, "active");
-  assert.deepEqual(h.disk.value, h.original, "the vault is untouched");
+  assert.equal((await owner.read()).status, "revoked", "distinct from reauth_required");
+  assert.equal((await h.ownerFor().read()).status, "revoked", "persisted across restart");
+  assert.equal(h.disk.value!.credential!.token, token, "the token is not aged as expired");
   assert.equal(h.calls.includes("recovery-challenge"), false);
 });
 

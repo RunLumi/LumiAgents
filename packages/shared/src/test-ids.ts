@@ -17,6 +17,10 @@ export const TID_LOGIN_USE_API_KEY_BUTTON = "login-use-api-key-button";
 export const TID_LUMI_ENTRY_SIGN_IN = "lumi-entry-sign-in";
 /** 登录页不登录、继续本地使用按钮 */
 export const TID_LOGIN_CONTINUE_LOCAL = "login-continue-local";
+/** 设置页：恢复并续期本设备按钮 */
+export const TID_LUMI_DEVICE_RECOVER = "lumi-device-recover";
+/** 设置页：本设备已被组织吊销的说明 */
+export const TID_LUMI_DEVICE_REVOKED = "lumi-device-revoked";
 /** API Key 登录 provider 选择触发器 */
 export const TID_LOGIN_API_KEY_PROVIDER_TRIGGER = "login-api-key-provider-trigger";
 /** API Key 登录 provider 选择项（动态后缀为 provider choice） */

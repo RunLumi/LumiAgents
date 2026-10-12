@@ -14,6 +14,8 @@ export interface LumiDeviceRecord {
   enrollmentId: string | null;
   approvalKey: string;
   credential: LumiDeviceCredential | null;
+  /** Set once the Worker answered `device_revoked` for this device; absent in older vault files. */
+  revokedAt?: string;
 }
 export function createLumiDeviceVault(options: {
   directory: string;
@@ -28,9 +30,15 @@ export function createLumiDeviceVault(options: {
   function validate(value: unknown): LumiDeviceRecord {
     if (!value || typeof value !== "object") throw new Error("lumi_device_invalid");
     const row = value as LumiDeviceRecord;
+    const keys = Object.keys(row)
+      .filter((key) => key !== "revokedAt")
+      .sort()
+      .join(",");
     if (
-      Object.keys(row).sort().join(",") !==
+      keys !==
         "approvalKey,credential,enrollmentId,fingerprint,orgId,orgSlug,origin,privateKeyPem,publicKeyPem,userId,version" ||
+      (row.revokedAt !== undefined &&
+        (typeof row.revokedAt !== "string" || !Number.isFinite(Date.parse(row.revokedAt)))) ||
       row.version !== 1 ||
       row.origin !== origin ||
       row.orgId !== options.orgId ||

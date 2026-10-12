@@ -105,6 +105,11 @@ export function createManagedAutomationAssembly(deps: ManagedAutomationAssemblyD
       async poll() {
         try {
           return await driver.poll();
+        } catch (error) {
+          // The due list is the first device-token call of a pass: an expired or revoked device is
+          // recorded by the device owner, the same as on any other device route.
+          await device.observeServerRefusal(error);
+          throw error;
         } finally {
           // A start that never confirmed cannot be proven "not started": mark it, never retry it.
           await journaled.sweepUnconfirmed();
