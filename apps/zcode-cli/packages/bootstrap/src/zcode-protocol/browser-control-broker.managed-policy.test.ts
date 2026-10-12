@@ -4,7 +4,10 @@ import test from "node:test";
 import type { ManagedBrowserComputerPolicyContext } from "@zcode/contracts";
 import type { BrowserComputerPolicyGate } from "@zcode/shared";
 
-import { createProtocolBrowserControlBroker } from "./browser-control-broker.js";
+import {
+  createProtocolBrowserControlBroker,
+  markManagedBrowserSession,
+} from "./browser-control-broker.js";
 import type { ZCodeProtocolAgentServerContext } from "./server-types.js";
 
 /**
@@ -197,4 +200,40 @@ test("cancelRequest is exempt so a running action stays cancellable", async () =
   });
   assert.equal(result.ok, true);
   assert.equal(requests.length, 1);
+});
+
+test("a session that received managed input refuses browser commands without a managed decision", async () => {
+  // P05-CR-005: node_repl browser commands carry no managed context. Before the fix a managed
+  // run's approved Browser Use call navigated as local-personal and bypassed the org browser policy.
+  const { context, requests } = createContext();
+  const nodeReplBroker = createProtocolBrowserControlBroker(context);
+  const before = await nodeReplBroker.execute({
+    browserId: "iab:test",
+    browserGeneration: 1,
+    sessionId: SESSION_ID,
+    command: navigate,
+  });
+  assert.equal(before.ok, true, "positive control: a local-personal session is unchanged");
+  assert.equal(requests.length, 1);
+
+  // The marker is shared by every broker built on this context (process-level and per-app).
+  markManagedBrowserSession(context, SESSION_ID);
+  const after = await nodeReplBroker.execute({
+    browserId: "iab:test",
+    browserGeneration: 1,
+    sessionId: SESSION_ID,
+    command: navigate,
+  });
+  assert.equal(after.ok, false);
+  assert.equal(after.error?.code, "policy_denied");
+  assert.equal(after.error?.sideEffect, "none");
+  assert.equal(requests.length, 1, "the refused command never reached the transport");
+
+  const cancelled = await nodeReplBroker.execute({
+    browserId: "iab:test",
+    browserGeneration: 1,
+    sessionId: SESSION_ID,
+    command: { method: "cancelRequest", requestId: "req_test" } as never,
+  });
+  assert.equal(cancelled.ok, true, "cancellation stays available");
 });

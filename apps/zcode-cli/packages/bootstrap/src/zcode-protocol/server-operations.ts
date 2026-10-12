@@ -115,7 +115,10 @@ import { createProtocolInteractionBroker } from "./interaction-broker.js";
 import { createProtocolAutomationPort } from "./automation-port.js";
 import { createProtocolOffPeakPort } from "./offpeak-port.js";
 import { createProtocolTopicResourcePort } from "./topic-resource-port.js";
-import { createProtocolBrowserControlBroker } from "./browser-control-broker.js";
+import {
+  createProtocolBrowserControlBroker,
+  markManagedBrowserSession,
+} from "./browser-control-broker.js";
 import { mapComputerUseOperationEvent } from "./computer-use-operation-event.js";
 import { protocolMcpServersToRuntimeMcpConfig } from "./protocol-mcp-config.js";
 import { projectIdFromDirectory } from "../app/paths.js";
@@ -2430,6 +2433,9 @@ async function runPromptTurnInBackground(
     record.activeOffPeakTaskId = activeOffPeakTaskId;
   }
   record.activeBotDeliveryTarget = params.botDeliveryTarget;
+  if (params.modelExecution?.managedContext) {
+    markManagedBrowserSession(context, record.app.sessionId);
+  }
   try {
     const admission = await record.app.sendInput(
       {
