@@ -1,10 +1,12 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
 import { generateKeyPairSync, createHash, randomUUID, sign, createPrivateKey } from "node:crypto";
 import {
+  LumiAccountError,
   LumiDeviceHostTransport,
   type LumiAccountHostTransport,
   type LumiRuntimeCapabilityReport,
 } from "@zcode/services/node";
+import { ageRefusedCredential } from "./lumiDeviceExpiry.js";
 import type { LumiDeviceRecord } from "./lumiDeviceVault.js";
 import type { LumiSessionGuard } from "./lumiSessionFence.js";
 interface Vault {
@@ -108,12 +110,29 @@ export function createLumiDeviceOwner(options: {
     await device.restore();
     loaded = true;
   }
+  /** Persist a Worker-declared expiry (see `ageRefusedCredential`), then reload the transport. */
+  async function markCredentialExpired(refusedToken: string) {
+    await withVaultLock(lockIdentity, async () => {
+      record = await ageRefusedCredential(options.vault, refusedToken);
+    });
+    await device.restore();
+  }
   function serialized<T>(work: () => Promise<T>, guard?: LumiSessionGuard): Promise<T> {
     const next = queue.then(async () => {
       activeGuard = guard;
       try {
         check();
         return await work();
+      } catch (error) {
+        const token = record?.credential?.token;
+        if (
+          token &&
+          error instanceof LumiAccountError &&
+          error.code === "lumi_device_token_expired"
+        )
+          // Best effort: failing to persist must not hide the refusal itself.
+          await markCredentialExpired(token).catch(() => undefined);
+        throw error;
       } finally {
         activeGuard = undefined;
       }

@@ -140,6 +140,7 @@ const account = {
 } as unknown as LumiAccountHostTransport;
 
 const mapping = { workspaceKey } as LumiWorkspaceMapping;
+const REFUSED = /lumi_device_token_expired|lumi_workspace_binding_missing/;
 
 /** The same composition `authorizeManagedRequest` uses for every managed turn and tool decision. */
 function authorizeManaged(device: ReturnType<typeof createLumiDeviceOwner>) {
@@ -187,18 +188,23 @@ test("a revoked device refuses new managed work at runtime and after restart, wi
   server.state.revoked = true;
   const refusedAfterRevoke = async (owner: ReturnType<typeof createLumiDeviceOwner>) => {
     // Managed turn and managed tool decision both go through this authorization first.
-    await assert.rejects(authorizeManaged(owner), /lumi_device_refused/);
+    // The first refusal is the Worker's 401 `device_token_expired`; it is persisted, so later
+    // checks refuse locally (expired token, or no binding read for a non-active device).
+    await assert.rejects(authorizeManaged(owner), REFUSED);
     // Automation: the due list is refused, so nothing is claimed.
     await assert.rejects(pollAutomations(owner), (error: unknown) => {
-      assert.equal((error as { reason?: string }).reason, "device_token_expired");
+      // Either the Worker's reason (lease transport) or the persisted local expiry.
+      const { reason, code } = error as { reason?: string; code?: string };
+      assert.ok(reason === "device_token_expired" || code === "lumi_device_token_expired");
       return true;
     });
     // Token mint and policy sync are refused as well; the vault keeps the dead credential only.
-    await assert.rejects(owner.refresh(), /lumi_device_refused/);
-    await assert.rejects(owner.syncPolicy(), /lumi_device_refused/);
-    await assert.rejects(owner.readCurrentPolicy(), /lumi_device_refused/);
+    await assert.rejects(owner.refresh(), REFUSED);
+    await assert.rejects(owner.syncPolicy(), REFUSED);
+    await assert.rejects(owner.readCurrentPolicy(), REFUSED);
     // `enroll` never silently re-enrolls an identity that already holds a credential.
     await owner.enroll();
+    assert.equal((await owner.read()).status, "reauth_required");
   };
 
   await refusedAfterRevoke(running);
