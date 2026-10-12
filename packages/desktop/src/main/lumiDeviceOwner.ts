@@ -6,7 +6,12 @@ import {
   type LumiAccountHostTransport,
   type LumiRuntimeCapabilityReport,
 } from "@zcode/services/node";
-import { persistDeviceRefusal, reconcile } from "./lumiDeviceExpiry.js";
+import {
+  keepLeasesFresh,
+  needsProactiveRefresh,
+  persistDeviceRefusal,
+  reconcile,
+} from "./lumiDeviceExpiry.js";
 import type { LumiDeviceRecord } from "./lumiDeviceVault.js";
 import type { LumiSessionGuard } from "./lumiSessionFence.js";
 interface Vault {
@@ -99,6 +104,29 @@ export function createLumiDeviceOwner(options: {
     } catch {
       // Best effort: failing to persist must not hide the refusal itself.
     }
+  }
+  /** Rotate a still-valid token that is about to expire, by proof of possession (P03-CG). */
+  async function ensureFresh() {
+    if (record?.revokedAt || !needsProactiveRefresh(record?.credential)) return;
+    try {
+      const privateKey = createPrivateKey(record!.privateKeyPem);
+      await device.refresh(options.appVersion, async (nonce) =>
+        sign(null, Buffer.from(nonce), privateKey).toString("hex"),
+      );
+    } catch (error) {
+      // Best effort: a refused rotation (e.g. below the minimum version) is recorded, and the
+      // still-valid token keeps serving this operation until it expires.
+      await observeRefusal(error);
+    }
+  }
+  /** A token-using operation: loaded, not revoked, enrolled, and rotated if about to expire. */
+  function withToken<T>(work: () => Promise<T>, guard?: LumiSessionGuard): Promise<T> {
+    return serialized(async () => {
+      await load();
+      if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      await ensureFresh();
+      return work();
+    }, guard);
   }
   /** A revoked device sends nothing with its token and offers no recovery. */
   function refuseRevoked(): false {
@@ -240,16 +268,17 @@ export function createLumiDeviceOwner(options: {
      * every request, and its results never reach the renderer, the scheduler process or Host.
      */
     automationLeases: () =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
-        return device.automationLeases();
+      withToken(async () => {
+        return keepLeasesFresh(device.automationLeases(), () =>
+          serialized(async () => {
+            await load();
+            if (!refuseRevoked()) await ensureFresh();
+          }),
+        );
       }),
 
     listWorkspaceBindings: () =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.listWorkspaceBindings();
       }),
 
@@ -259,66 +288,48 @@ export function createLumiDeviceOwner(options: {
       workspaceBindingId: string;
       title?: string;
     }) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.createManagedSession(input);
       }),
 
     createManagedRun: (agentSessionId: string, modelAlias: string) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.createManagedRun(agentSessionId, modelAlias);
       }),
 
     getManagedRun: (runId: string) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.getManagedRun(runId);
       }),
 
     requestManagedToolDecision: (
       input: import("@zcode/shared").ZCodeManagedToolDecisionRequestParams,
     ) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.requestManagedToolDecision(input);
       }),
 
     reportManagedToolResult: (input: import("@zcode/shared").ZCodeManagedToolResultRequestParams) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         await device.reportManagedToolResult(input, input.status);
       }),
     startManagedRun: (run: Awaited<ReturnType<typeof device.getManagedRun>>) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.startManagedRun(run);
       }),
 
     completeManagedRun: (run: Awaited<ReturnType<typeof device.getManagedRun>>) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.completeManagedRun(run);
       }),
 
     failManagedRun: (run: Awaited<ReturnType<typeof device.getManagedRun>>, failureCode: string) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.failManagedRun(run, failureCode);
       }),
 
     cancelManagedRun: (run: Awaited<ReturnType<typeof device.getManagedRun>>) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.cancelManagedRun(run);
       }),
 
@@ -328,23 +339,17 @@ export function createLumiDeviceOwner(options: {
       displayName: string;
       environmentType: "local" | "ssh" | "wsl" | "docker" | "remote";
     }) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.createWorkspaceBinding(input);
       }),
 
     deleteWorkspaceBinding: (bindingId: string) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         await device.deleteWorkspaceBinding(bindingId);
       }),
 
     recover: (guard?: LumiSessionGuard) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         const { credential, privateKeyPem } = record;
         check();
         const challenge = await options.account.createDeviceRecoveryChallenge(
@@ -378,9 +383,7 @@ export function createLumiDeviceOwner(options: {
         return projection();
       }, guard),
     syncPolicy: (guard?: LumiSessionGuard) =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         check();
         await reportRuntime();
         check();
@@ -398,9 +401,7 @@ export function createLumiDeviceOwner(options: {
         };
       }, guard),
     readCurrentPolicy: () =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         const policy = await device.policy();
         return {
           id: policy.id as string,
@@ -410,9 +411,7 @@ export function createLumiDeviceOwner(options: {
       }),
     /** Publish the Main-validated runtime snapshot; heartbeat only, never policy ACK. */
     refreshRuntimeCapabilities: () =>
-      serialized(async () => {
-        await load();
-        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         await reportRuntime(true);
       }),
     /** Main paths outside this queue (the automation poll) report a refusal of the held token. */

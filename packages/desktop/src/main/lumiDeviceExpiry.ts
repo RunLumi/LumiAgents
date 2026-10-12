@@ -96,3 +96,46 @@ export function reconcile(
   }
   return { ...latest, enrollmentId: latest.enrollmentId ?? next.enrollmentId, credential };
 }
+
+/**
+ * Rotate a still-valid device token this long before it expires (P03-CG: DeviceToken is
+ * short-lived, 15 minutes, renewed by proof-of-possession over a server nonce). An already
+ * expired token is never rotated here: that needs human-authorized recovery (FR-F19-010).
+ */
+export const DEVICE_TOKEN_REFRESH_MARGIN_MS = 5 * 60_000;
+
+export function needsProactiveRefresh(
+  credential: { tokenExpiresAt: string } | null | undefined,
+  now = Date.now(),
+): boolean {
+  if (!credential) return false;
+  const remaining = Date.parse(credential.tokenExpiresAt) - now;
+  return Number.isFinite(remaining) && remaining > 0 && remaining <= DEVICE_TOKEN_REFRESH_MARGIN_MS;
+}
+
+type LeaseMethods = "listDue" | "claim" | "renew" | "start" | "settle" | "release";
+type LeaseTransport = Record<LeaseMethods, (...args: never[]) => Promise<unknown>>;
+
+/**
+ * The lease port outlives the owner call that produced it (a poll, a long managed run's renewals),
+ * so each lease request first lets the owner rotate a token that is about to expire.
+ */
+export function keepLeasesFresh<T extends LeaseTransport>(
+  leases: T,
+  ensureFresh: () => Promise<void>,
+): Pick<T, LeaseMethods> {
+  const wrap =
+    <K extends LeaseMethods>(method: K) =>
+    async (...args: Parameters<T[K]>) => {
+      await ensureFresh();
+      return (leases[method] as (...a: Parameters<T[K]>) => ReturnType<T[K]>)(...args);
+    };
+  return {
+    listDue: wrap("listDue"),
+    claim: wrap("claim"),
+    renew: wrap("renew"),
+    start: wrap("start"),
+    settle: wrap("settle"),
+    release: wrap("release"),
+  } as unknown as Pick<T, LeaseMethods>;
+}
