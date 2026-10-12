@@ -5,6 +5,7 @@ import type {
   LumiDeviceStateProjection,
   LumiAccountCommand,
 } from "@zcode/shared";
+import { TID_LUMI_DEVICE_RECOVER, TID_LUMI_DEVICE_REVOKED } from "@zcode/shared";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { Button } from "@/components/ui/button.js";
@@ -50,6 +51,14 @@ export function LumiDeviceSection({
     };
   }, [orgId, lumiAccount]);
   if (!lumiAccount) return null;
+  /** A refused action may have changed the device state (e.g. the Worker expired the token). */
+  async function reread(current: number) {
+    if (!orgId || !lumiAccount) return;
+    const result = await lumiAccount
+      .request({ action: "read-device", orgId })
+      .catch(() => undefined);
+    if (current === seq.current && result?.ok) setDevice(result.device);
+  }
   async function action(
     kind: "enroll-device" | "recover-device" | "sync-device" | "refresh-device",
   ) {
@@ -67,9 +76,15 @@ export function LumiDeviceSection({
       if (result.ok) {
         setDevice(result.device);
         onDeviceChanged?.();
-      } else setError(true);
+      } else {
+        setError(true);
+        await reread(current);
+      }
     } catch {
-      if (current === seq.current) setError(true);
+      if (current === seq.current) {
+        setError(true);
+        await reread(current);
+      }
     } finally {
       if (current === seq.current) setBusy(false);
     }
@@ -108,12 +123,18 @@ export function LumiDeviceSection({
               {text("policyVersion")}: {device.device.policyVersion}
             </p>
           ) : null}
+          {device?.status === "revoked" ? (
+            <p role="status" data-testid={TID_LUMI_DEVICE_REVOKED}>
+              {text("revoked")}
+            </p>
+          ) : null}
           {device?.status === "reauth_required" ? (
             <div role="alert" className="space-y-2">
               <p>{text("expired")}</p>
               <Button
                 variant="outline"
                 disabled={busy}
+                data-testid={TID_LUMI_DEVICE_RECOVER}
                 onClick={() => void action("recover-device")}
               >
                 {text("recover")}
@@ -129,14 +150,14 @@ export function LumiDeviceSection({
               <>
                 <Button
                   variant="outline"
-                  disabled={busy || device.status === "reauth_required"}
+                  disabled={busy || device.status !== "active"}
                   onClick={() => void action("sync-device")}
                 >
                   {text("sync")}
                 </Button>
                 <Button
                   variant="outline"
-                  disabled={busy || device.status === "reauth_required"}
+                  disabled={busy || device.status !== "active"}
                   onClick={() => void action("refresh-device")}
                 >
                   {text("refresh")}

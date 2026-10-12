@@ -241,7 +241,8 @@ export interface LumiAutomationAdoptionProjection {
 }
 
 export interface LumiDeviceStateProjection {
-  status: "not_enrolled" | "pending" | "active" | "reauth_required";
+  /** `revoked`: the Worker said `device_revoked`; persisted, never offered recovery. */
+  status: "not_enrolled" | "pending" | "active" | "reauth_required" | "revoked";
   orgId: string;
   enrollmentId?: string | null;
   device?: { id: string; orgId: string; tokenExpiresAt: string; policyVersion: number };

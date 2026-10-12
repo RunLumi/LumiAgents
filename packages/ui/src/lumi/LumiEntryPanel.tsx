@@ -1,6 +1,7 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
 import { useEffect, useRef } from "react";
 import { Loader2Icon, TriangleAlertIcon } from "lucide-react";
+import { TID_LUMI_ENTRY_SIGN_IN } from "@zcode/shared";
 import { Alert, AlertDescription } from "@/components/ui/alert.js";
 import { Button } from "@/components/ui/button.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
@@ -149,6 +150,7 @@ export function LumiEntryPanel({ onSignedIn }: LumiEntryPanelProps) {
             size="lg"
             autoFocus={!restoreFailed}
             disabled={busy}
+            data-testid={TID_LUMI_ENTRY_SIGN_IN}
             onClick={() => void run("begin")}
           >
             {busy && !restoreFailed ? (

@@ -216,7 +216,7 @@ sequenceDiagram
  S->>M: managed-poll-request {} (no ids, no token)
  M->>M: single-flight; Host available? else skip (no claim)
  M->>W: GET /devices/automations/due (device token)
- M->>M: drop off_peak items and items without a managed marker
+ M->>M: skip items without a managed marker; refuse off_peak (shared P06 classifier)
  M->>W: claim -> lease token, fence (guard.acceptClaim)
  M->>M: journal(occurrence, starting)
  M->>W: start -> run_id, session  (guard.acceptStart)
@@ -252,7 +252,15 @@ Rules:
   A lost start response,5xx,unknown refusal or invalid grant is ambiguous delivery,
   even if the local guard never received acceptStart. Do not release or requeue;
   return needs-reconciliation. Only explicit known pre-start eligibility refusals
-  permit best-effort release; server fence remains authoritative.
+  permit best-effort release; server fence remains authoritative. That list lives
+  only in `isStartRefusedBeforeStart` (`automationOccurrenceDriver.ts`) and is the
+  Worker's pre-write refusals: `require_device` (`device_token_expired`),
+  `authorize_device` (`device_revoked`, `device_not_approved`,
+  `organization_not_active`), the frozen `device_not_eligible`, and `dispatch_block`
+  as re-read by `start` (`organization_suspended`, `organization_not_found`,
+  `organization_pending_deletion`, `execution_principal_unavailable`,
+  `policy_snapshot_stale`, `entitlement_not_granted`, `entitlement_grace_expired`,
+  `entitlement_limit_exceeded`). Only a 4xx with one of these reasons counts.
 - Restart: an in-memory lease cannot be re-adopted (the raw token exists once).
   After restart, an occurrence that had started is not retried: Main reports it
   to the user as needs-reconciliation and never re-dispatches
@@ -360,7 +368,10 @@ lease token, fence or device token; the Host receives only the context.
 An occurrence whose `off_peak_mode` is `off_peak` is never claimed here: the Host path
 does not yet enforce the narrowed tool constraints
 (`narrowOffPeakToolConstraints`), and claiming without them would broaden a host
-restriction. Adoption never sets an `off_peak_policy`, so this is a fail-closed
+restriction. The decision has one owner, the shared P06 classifier
+`resolveAutomationExecutionClass`, called by the occurrence driver before the claim
+with no enforceable off-peak policy; the poll reports the frozen reason
+`off_peak_not_allowed` and nothing is claimed or journaled. Adoption never sets an `off_peak_policy`, so this is a fail-closed
 refusal, not a feature gap for adopted crons. Local off-peak tasks
 (`OffPeakTaskRepo`) are untouched.
 

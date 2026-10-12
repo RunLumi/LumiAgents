@@ -271,7 +271,7 @@ export class LumiDeviceHostTransport {
       signal: AbortSignal.timeout(30_000),
       body: body === undefined ? undefined : JSON.stringify(body),
     });
-    if (!response.ok) throw new LumiAccountError("lumi_device_refused", response.status);
+    if (!response.ok) throw deviceRefusal(response.status, await response.json().catch(() => null));
     return response.status === 204
       ? undefined
       : ((await response.json()) as Record<string, unknown>);
@@ -398,4 +398,19 @@ export class LumiDeviceHostTransport {
     this.#credential = credential;
     return this.projection();
   }
+}
+
+/**
+ * Only the envelope's stable `error.details.reason` is read; nothing else in the body is trusted
+ * or echoed. A Worker-side expiry (`require_device` answers 401 `device_token_expired`, also before
+ * the local `tokenExpiresAt`) is the same fact as a locally expired token; `device_revoked` stays
+ * distinct because a revoked device must not be offered token recovery.
+ */
+export function deviceRefusal(status: number, body: unknown): LumiAccountError {
+  const reason = (body as { error?: { details?: { reason?: unknown } } } | null)?.error?.details
+    ?.reason;
+  if (status === 401 && reason === "device_token_expired")
+    return new LumiAccountError("lumi_device_token_expired", status);
+  if (reason === "device_revoked") return new LumiAccountError("lumi_device_revoked", status);
+  return new LumiAccountError("lumi_device_refused", status);
 }

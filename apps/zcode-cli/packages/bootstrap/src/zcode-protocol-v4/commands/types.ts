@@ -78,6 +78,8 @@ export interface V4SessionRecordView {
   activeOffPeakTaskId?: string;
   /** 当前 Bot 入站 turn 的稳定回推地址；turn 结束后必须恢复。 */
   activeBotDeliveryTarget?: ZCodeAutomationBotDeliveryTarget;
+  /** Same field as ZCodeProtocolSessionRecord: set once this session receives Lumi managed input. */
+  lumiManagedSession?: boolean;
   /** 恢复失败告警：存在时拒绝新 turn（历史损坏不能静默续写）。 */
   restoreWarning?: { message: string; type: string };
   taskType?: SessionTaskType;

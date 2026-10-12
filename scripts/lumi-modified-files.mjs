@@ -103,6 +103,7 @@ export const MODIFIED_FILES = [
   // v3.15.1 上游删除了遥测总开关判定；Lumi 恢复 opt-in 门禁。
   { path: "packages/services/src/telemetry/telemetryCore.ts", comment: "line" },
   { path: "packages/shared/src/index.ts", comment: "line" },
+  { path: "packages/shared/src/test-ids.ts", comment: "line" },
   { path: "packages/ui/src/DesktopTopOverlay.tsx", comment: "line" },
   { path: "packages/ui/src/Root.tsx", comment: "line" },
   { path: "packages/ui/src/SettingsPage.tsx", comment: "line" },
@@ -134,6 +135,7 @@ export const MODIFIED_FILES = [
   { path: "apps/zcode-cli/packages/adapters/tests/provider-database-migration.test.ts", comment: "line" },
   { path: "apps/zcode-cli/packages/node-repl-host/test/bundle-boundary.test.ts", comment: "line" },
   { path: "packages/web/test/webRemoteControlThemeSeed.test.ts", comment: "line" },
+  { path: "packages/ui/test/loginFailureCancel.test.ts", comment: "line" },
   // shebang 必须是脚本第一行，声明只能插在其后，否则脚本不再可执行。
   // shebang 必须是脚本第一行，声明只能插在其后，否则脚本不再可执行。
   { path: "scripts/build-zcode.mjs", comment: "line", place: "afterShebang" },

@@ -1,8 +1,7 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
-// 在不改动 occurrence 驱动器的前提下，为租约端口加两个本地安全属性（spec 07）：
-//  1. start 请求发出之前，「可能已开始」的证据先落盘（崩溃/断连后才能诚实地标 needs reconciliation）。
-//  2. off_peak 类 occurrence 在 claim 之前就被过滤：本机无法执行收窄后的工具约束，认领即放宽限制。
-// 本模块不判断授权、不分类服务端 reason，也不重试；这些全在驱动器与守卫里。
+// 在不改动 occurrence 驱动器的前提下，为租约端口加一个本地安全属性（spec 07）：
+// start 请求发出之前，「可能已开始」的证据先落盘（崩溃/断连后才能诚实地标 needs reconciliation）。
+// 本模块不判断授权、不分类服务端 reason（含 off-peak 拒绝），也不重试；这些全在驱动器与守卫里。
 import type { AutomationManagedOccurrenceState } from "../session/automationManagedOccurrence.js";
 import type {
   LumiAutomationLeaseHostTransport,
@@ -36,8 +35,6 @@ export interface JournaledLeasePortInput {
 }
 
 export type JournaledLeasePort = LeasePort & {
-  /** 本轮因 off_peak 被拒绝认领的 occurrence（仅用于诊断/展示，不是授权信息）。 */
-  refusedOffPeak(): string[];
   /** 一轮结束后：仍停在 starting 的行不能证明「未开始」，一律标为 ambiguous。 */
   sweepUnconfirmed(): Promise<void>;
 };
@@ -45,21 +42,12 @@ export type JournaledLeasePort = LeasePort & {
 export function createJournaledLeasePort(input: JournaledLeasePortInput): JournaledLeasePort {
   const known = new Map<string, LumiDueOccurrence>();
   const open = new Map<string, { localAutomationId: string; managedAutomationId: string }>();
-  const refused: string[] = [];
 
   return {
     async listDue() {
       const items = await input.leases.listDue();
-      const kept: LumiDueOccurrence[] = [];
-      for (const item of items) {
-        if (item.offPeakMode !== "normal") {
-          refused.push(item.occurrenceId);
-          continue;
-        }
-        known.set(item.occurrenceId, item);
-        kept.push(item);
-      }
-      return kept;
+      for (const item of items) known.set(item.occurrenceId, item);
+      return items;
     },
 
     claim(due, principal) {
@@ -112,8 +100,6 @@ export function createJournaledLeasePort(input: JournaledLeasePortInput): Journa
       }
       return response;
     },
-
-    refusedOffPeak: () => [...refused],
 
     async sweepUnconfirmed() {
       for (const [occurrenceId, identity] of open) {

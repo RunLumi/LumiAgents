@@ -63,3 +63,37 @@ test("pending Ed25519 identity restores only for its origin/org, no plaintext", 
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test("revoked state is optional: older files without it still load, a malformed one is refused", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "lumi-device-vault-revoked-"));
+  try {
+    const orgId = `org_${"a".repeat(32)}`,
+      origin = "https://lumi.example",
+      userId = `usr_${"c".repeat(32)}`,
+      { publicKey, privateKey } = generateKeyPairSync("ed25519");
+    const older: LumiDeviceRecord = {
+      version: 1,
+      origin,
+      orgId,
+      userId,
+      orgSlug: "lumi-org",
+      privateKeyPem: privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
+      publicKeyPem: publicKey.export({ type: "spki", format: "pem" }).toString(),
+      fingerprint: createHash("sha256")
+        .update(publicKey.export({ type: "spki", format: "der" }))
+        .digest("hex"),
+      enrollmentId: `enr_${"1".repeat(32)}`,
+      approvalKey: "test-key",
+      credential: null,
+    };
+    const vault = () => createLumiDeviceVault({ directory, origin, orgId, userId, encryption });
+    await vault().save(older);
+    assert.deepEqual(await vault().load(), older);
+    const revoked = { ...older, revokedAt: "2026-10-12T00:00:00.000Z" };
+    await vault().save(revoked);
+    assert.deepEqual(await vault().load(), revoked);
+    await assert.rejects(vault().save({ ...older, revokedAt: "yesterday" }), /lumi_device_invalid/);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});

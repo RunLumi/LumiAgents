@@ -129,6 +129,8 @@ const enUS: Record<string, string> = {
   "lumiDevice.enroll": "Confirm and enroll this device",
   "lumiDevice.sync": "Sync policy",
   "lumiDevice.refresh": "Refresh device token",
+  "lumiDevice.revoked":
+    "This device was revoked by your organization. Managed work on this device is stopped; local work is not affected. Ask an organization admin before enrolling this device again.",
   "lumiDevice.recover": "Approve recovery and renew this device",
 
   "lumiAccount.openBrowser": "Open approval page",

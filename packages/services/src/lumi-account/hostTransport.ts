@@ -100,8 +100,15 @@ export class LumiAccountHostTransport {
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     if (!response.ok) {
-      // Never interpolate server body/URL into errors: it could contain a credential.
-      throw new LumiAccountError("lumi_request_refused", response.status);
+      // Never interpolate server body/URL into errors: it could contain a credential. Only the
+      // stable reason is read, so device recovery can tell a revoked device from other refusals.
+      const body: unknown = await response.json().catch(() => null);
+      const reason = (body as { error?: { details?: { reason?: unknown } } } | null)?.error?.details
+        ?.reason;
+      throw new LumiAccountError(
+        reason === "device_revoked" ? "lumi_device_revoked" : "lumi_request_refused",
+        response.status,
+      );
     }
     return response;
   }

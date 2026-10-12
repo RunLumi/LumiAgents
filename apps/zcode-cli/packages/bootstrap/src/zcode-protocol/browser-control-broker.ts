@@ -116,6 +116,25 @@ function browserPolicyDenialMessage(code: string): string {
   }
 }
 
+/**
+ * P05-CR-005 step 1: a session (or the client session that started a child session) that received
+ * Lumi managed input requires a managed decision for every browser command. Without one the command
+ * is refused instead of degrading to local-personal, which let an approved Browser Use call bypass
+ * the organization's browser policy.
+ */
+function isManagedBrowserSession(
+  context: ZCodeProtocolAgentServerContext,
+  state: ProtocolBrowserBrokerState,
+  sessionId: string,
+): boolean {
+  const parentSessionId = state.childSessionParents.get(sessionId);
+  return (
+    context.sessions.get(sessionId)?.lumiManagedSession === true ||
+    (parentSessionId !== undefined &&
+      context.sessions.get(parentSessionId)?.lumiManagedSession === true)
+  );
+}
+
 export function createProtocolBrowserControlBroker(
   context: ZCodeProtocolAgentServerContext,
   options: ProtocolBrowserPolicyOptions = {},
@@ -191,7 +210,9 @@ export function createProtocolBrowserControlBroker(
         const argumentsSummary = summarizeBrowserPolicyCommand(command as BrowserCommand);
         const authorization = await authorizeBrowserComputerAction({
           ...(options.policyGate ? { gate: options.policyGate } : {}),
-          ...(options.requireManagedPolicy ? { requireManagedPolicy: true } : {}),
+          ...(options.requireManagedPolicy || isManagedBrowserSession(context, state, sessionId)
+            ? { requireManagedPolicy: true }
+            : {}),
           ...(signal ? { signal } : {}),
           request: {
             surface: "browser",

@@ -221,9 +221,14 @@ export function createManagedAutomationRuntime(deps: ManagedAutomationRuntimeDep
             started++;
             await begin(orgId, occurrence);
           }
-        } catch {
+        } catch (error) {
           // 一个组织的失败（令牌过期、网络、吊销）不影响其他组织，也不影响本地任务。
-          deps.log("warn", "managed automation poll failed for one organization");
+          // Only the stable code is logged (never a message, token or body), so a silent stop is diagnosable.
+          const code =
+            error && typeof error === "object" && "code" in error && typeof error.code === "string"
+              ? error.code
+              : "unknown";
+          deps.log("warn", `managed automation poll failed for one organization code=${code}`);
         }
       }
       return { status: "ok", started, skipped };

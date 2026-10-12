@@ -1,3 +1,5 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
+/* oxlint-disable eslint(max-lines) -- the single test-id registry is intentionally one flat file. */
 /**
  * 统一管理所有 data-testid，UI 组件和 E2E 测试共用此单一来源。
  * 新增 testid 时请在此文件添加，不要在组件中硬编码字符串。
@@ -11,6 +13,14 @@ export const TID_LOGIN_TRIGGER = "login-trigger";
 export const TID_LOGIN_MENU_ITEM = "login-menu-item";
 /** 登录页切换到 API Key 登录方式按钮 */
 export const TID_LOGIN_USE_API_KEY_BUTTON = "login-use-api-key-button";
+/** 登录页 Lumi 账号登录按钮（Lumi 首选入口） */
+export const TID_LUMI_ENTRY_SIGN_IN = "lumi-entry-sign-in";
+/** 登录页不登录、继续本地使用按钮 */
+export const TID_LOGIN_CONTINUE_LOCAL = "login-continue-local";
+/** 设置页：恢复并续期本设备按钮 */
+export const TID_LUMI_DEVICE_RECOVER = "lumi-device-recover";
+/** 设置页：本设备已被组织吊销的说明 */
+export const TID_LUMI_DEVICE_REVOKED = "lumi-device-revoked";
 /** API Key 登录 provider 选择触发器 */
 export const TID_LOGIN_API_KEY_PROVIDER_TRIGGER = "login-api-key-provider-trigger";
 /** API Key 登录 provider 选择项（动态后缀为 provider choice） */

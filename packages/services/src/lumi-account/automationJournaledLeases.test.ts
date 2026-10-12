@@ -105,16 +105,16 @@ test("if the breadcrumb cannot be written, start is never sent", async () => {
   assert.equal(calls.includes("start"), false);
 });
 
-test("off-peak occurrences are filtered before claim and reported, never claimed", async () => {
+test("the journal has no off-peak rule of its own: the driver's shared classifier decides", async () => {
   const { port, calls } = harness({
     items: [due({ occurrenceId: OCC_OFF, offPeakMode: "off_peak" }), due()],
   });
-  const kept = await port.listDue();
+  const listed = await port.listDue();
   assert.deepEqual(
-    kept.map((item) => item.occurrenceId),
-    [OCC],
+    listed.map((item) => item.occurrenceId),
+    [OCC_OFF, OCC],
   );
-  assert.deepEqual(port.refusedOffPeak(), [OCC_OFF]);
+  assert.equal("refusedOffPeak" in port, false);
   assert.equal(calls.includes("claim"), false);
 });
 

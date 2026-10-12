@@ -2430,6 +2430,7 @@ async function runPromptTurnInBackground(
     record.activeOffPeakTaskId = activeOffPeakTaskId;
   }
   record.activeBotDeliveryTarget = params.botDeliveryTarget;
+  if (params.modelExecution?.managedContext) record.lumiManagedSession = true;
   try {
     const admission = await record.app.sendInput(
       {

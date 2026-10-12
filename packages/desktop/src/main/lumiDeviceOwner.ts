@@ -1,10 +1,17 @@
 /* Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents). Apache-2.0 §4(b) modification notice. */
 import { generateKeyPairSync, createHash, randomUUID, sign, createPrivateKey } from "node:crypto";
 import {
+  LumiAccountError,
   LumiDeviceHostTransport,
   type LumiAccountHostTransport,
   type LumiRuntimeCapabilityReport,
 } from "@zcode/services/node";
+import {
+  keepLeasesFresh,
+  needsProactiveRefresh,
+  persistDeviceRefusal,
+  reconcile,
+} from "./lumiDeviceExpiry.js";
 import type { LumiDeviceRecord } from "./lumiDeviceVault.js";
 import type { LumiSessionGuard } from "./lumiSessionFence.js";
 interface Vault {
@@ -29,30 +36,6 @@ function withVaultLock<T>(identity: string, work: () => Promise<T>): Promise<T> 
     if (vaultQueues.get(identity) === tail) vaultQueues.delete(identity);
   });
   return next;
-}
-
-/**
- * Merge a write onto what is on disk right now, never onto this owner's possibly stale memory.
- * The key pair and enrollment of an existing record are never replaced, and a stale owner can
- * neither regress a newer credential nor erase one it never saw.
- */
-function reconcile(
-  latest: LumiDeviceRecord | null,
-  next: LumiDeviceRecord,
-  credentialIsNew: boolean,
-): LumiDeviceRecord {
-  if (!latest) return next;
-  if (latest.fingerprint !== next.fingerprint || latest.publicKeyPem !== next.publicKeyPem)
-    throw new Error("lumi_device_conflict");
-  let credential = latest.credential;
-  if (next.credential) {
-    if (!credential) credential = next.credential;
-    else if (credential.id !== next.credential.id) throw new Error("lumi_device_conflict");
-    else if (Date.parse(next.credential.tokenExpiresAt) >= Date.parse(credential.tokenExpiresAt))
-      credential = next.credential;
-    else if (credentialIsNew) throw new Error("lumi_device_conflict");
-  }
-  return { ...latest, enrollmentId: latest.enrollmentId ?? next.enrollmentId, credential };
 }
 
 /** One serialized main owner per origin/org. No renderer key/token access. */
@@ -108,12 +91,57 @@ export function createLumiDeviceOwner(options: {
     await device.restore();
     loaded = true;
   }
+  /** Persist what a server refusal of the held credential proves (see `persistDeviceRefusal`). */
+  async function observeRefusal(error: unknown) {
+    const held = record?.credential;
+    if (!held) return;
+    try {
+      await withVaultLock(lockIdentity, async () => {
+        const next = await persistDeviceRefusal(options.vault, error, held);
+        if (next !== undefined) record = next;
+      });
+      await device.restore();
+    } catch {
+      // Best effort: failing to persist must not hide the refusal itself.
+    }
+  }
+  /** Rotate a still-valid token that is about to expire, by proof of possession (P03-CG). */
+  async function ensureFresh() {
+    if (record?.revokedAt || !needsProactiveRefresh(record?.credential)) return;
+    try {
+      const privateKey = createPrivateKey(record!.privateKeyPem);
+      await device.refresh(options.appVersion, async (nonce) =>
+        sign(null, Buffer.from(nonce), privateKey).toString("hex"),
+      );
+    } catch (error) {
+      // Best effort: a refused rotation (e.g. below the minimum version) is recorded, and the
+      // still-valid token keeps serving this operation until it expires.
+      await observeRefusal(error);
+    }
+  }
+  /** A token-using operation: loaded, not revoked, enrolled, and rotated if about to expire. */
+  function withToken<T>(work: () => Promise<T>, guard?: LumiSessionGuard): Promise<T> {
+    return serialized(async () => {
+      await load();
+      if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
+      await ensureFresh();
+      return work();
+    }, guard);
+  }
+  /** A revoked device sends nothing with its token and offers no recovery. */
+  function refuseRevoked(): false {
+    if (record?.revokedAt) throw new LumiAccountError("lumi_device_revoked");
+    return false;
+  }
   function serialized<T>(work: () => Promise<T>, guard?: LumiSessionGuard): Promise<T> {
     const next = queue.then(async () => {
       activeGuard = guard;
       try {
         check();
         return await work();
+      } catch (error) {
+        await observeRefusal(error);
+        throw error;
       } finally {
         activeGuard = undefined;
       }
@@ -133,8 +161,9 @@ export function createLumiDeviceOwner(options: {
         enrollmentId: record.enrollmentId,
       };
     return {
-      status:
-        Date.parse(record.credential.tokenExpiresAt) > Date.now()
+      status: record.revokedAt
+        ? ("revoked" as const)
+        : Date.parse(record.credential.tokenExpiresAt) > Date.now()
           ? ("active" as const)
           : ("reauth_required" as const),
       orgId: options.orgId,
@@ -239,16 +268,17 @@ export function createLumiDeviceOwner(options: {
      * every request, and its results never reach the renderer, the scheduler process or Host.
      */
     automationLeases: () =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
-        return device.automationLeases();
+      withToken(async () => {
+        return keepLeasesFresh(device.automationLeases(), () =>
+          serialized(async () => {
+            await load();
+            if (!refuseRevoked()) await ensureFresh();
+          }),
+        );
       }),
 
     listWorkspaceBindings: () =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.listWorkspaceBindings();
       }),
 
@@ -258,66 +288,48 @@ export function createLumiDeviceOwner(options: {
       workspaceBindingId: string;
       title?: string;
     }) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.createManagedSession(input);
       }),
 
     createManagedRun: (agentSessionId: string, modelAlias: string) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.createManagedRun(agentSessionId, modelAlias);
       }),
 
     getManagedRun: (runId: string) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.getManagedRun(runId);
       }),
 
     requestManagedToolDecision: (
       input: import("@zcode/shared").ZCodeManagedToolDecisionRequestParams,
     ) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.requestManagedToolDecision(input);
       }),
 
     reportManagedToolResult: (input: import("@zcode/shared").ZCodeManagedToolResultRequestParams) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         await device.reportManagedToolResult(input, input.status);
       }),
     startManagedRun: (run: Awaited<ReturnType<typeof device.getManagedRun>>) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.startManagedRun(run);
       }),
 
     completeManagedRun: (run: Awaited<ReturnType<typeof device.getManagedRun>>) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.completeManagedRun(run);
       }),
 
     failManagedRun: (run: Awaited<ReturnType<typeof device.getManagedRun>>, failureCode: string) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.failManagedRun(run, failureCode);
       }),
 
     cancelManagedRun: (run: Awaited<ReturnType<typeof device.getManagedRun>>) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.cancelManagedRun(run);
       }),
 
@@ -327,23 +339,17 @@ export function createLumiDeviceOwner(options: {
       displayName: string;
       environmentType: "local" | "ssh" | "wsl" | "docker" | "remote";
     }) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         return device.createWorkspaceBinding(input);
       }),
 
     deleteWorkspaceBinding: (bindingId: string) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         await device.deleteWorkspaceBinding(bindingId);
       }),
 
     recover: (guard?: LumiSessionGuard) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         const { credential, privateKeyPem } = record;
         check();
         const challenge = await options.account.createDeviceRecoveryChallenge(
@@ -377,9 +383,7 @@ export function createLumiDeviceOwner(options: {
         return projection();
       }, guard),
     syncPolicy: (guard?: LumiSessionGuard) =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         check();
         await reportRuntime();
         check();
@@ -397,9 +401,7 @@ export function createLumiDeviceOwner(options: {
         };
       }, guard),
     readCurrentPolicy: () =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         const policy = await device.policy();
         return {
           id: policy.id as string,
@@ -409,15 +411,15 @@ export function createLumiDeviceOwner(options: {
       }),
     /** Publish the Main-validated runtime snapshot; heartbeat only, never policy ACK. */
     refreshRuntimeCapabilities: () =>
-      serialized(async () => {
-        await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+      withToken(async () => {
         await reportRuntime(true);
       }),
+    /** Main paths outside this queue (the automation poll) report a refusal of the held token. */
+    observeServerRefusal: (error: unknown) => serialized(() => observeRefusal(error)),
     refresh: (guard?: LumiSessionGuard) =>
       serialized(async () => {
         await load();
-        if (!record?.credential) throw new Error("lumi_device_missing");
+        if (refuseRevoked() || !record?.credential) throw new Error("lumi_device_missing");
         const privateKey = createPrivateKey(record.privateKeyPem);
         check();
         await device.refresh(options.appVersion, async (nonce) =>

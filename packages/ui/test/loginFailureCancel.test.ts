@@ -1,3 +1,4 @@
+// Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 // @vitest-environment jsdom
 
 /**
@@ -11,7 +12,12 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TID_OAUTH_CANCEL, TID_OAUTH_ERROR, TID_OAUTH_LOGIN_BUTTON } from "@zcode/shared";
+import {
+  TID_LOGIN_USE_API_KEY_BUTTON,
+  TID_OAUTH_CANCEL,
+  TID_OAUTH_ERROR,
+  TID_OAUTH_LOGIN_BUTTON,
+} from "@zcode/shared";
 
 const oauthState = vi.hoisted(() => ({
   status: "idle" as "idle" | "waiting" | "error",
@@ -144,7 +150,9 @@ describe("登录失败态的取消交互", () => {
     storeState.oauthError = null;
     view.rerender(createElement(WelcomeScreen, { onComplete: vi.fn() }));
 
-    expect(screen.getByTestId(TID_OAUTH_LOGIN_BUTTON)).toBeTruthy();
+    // Lumi 入口（spec 04）：恢复的是 API Key / 本地入口，Z.ai/BigModel OAuth 按钮不再列出。
+    expect(screen.getByTestId(TID_LOGIN_USE_API_KEY_BUTTON)).toBeTruthy();
+    expect(screen.queryByTestId(TID_OAUTH_LOGIN_BUTTON)).toBeNull();
     expect(screen.queryByTestId(TID_OAUTH_ERROR)).toBeNull();
     expect(screen.queryByTestId(TID_OAUTH_CANCEL)).toBeNull();
   });
