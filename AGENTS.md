@@ -1,5 +1,20 @@
 > Modified for Lumi Agents (https://github.com/RunLumi/LumiAgents) from ZCode (https://github.com/zai-org/ZCode). Apache-2.0 §4(b) modification notice.
 
+## Ambition with evidence
+
+**Raise the quality of the outcome, not the volume of work.** For non-trivial tasks, apply these lenses in the existing spec/task/PR; small fixes stay small.
+
+- **Altitude:** name the user task that must become dependable, not merely the component to edit. Set observable acceptance, constraints and a stop condition. Propose a better bounded approach when justified; do not silently replace approved behavior or scope.
+- **Depth:** start from the checked-out source, exact app version/commit, redacted logs and a reproducer. Use professional debugging, profiling and protocol/state analysis rather than expert-sounding prose. Challenge the first root-cause theory. A demanding target is a bounded experiment, not a result to assert.
+- **Range:** apply useful methods from distributed systems, human-computer interaction, security or release engineering. Test event ordering, ownership and recovery instead of role-playing a panel of experts. Extra agents or architecture are not evidence of quality.
+- **Speed:** shorten the verified feedback loop with existing tools and reusable synthetic fixtures. Complete authorized implementation, verification and in-scope repair, not just a plan or mock. Change method when the first approach fails; stop at proven acceptance or a specific blocker.
+
+**Here:** improve a user's ability to continue the same task across desktop and remote/mobile reconnects without duplicate execution or lost accepted input. For related changes, inspect the actual owner/lease, CommandInbox and stream/snapshot contracts; exercise both desktop-continuous and web-remote-replayable paths, including stale events and reconnect failures. For crash fixes, tie reproduction and regression evidence to the exact source revision. Never infer cross-platform success from one platform's build.
+
+**Evidence and authority:** use executed tests, actual UI/runtime behavior and independent review, not the implementing model's self-score. Report commands, revision, results and missing coverage. Preserve spec-first changes, architecture boundaries, upstream attribution, modification notices, DCO, disabled-by-default telemetry/updates and release approvals. Larger opportunities remain proposals. Evaluate guidance changes on representative tasks before claiming better agent outcomes.
+
+**Credit:** adapted from [Felix Rieseberg, “How to be more ambitious: A tutorial for humans with models”](https://felixrieseberg.com/how-to-be-more-ambitious-a-tutorial-for-humans-with-models/) (13 October 2026). Speed, Altitude, Depth and Range are his framework; runtime examples and authority safeguards are Lumi's adaptation.
+
 ## 核心原则
 
 - 新增或修改行为前，先更新对应 spec；目录不存在时按需创建。先明确产品规则、状态所有者、接口和验收场景，再实现代码。
