@@ -1,17 +1,5 @@
 [
   {
-    "package": "@ai-sdk/provider-utils@4.0.23",
-    "file": "third-party/upstream/b4f9adb7c568904834d0dd6cc98d16c390d21ca32fc17ae7a267715269bd5529.txt",
-    "sha256": "b4f9adb7c568904834d0dd6cc98d16c390d21ca32fc17ae7a267715269bd5529",
-    "source": "https://raw.githubusercontent.com/vercel/ai/@ai-sdk/provider-utils@4.0.23/LICENSE"
-  },
-  {
-    "package": "@ai-sdk/provider-utils@4.0.27",
-    "file": "third-party/upstream/b4f9adb7c568904834d0dd6cc98d16c390d21ca32fc17ae7a267715269bd5529.txt",
-    "sha256": "b4f9adb7c568904834d0dd6cc98d16c390d21ca32fc17ae7a267715269bd5529",
-    "source": "https://raw.githubusercontent.com/vercel/ai/@ai-sdk/provider-utils@4.0.27/LICENSE"
-  },
-  {
     "package": "@ai-sdk/provider-utils@4.0.39",
     "file": "third-party/upstream/b4f9adb7c568904834d0dd6cc98d16c390d21ca32fc17ae7a267715269bd5529.txt",
     "sha256": "b4f9adb7c568904834d0dd6cc98d16c390d21ca32fc17ae7a267715269bd5529",
@@ -212,6 +200,12 @@
     "source": "node_modules/@tokenizer/token/README.md"
   },
   {
+    "package": "agent-base@6.0.2",
+    "file": "third-party/upstream/9392da8d1d2ccb224d60025fee4d6223ae0b863469fcd8c6b9461145723cf1c4.txt",
+    "sha256": "9392da8d1d2ccb224d60025fee4d6223ae0b863469fcd8c6b9461145723cf1c4",
+    "source": "node_modules/axios/node_modules/agent-base/README.md"
+  },
+  {
     "package": "ansi-to-react@6.2.6",
     "repo": "nteract/ansi-to-react",
     "refs": ["145140971e9d83ccac32265f24b1c55dea437896"],
@@ -294,6 +288,12 @@
     "file": "third-party/upstream/6ae13df543a24b3fb18c25182cf4f084132f799ea9225410f7037888401b7469.txt",
     "sha256": "6ae13df543a24b3fb18c25182cf4f084132f799ea9225410f7037888401b7469",
     "source": "node_modules/http-mitm-proxy/README.md"
+  },
+  {
+    "package": "https-proxy-agent@5.0.1",
+    "file": "third-party/upstream/58f4074efa400c8397add18c6561d0a17e4721e24bfd1b4d1e8ca764a8cb3eca.txt",
+    "sha256": "58f4074efa400c8397add18c6561d0a17e4721e24bfd1b4d1e8ca764a8cb3eca",
+    "source": "node_modules/axios/node_modules/https-proxy-agent/README.md"
   },
   {
     "package": "is-node-process@1.2.0",
